@@ -60,6 +60,10 @@ local Data = {}
 
 local Toggles, Options, Library
 
+local function checkTeam(target)
+	return target.Team == LocalPlayer.Team
+end
+
 local function ApplyStyle(Object, StyleProperties)
 	for Property, Value in pairs(StyleProperties) do
 		pcall(function()
@@ -163,6 +167,11 @@ local function RemoveESP(Player)
 end
 
 local function UpdateESP(Player, EspData)
+	if Toggles.ESPTeamCheck.Value and checkTeam(Player) then
+		HideESP(EspData)
+		return
+	end
+
 	local Character = Player.Character
 	if not Character then
 		HideESP(EspData)
