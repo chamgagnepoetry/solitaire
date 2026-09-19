@@ -225,6 +225,7 @@ function Logic:Initialize(UIReference)
 	-- MAIN TAB
 	local CameraTarget = nil
 	runLoop("CameraLockKey", function()
+		print('updated')
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(nil, {
 				CameraFriendCheck = Toggles.CameraFriendCheck.Value,
