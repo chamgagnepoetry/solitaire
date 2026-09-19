@@ -130,7 +130,7 @@ function UI:Initialize()
 		Rounding = 2;
 		Compact = true;
 	})
-	CameraRadiusDepBox:AddSlider("MouseRadiusThickness",{
+	MouseRadiusDepBox:AddSlider("MouseRadiusThickness",{
 		Text = "thickness";
 		Default = 2;
 		Min = 1;
