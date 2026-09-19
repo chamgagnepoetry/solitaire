@@ -25,7 +25,7 @@ Setup(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
 local function getEquippedTool()
 	local Tool
 	for _, object in pairs(LocalCharacter:GetChildren()) do
-		if v:FindFirstChildOfClass("Tool") then
+		if object:IsA("Tool") then
 			Tool = object
 			return Tool
 		end
@@ -207,7 +207,6 @@ function Logic:Initialize(UIReference)
 	end)--]]
 	-- MAIN TAB
 	runLoop("CameraLockKey", function()
-		print('yes2')
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(nil, {
 				CameraFriendCheck = Toggles.CameraFriendCheck.Value,
