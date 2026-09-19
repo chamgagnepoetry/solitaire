@@ -1,4 +1,4 @@
-print("updated")
+print("updated22")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -183,34 +183,28 @@ local function runLoop(controlObj, loopFn, stopFn)
 		return
 	end
 
-	if controlObj.OnChanged then
-		local loopTask
+	if controlObj.Value ~= nil then
+		task.spawn(function()
+			local wasActive = false
 
-		controlObj:OnChanged(function()
-			print('changed')
-			if controlObj.Value then
-				if not loopTask then
-					loopTask = task.spawn(function()
-						pcall(function()
-							while controlObj.Value do
-								task.wait()
-								loopFn()
-							end
+			while true do
+				local ok, err = pcall(function()
+					if controlObj.Value then
+						wasActive = true
+						loopFn()
+					elseif wasActive then
+						wasActive = false
+						if stopFn then
+							stopFn()
+						end
+					end
+				end)
 
-							loopTask = nil
-
-							if stopFn then
-								stopFn()
-							end
-						end)
-					end)
+				if not ok then
+					warn("runLoop error:", err)
 				end
-			else
-				loopTask = nil
 
-				if stopFn then
-					stopFn()
-				end
+				task.wait()
 			end
 		end)
 	end
