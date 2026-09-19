@@ -1,3 +1,4 @@
+local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
@@ -13,6 +14,10 @@ local NotificationTime = 3
 local Logic = {}
 
 local Library, Toggles, Options
+
+local CircleRadius = Drawing.new("Circle")
+CircleRadius.Thickness = 2
+CircleRadius.Transparency = 0.5
 
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
@@ -74,18 +79,20 @@ local function checkTeam(target)
 	return target.Team == LocalPlayer.Team
 end
 
-local function FindPlayerToMouse(radius,configurations)
+local function FindPlayerToMouse(radius, configurations)
 	if not LocalHumanoidRootPart then
-        return false
-    end
+		return false
+	end
+
 	local ClosestPlayer = nil
-	local shortestDistance = math.huge
-	local mousePos = Vector2.new(Mouse.X, Mouse.Y)
+	local ShortestDistance = math.huge
+	local MousePos = Vector2.new(Mouse.X, Mouse.Y)
+
 	for _, target in ipairs(Players:GetPlayers()) do
 		if target ~= LocalPlayer and target.Character then
 			local targetRootPart = target.Character:FindFirstChild("HumanoidRootPart")
 			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
-		
+
 			if targetRootPart and targetHumanoid then
 				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
 					continue
@@ -104,17 +111,25 @@ local function FindPlayerToMouse(radius,configurations)
 				end
 
 				local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
+
 				if onScreen then
 					local screenVector = Vector2.new(screenPos.X, screenPos.Y)
-					local distance = (screenVector - mousePos).Magnitude
-					if distance < shortestDistance then
-						shortestDistance = distance
+					local distance = (screenVector - MousePos).Magnitude
+
+					-- Only apply radius check if radius was provided
+					if radius and distance > radius then
+						continue
+					end
+
+					if distance < ShortestDistance then
+						ShortestDistance = distance
 						ClosestPlayer = target
 					end
 				end
 			end
 		end
 	end
+
 	return ClosestPlayer
 end
 
@@ -340,6 +355,24 @@ function Logic:Initialize(UIReference)
 
 		if not FriendCheck and not TeamCheck and isrbxactive() then
 			mouse1click()
+		end
+	end)
+
+	runLoop(Toggles.CameraRadius, function()
+		local MouseLocation = UserInputService:GetMouseLocation()
+		local correctedPos = Vector2.new(MouseLocation.X,MouseLocation.Y)
+
+		CircleRadius.Position = correctedPos
+		CircleRadis.Radius = Options.CameraRadiusSize.Value
+		CircleRadius.Visible = true
+	end, function()
+		CircleRadius.Visible = false
+	end)
+	Toggles.CameraRadius:OnChanged(function()
+		if Toggles.CameraRadius.Value then
+			CircleRadius.Visible = true
+		else
+			CircleRadius.Visible = false
 		end
 	end)
 
