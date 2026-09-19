@@ -66,7 +66,15 @@ function UI:Initialize()
 		Min = 50;
 		Max = 800;
 		Rounding = 2;
-		Compact = false;
+		Compact = true;
+	})
+	CameraRadiusDepBox:AddSlider("CameraRadiusThickness",{
+		Text = "thickness";
+		Default = 2;
+		Min = 1;
+		Max = 10;
+		Rounding = 2;
+		Compact = true;
 	})
 	CameraGroupBox:AddDivider()
 	CameraGroupBox:AddDropdown("CameraLockToggleType",{
@@ -107,6 +115,8 @@ function UI:Initialize()
 	})
 	MouseDepBox:AddToggle("MouseRadius",{
 		Text = "lock radius"
+	}):AddColorPicker("MouseRadiusColor", {
+		Default = Color3.fromRGB(255,255,255)
 	})
 	local MouseRadiusDepBox = MouseDepBox:AddDependencyBox()
 	MouseRadiusDepBox:SetupDependencies({
@@ -118,7 +128,15 @@ function UI:Initialize()
 		Min = 50;
 		Max = 800;
 		Rounding = 2;
-		Compact = false;
+		Compact = true;
+	})
+	CameraRadiusDepBox:AddSlider("MouseRadiusThickness",{
+		Text = "thickness";
+		Default = 2;
+		Min = 1;
+		Max = 10;
+		Rounding = 2;
+		Compact = true;
 	})
 	MouseGroupBox:AddDivider()
 	MouseGroupBox:AddDropdown("MouseLockToggleType",{
@@ -191,7 +209,7 @@ function UI:Initialize()
 		Min = 1;
 		Max = 1000;
 		Rounding = 0;
-		Compact = true;
+		UltraCompact = true;
 		Suffix = "s";
 	})
 	MovementGroupBox:AddSlider("JumpPower",{
@@ -200,7 +218,7 @@ function UI:Initialize()
 		Min = 1;
 		Max = 1000;
 		Rounding = 0;
-		Compact = true;
+		UltraCompact = true;
 		Suffix = "s";
 	})
 
