@@ -1,4 +1,4 @@
-print("updated22")
+print('udated545')
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -16,9 +16,11 @@ local Logic = {}
 
 local Library, Toggles, Options
 
-local CircleRadius = Drawing.new("Circle")
-CircleRadius.Thickness = 2
-CircleRadius.Transparency = 0.5
+local CameraRadius = Drawing.new("Circle")
+CameraRadius.Transparency = 0.5
+
+local MouseRadius = Drawing.new("Circle")
+MouseRadius.Transparency = 0.5
 
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
@@ -236,8 +238,9 @@ function Logic:Initialize(UIReference)
 	-- MAIN TAB
 	local CameraTarget = nil
 	runLoop("CameraLockKey", function()
+		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius or nil
 		if not CameraTarget then
-			CameraTarget = FindPlayerToMouse(nil, {
+			CameraTarget = FindPlayerToMouse(radiusSize, {
 				FriendCheck = Toggles.CameraFriendCheck.Value,
 				TeamCheck = Toggles.CameraTeamCheck.Value,
 				WallCheck = Toggles.CameraWallCheck.Value,
@@ -248,7 +251,7 @@ function Logic:Initialize(UIReference)
 		if CameraTarget and CameraTarget.Character then
 			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
 			if Toggles.CameraDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				CameraTarget = FindPlayerToMouse(nil, {
+				CameraTarget = FindPlayerToMouse(radiusSize, {
 					FriendCheck = Toggles.CameraFriendCheck.Value,
 					TeamCheck = Toggles.CameraTeamCheck.Value,
 					WallCheck = Toggles.CameraWallCheck.Value,
@@ -272,8 +275,9 @@ function Logic:Initialize(UIReference)
 
 	local MouseTarget = nil
 	runLoop("MouseLockKey", function()
+		local radiusSize = Toggles.MouseRadius.Value and MouseRadius.Radius or nil
 		if not MouseTarget then
-			MouseTarget = FindPlayerToMouse(nil, {
+			MouseTarget = FindPlayerToMouse(radiusSize, {
 				FriendCheck = Toggles.MouseFriendCheck.Value,
 				TeamCheck = Toggles.MouseTeamCheck.Value,
 				WallCheck = Toggles.MouseWallCheck.Value,
@@ -284,7 +288,7 @@ function Logic:Initialize(UIReference)
 		if MouseTarget and MouseTarget.Character then
 			local TargetHumanoid = MouseTarget.Character:FindFirstChildOfClass("Humanoid")
 			if Toggles.MouseDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				MouseTarget = FindPlayerToMouse(nil, {
+				MouseTarget = FindPlayerToMouse(radiusSize, {
 					FriendCheck = Toggles.MouseFriendCheck.Value,
 					TeamCheck = Toggles.MouseTeamCheck.Value,
 					WallCheck = Toggles.MouseWallCheck.Value,
@@ -355,17 +359,29 @@ function Logic:Initialize(UIReference)
 	end)
 
 	runLoop(Toggles.CameraRadius, function()
-		print("running")
 		local MouseLocation = UserInputService:GetMouseLocation()
 		local correctedPos = Vector2.new(MouseLocation.X,MouseLocation.Y)
 
-		CircleRadius.Position = correctedPos
-		CircleRadius.Radius = Options.CameraRadiusSize.Value
-		CircleRadius.Color = Options.CameraRadiusColor.Value
-		CircleRadius.Visible = true
+		CameraRadius.Position = correctedPos
+		CameraRadius.Radius = Options.CameraRadiusSize.Value
+		CameraRadius.Color = Options.CameraRadiusColor.Value
+		CameraRadius.Thickness = Options.CameraRadiusThickness.Value
+		CameraRadius.Visible = true
 	end, function()
-		print("ended")
-		CircleRadius.Visible = false
+		CameraRadius.Visible = false
+	end)
+
+	runLoop(Toggles.MouseRadius, function()
+		local MouseLocation = UserInputService:GetMouseLocation()
+		local correctedPos = Vector2.new(MouseLocation.X,MouseLocation.Y)
+
+		MouseRadius.Position = correctedPos
+		MouseRadius.Radius = Options.MouseRadiusSize.Value
+		MouseRadius.Color = Options.MouseRadiusColor.Value
+		MouseRadius.Thickness = Options.MouseRadiusThickness.Value
+		MouseRadius.Visible = true
+	end, function()
+		MouseRadius.Visible = false
 	end)
 
 	-- CHARACTER TAB
