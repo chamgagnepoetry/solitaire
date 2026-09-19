@@ -142,6 +142,7 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255,255,255)
 	})
 	local ESPBoxDepBox = ESPGroupBox:AddDependencyBox()
+	print("fixed")
 	ESPBoxDepBox:SetupDependencies({
 		{Toggles.ESPBox, true}
 	})
