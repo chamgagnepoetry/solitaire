@@ -33,16 +33,23 @@ function UI:Initialize()
         Mode = "Toggle";
         NoUI = false;
     })
-	CameraGroupBox:AddToggle("CameraFriendCheck",{
+	local CameraLockDepBox = CameraGroupBox:AddDependencyBox()
+	CameraLockDepBox:SetupDependencies({
+		{Toggles.CameraLock, true}
+	})
+	CameraLockDepBox:AddToggle("CameraFriendCheck",{
 		Text = "friend check"
 	})
-	CameraGroupBox:AddToggle("CameraWallCheck",{
+	CameraLockDepBox:AddToggle("CameraWallCheck",{
 		Text = "wall check"
 	})
-	CameraGroupBox:AddToggle("CameraRadius",{
-		Text = "add radius"
+	CameraLockDepBox:AddToggle("CameraDeadCheck",{
+		Text = "dead check"
 	})
-	local CameraRadiusDepBox = CameraGroupBox:AddDependencyBox()
+	CameraLockDepBox:AddToggle("CameraRadius",{
+		Text = "lock radius"
+	})
+	local CameraRadiusDepBox = CameraLockDepBox:AddDependencyBox()
 	CameraRadiusDepBox:SetupDependencies({
 		{Toggles.CameraRadius, true}
 	})
@@ -81,6 +88,9 @@ function UI:Initialize()
 	})
 	TriggerBotDepBox:AddToggle("GunTriggerBotFriendCheck",{
 		Text = "friend check"
+	})
+	TriggerBotDepBox:AddToggle("GunTriggerBotDeadCheck",{
+		Text = "dead check"
 	})
 	GunGroupBox:AddDivider()
 
@@ -142,7 +152,6 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255,255,255)
 	})
 	local ESPBoxDepBox = ESPGroupBox:AddDependencyBox()
-	print("fixed")
 	ESPBoxDepBox:SetupDependencies({
 		{Toggles.ESPBox, true}
 	})
