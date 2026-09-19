@@ -70,6 +70,10 @@ local function checkFriend(target)
 	return LocalPlayer:IsFriendsWith(target.UserId)
 end
 
+local function checkTeam(target)
+	return target.Team == LocalPlayer.Team
+end
+
 local function FindPlayerToMouse(radius,configurations)
 	if not LocalHumanoidRootPart then
         return false
@@ -80,8 +84,18 @@ local function FindPlayerToMouse(radius,configurations)
 	for _, target in ipairs(Players:GetPlayers()) do
 		if target ~= LocalPlayer and target.Character then
 			local targetRootPart = target.Character:FindFirstChild("HumanoidRootPart")
-			if targetRootPart then
+			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
+		
+			if targetRootPart and targetHumanoid then
+				if configurations.CameraDeadCheck and targetHumanoid.Health <= 0 then
+					continue
+				end
+
 				if configurations.CameraFriendCheck and checkFriend(target) then
+					continue
+				end
+
+				if configurations.CameraTeamCheck and checkTeam(target) then
 					continue
 				end
 
@@ -211,30 +225,33 @@ function Logic:Initialize(UIReference)
 	-- MAIN TAB
 	local CameraTarget = nil
 	runLoop("CameraLockKey", function()
-		if CameraTarget then
-			local TargetCharacter = CameraTarget.Character
-			local TargetHumanoid = TargetCharacter and TargetCharacter:FindFirstChildOfClass("Humanoid")
-	
-			if Toggles.CameraDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				CameraTarget = nil
-			end
-		end
-	
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(nil, {
 				CameraFriendCheck = Toggles.CameraFriendCheck.Value,
-				CameraWallCheck = Toggles.CameraWallCheck.Value
+				CameraWallCheck = Toggles.CameraWallCheck.Value,
+				CameraDeadCheck = Toggles.CameraDeadCheck.Value
 			})
 		end
-	
+
 		if CameraTarget and CameraTarget.Character then
-			local TargetHeadPart = CameraTarget.Character:FindFirstChild("Head")
-	
-			if TargetHeadPart then
-				Camera.CFrame = CFrame.new(
-					Camera.CFrame.Position,
-					TargetHeadPart.Position
-				)
+			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
+			if Toggles.CameraDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+				CameraTarget = FindPlayerToMouse(nil, {
+					CameraFriendCheck = Toggles.CameraFriendCheck.Value,
+					CameraTeamCheck = Toggles.CameraTeamCheck.Value,
+					CameraWallCheck = Toggles.CameraWallCheck.Value,
+					CameraDeadCheck = Toggles.CameraDeadCheck.Value
+				})
+			end
+
+			if CameraTarget and CameraTarget.Character then
+				local TargetHeadPart = CameraTarget.Character:FindFirstChild("Head")
+				if TargetHeadPart then
+					Camera.CFrame = CFrame.new(
+						Camera.CFrame.Position,
+						TargetHeadPart.Position
+					)
+				end
 			end
 		end
 	end, function()
@@ -274,12 +291,17 @@ function Logic:Initialize(UIReference)
 	
 		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
 		local FriendCheck = false
-	
+		local TeamCheck = false
+		
+		if Toggles.GunTriggerBotTeamCheck.Value then
+			TeamCheck = checkTeam(TargetPlayer)
+		end
+
 		if Toggles.GunTriggerBotFriendCheck.Value then
 			FriendCheck = checkFriend(TargetPlayer)
 		end
 
-		if not FriendCheck then
+		if not FriendCheck and not TeamCheck then
 			mouse1click()
 		end
 	end)
