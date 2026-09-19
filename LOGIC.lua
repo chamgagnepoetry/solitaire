@@ -87,19 +87,19 @@ local function FindPlayerToMouse(radius,configurations)
 			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
 		
 			if targetRootPart and targetHumanoid then
-				if configurations.CameraDeadCheck and targetHumanoid.Health <= 0 then
+				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
 					continue
 				end
 
-				if configurations.CameraFriendCheck and checkFriend(target) then
+				if configurations.FriendCheck and checkFriend(target) then
 					continue
 				end
 
-				if configurations.CameraTeamCheck and checkTeam(target) then
+				if configurations.TeamCheck and checkTeam(target) then
 					continue
 				end
 
-				if configurations.CameraWallCheck and checkWall(target) then
+				if configurations.WallCheck and checkWall(target) then
 					continue
 				end
 
@@ -227,10 +227,10 @@ function Logic:Initialize(UIReference)
 	runLoop("CameraLockKey", function()
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(nil, {
-				CameraFriendCheck = Toggles.CameraFriendCheck.Value,
-				CameraTeamCheck = Toggles.CameraTeamCheck.Value,
-				CameraWallCheck = Toggles.CameraWallCheck.Value,
-				CameraDeadCheck = Toggles.CameraDeadCheck.Value
+				FriendCheck = Toggles.CameraFriendCheck.Value,
+				TeamCheck = Toggles.CameraTeamCheck.Value,
+				WallCheck = Toggles.CameraWallCheck.Value,
+				DeadCheck = Toggles.CameraDeadCheck.Value
 			})
 		end
 
@@ -238,10 +238,10 @@ function Logic:Initialize(UIReference)
 			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
 			if Toggles.CameraDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
 				CameraTarget = FindPlayerToMouse(nil, {
-					CameraFriendCheck = Toggles.CameraFriendCheck.Value,
-					CameraTeamCheck = Toggles.CameraTeamCheck.Value,
-					CameraWallCheck = Toggles.CameraWallCheck.Value,
-					CameraDeadCheck = Toggles.CameraDeadCheck.Value
+					FriendCheck = Toggles.CameraFriendCheck.Value,
+					TeamCheck = Toggles.CameraTeamCheck.Value,
+					WallCheck = Toggles.CameraWallCheck.Value,
+					DeadCheck = Toggles.CameraDeadCheck.Value
 				})
 			end
 
@@ -257,6 +257,42 @@ function Logic:Initialize(UIReference)
 		end
 	end, function()
 		CameraTarget = nil
+	end)
+
+	local MouseTarget = nil
+	runLoop("MouseLockKey", function()
+		if not MouseTarget then
+			MouseTarget = FindPlayerToMouse(nil, {
+				FriendCheck = Toggles.MouseFriendCheck.Value,
+				TeamCheck = Toggles.MouseTeamCheck.Value,
+				WallCheck = Toggles.MouseWallCheck.Value,
+				DeadCheck = Toggles.MouseDeadCheck.Value
+			})
+		end
+
+		if MouseTarget and MouseTarget.Character then
+			local TargetHumanoid = MouseTarget.Character:FindFirstChildOfClass("Humanoid")
+			if Toggles.MouseDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+				MouseTarget = FindPlayerToMouse(nil, {
+					FriendCheck = Toggles.MouseFriendCheck.Value,
+					TeamCheck = Toggles.MouseTeamCheck.Value,
+					WallCheck = Toggles.MouseWallCheck.Value,
+					DeadCheck = Toggles.MouseDeadCheck.Value
+				})
+			end
+
+			if MouseTarget and MouseTarget.Character then
+				local TargetHeadPart = MouseTarget.Character:FindFirstChild("Head")
+				if TargetHeadPart then
+					local screenPos, onScreen = Camera:WorldToViewportPoint(TargetHeadPart.Position)
+					if onScreen and isrbxactive() then
+						mousemoveabs(screenPos.X,screenPos.Y)
+					end
+				end
+			end
+		end
+	end, function()
+		MouseTarget = nil
 	end)
 
 	runLoop("GunTriggerBotKey", function()
@@ -302,7 +338,7 @@ function Logic:Initialize(UIReference)
 			FriendCheck = checkFriend(TargetPlayer)
 		end
 
-		if not FriendCheck and not TeamCheck then
+		if not FriendCheck and not TeamCheck and isrbxactive() then
 			mouse1click()
 		end
 	end)
