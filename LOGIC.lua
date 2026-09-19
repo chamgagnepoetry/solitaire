@@ -228,6 +228,7 @@ function Logic:Initialize(UIReference)
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(nil, {
 				CameraFriendCheck = Toggles.CameraFriendCheck.Value,
+				CameraTeamCheck = Toggles.CameraTeamCheck.Value,
 				CameraWallCheck = Toggles.CameraWallCheck.Value,
 				CameraDeadCheck = Toggles.CameraDeadCheck.Value
 			})
