@@ -142,7 +142,9 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255,255,255)
 	})
 	local ESPBoxDepBox = ESPGroupBox:AddDependencyBox()
-	ESPBoxDepBox:SetupDependencies({Toggles.ESPBox, true})
+	ESPBoxDepBox:SetupDependencies({
+		{Toggles.ESPBox, true}
+	})
 	ESPBoxDepBox:AddToggle("ESPBoxOutline",{
 		Text = "outline"
 	})
@@ -155,7 +157,9 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255,255,255)
 	})
 	local ESPNameDepBox = ESPGroupBox:AddDependencyBox()
-	ESPNameDepBox:SetupDependencies({Toggles.ESPName, true})
+	ESPNameDepBox:SetupDependencies({
+		{Toggles.ESPName, true}
+	})
 	ESPNameDepBox:AddToggle("ESPNameOutline",{
 		Text = "outline"
 	})
@@ -168,7 +172,9 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255,255,255)
 	})
 	local ESPWeaponDepBox = ESPGroupBox:AddDependencyBox()
-	ESPWeaponDepBox:SetupDependencies({Toggles.ESPWeaponColor, true})
+	ESPWeaponDepBox:SetupDependencies({
+		{Toggles.ESPWeapon, true}
+	})
 	ESPWeaponDepBox:AddToggle("ESPWeaponOutline",{
 		Text = "outline"
 	})
@@ -181,7 +187,9 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255,255,255)
 	})
 	local ESPDistanceDepBox = ESPGroupBox:AddDependencyBox()
-	ESPDistanceDepBox:SetupDependencies({Toggles.ESPDistance, true})
+	ESPDistanceDepBox:SetupDependencies({
+		{Toggles.ESPDistance, true}
+	})
 	ESPDistanceDepBox:AddToggle("ESPDistanceOutline",{
 		Text = "outline"
 	})
