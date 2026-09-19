@@ -257,7 +257,7 @@ function Logic:Initialize(UIReference)
 			end
 		end
 	
-		if not Humanoid then
+		if not TargetHumanoid then
 			return
 		end
 	
