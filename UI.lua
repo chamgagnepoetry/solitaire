@@ -40,6 +40,9 @@ function UI:Initialize()
 	CameraLockDepBox:AddToggle("CameraFriendCheck",{
 		Text = "friend check"
 	})
+	CameraLockDepBox:AddToggle("CameraTeamCheck",{
+		Text = "team check"
+	})
 	CameraLockDepBox:AddToggle("CameraWallCheck",{
 		Text = "wall check"
 	})
@@ -88,6 +91,9 @@ function UI:Initialize()
 	})
 	TriggerBotDepBox:AddToggle("GunTriggerBotFriendCheck",{
 		Text = "friend check"
+	})
+	TriggerBotDepBox:AddToggle("GunTriggerBotTeamCheck",{
+		Text = "team check"
 	})
 	TriggerBotDepBox:AddToggle("GunTriggerBotDeadCheck",{
 		Text = "dead check"
@@ -202,6 +208,12 @@ function UI:Initialize()
 	})
 	ESPDistanceDepBox:AddToggle("ESPDistanceOutline",{
 		Text = "outline"
+	})
+
+	ESPGroupBox:AddDivider()
+
+	ESPGroupBox:AddToggle("ESPTeamCheck",{
+		Text = "team check"
 	})
 
 	ESPGroupBox:AddDivider()
