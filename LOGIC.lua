@@ -363,7 +363,8 @@ function Logic:Initialize(UIReference)
 		local correctedPos = Vector2.new(MouseLocation.X,MouseLocation.Y)
 
 		CircleRadius.Position = correctedPos
-		CircleRadis.Radius = Options.CameraRadiusSize.Value
+		CircleRadius.Radius = Options.CameraRadiusSize.Value
+		CircleRadius.Color = Options.CameraRadiusColor.Value
 		CircleRadius.Visible = true
 	end, function()
 		CircleRadius.Visible = false
