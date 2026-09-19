@@ -4,7 +4,8 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 local Mouse = LocalPlayer:GetMouse()
-local Camera = workspace.CurrentCamera	
+local Camera = workspace.CurrentCamera
+Mouse.TargetFilter = LocalCharacter
 
 local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
 local NotificationTime = 3
@@ -17,6 +18,8 @@ local function Setup(newCharacter)
 	LocalCharacter = newCharacter
 	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
 	LocalHumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+
+	Mouse.TargetFilter = newCharacter
 end
 
 LocalPlayer.CharacterAdded:Connect(Setup)
@@ -206,6 +209,7 @@ function Logic:Initialize(UIReference)
 		end))
 	end)--]]
 	-- MAIN TAB
+	local CameraTarget = nil
 	runLoop("CameraLockKey", function()
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(nil, {
@@ -215,12 +219,12 @@ function Logic:Initialize(UIReference)
 		end
 	
 		if CameraTarget and CameraTarget.Character then
-			local targetHeadPart = CameraTarget.Character:FindFirstChild("Head")
+			local TargetHeadPart = CameraTarget.Character:FindFirstChild("Head")
 	
-			if targetHeadPart then
+			if TargetHeadPart then
 				Camera.CFrame = CFrame.new(
 					Camera.CFrame.Position,
-					targetHeadPart.Position
+					TargetHeadPart.Position
 				)
 			end
 		end
@@ -229,26 +233,43 @@ function Logic:Initialize(UIReference)
 	end)
 
 	runLoop("GunTriggerBotKey", function()
-		print('yes')
 		local Tool = getEquippedTool()
-		print('tt')
-		if Tool then
-			print('1')
-			Mouse.TargetFilter = Character
-			if Mouse.Target then
-				print('2')
-				if Mouse.Target.Parent then
-					print('3')
-					if Mouse.Target.Parent:FindFirstChildOfClass("Humanoid") or Mouse.Target.Parent.Parent:FindFirstChildOfClass("Humanoid") then
-						local friendCheck = Toggles.GunTriggerBotFriendCheck.Value and checkFriend(Players:FindFirstChild(Mouse.Target.Parent.Name)) or false
-						print('friend check')
-						if not friendCheck then
-							print('fired')
-							mouse1click()
-						end
-					end
-				end
+		if not Tool then
+			return
+		end
+	
+		local TargetPart = Mouse.Target
+		if not TargetPart then
+			return
+		end
+	
+		local TargetModel = TargetPart.Parent
+		if not TargetModel then
+			return
+		end
+	
+		local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
+	
+		if not TargetHumanoid and TargetModel.Parent then
+			TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
+			if TargetHumanoid then
+				TargetModel = TargetModel.Parent
 			end
+		end
+	
+		if not Humanoid then
+			return
+		end
+	
+		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
+		local FriendCheck = false
+	
+		if Toggles.GunTriggerBotFriendCheck.Value then
+			FriendCheck = checkFriend(TargetPlayer)
+		end
+
+		if not FriendCheck then
+			mouse1click()
 		end
 	end)
 
