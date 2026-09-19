@@ -183,6 +183,7 @@ local function runLoop(controlObj, loopFn, stopFn)
 	end
 
 	if controlObj.OnChanged then
+		print("is toggle object")
 		local loopTask
 
 		controlObj:OnChanged(function()
@@ -359,6 +360,7 @@ function Logic:Initialize(UIReference)
 	end)
 
 	runLoop(Toggles.CameraRadius, function()
+		print("running")
 		local MouseLocation = UserInputService:GetMouseLocation()
 		local correctedPos = Vector2.new(MouseLocation.X,MouseLocation.Y)
 
@@ -367,6 +369,7 @@ function Logic:Initialize(UIReference)
 		CircleRadius.Color = Options.CameraRadiusColor.Value
 		CircleRadius.Visible = true
 	end, function()
+		print("ended")
 		CircleRadius.Visible = false
 	end)
 	Toggles.CameraRadius:OnChanged(function()
