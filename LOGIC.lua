@@ -184,10 +184,10 @@ local function runLoop(controlObj, loopFn, stopFn)
 	end
 
 	if controlObj.OnChanged then
-		print("is toggle object")
 		local loopTask
 
 		controlObj:OnChanged(function()
+			print('changed')
 			if controlObj.Value then
 				if not loopTask then
 					loopTask = task.spawn(function()
@@ -372,13 +372,6 @@ function Logic:Initialize(UIReference)
 	end, function()
 		print("ended")
 		CircleRadius.Visible = false
-	end)
-	Toggles.CameraRadius:OnChanged(function()
-		if Toggles.CameraRadius.Value then
-			CircleRadius.Visible = true
-		else
-			CircleRadius.Visible = false
-		end
 	end)
 
 	-- CHARACTER TAB
