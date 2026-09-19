@@ -1,0 +1,207 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/havoceternal/VantaLib/refs/heads/main/Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/havoceternal/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/havoceternal/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
+
+local UI = {}
+
+function UI:Initialize()
+    local Window = Library:CreateWindow({
+        Title = "SOLITAIRE UNIVERSAL";
+        Centre = true;
+        AutoShow = true;
+        TabPadding = 12;
+        MenuFadeTime = 0;
+    })
+
+    local Tabs = {
+        Main = Window:AddTab("main");
+        Character = Window:AddTab("character");
+		Visuals = Window:AddTab("visuals");
+        Settings = Window:AddTab("settings");
+    }
+
+    -- \\MAIN TAB//
+    local CameraGroupBox = Tabs.Main:AddLeftGroupbox("camera")
+    local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
+
+	-- Camera Group Box
+    CameraGroupBox:AddToggle("CameraLock", {
+        Text = "cam lock"
+    }):AddKeyPicker("CameraLockKey",{
+        Text = "cam lock";
+        Default = "E";
+        Mode = "Toggle";
+        NoUI = false;
+    })
+	CameraGroupBox:AddToggle("CameraFriendCheck",{
+		Text = "friend check"
+	})
+	CameraGroupBox:AddToggle("CameraWallCheck",{
+		Text = "wall check"
+	})
+	CameraGroupBox:AddToggle("CameraRadius",{
+		Text = "add radius"
+	})
+	local CameraRadiusDepBox = CameraGroupBox:AddDependencyBox()
+	CameraRadiusDepBox:SetupDependencies({
+		{Toggles.CameraRadius, true}
+	})
+	CameraRadiusDepBox:AddSlider("CameraRadiusSize",{
+		Text = "size";
+		Default = 200;
+		Min = 50;
+		Max = 800;
+		Rounding = 2;
+		Compact = false;
+	})
+	CameraGroupBox:AddDivider()
+	CameraGroupBox:AddDropdown("CameraLockToggleType",{
+		Values = {"Toggle","Hold"};
+		Default = 1;
+		Multi = false;
+		Text = "toggle type";
+		Callback = function(Value)
+			Options.CameraLockKey.Mode = tostring(Value)
+		end,
+	})
+
+	-- Gun Group Box
+
+	GunGroupBox:AddToggle("GunTriggerBot",{
+		Text = "trigger bot"
+	}):AddKeyPicker("GunTriggerBotKey",{
+        Text = "trigger bot";
+        Default = "T";
+        Mode = "Toggle";
+        NoUI = false;
+    })
+	local TriggerBotDepBox = GunGroupBox:AddDependencyBox()
+	TriggerBotDepBox:SetupDependencies({
+		{Toggles.GunTriggerBot, true}
+	})
+	TriggerBotDepBox:AddToggle("GunTriggerBotFriendCheck",{
+		Text = "friend check"
+	})
+	GunGroupBox:AddDivider()
+
+    -- \\CHARACTER TAB//
+    local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
+
+	-- Movement Group Box
+    MovementGroupBox:AddToggle("VelocityToggle",{
+		Text = "velocity"
+	}):AddKeyPicker("VelocityKey",{
+		Text = "velocity";
+		Default = "X";
+		Mode = "Toggle";
+		NoUI = false;
+	})
+	MovementGroupBox:AddToggle("WalkSpeedToggle",{
+		Text = "walk speed",
+		Tooltip = "only works if the game has any sort of changing speed"
+	})
+	MovementGroupBox:AddToggle("JumpPowerToggle",{
+		Text = "jump power",
+		Tooltip = "only works if the game has any sort of changing jump power"
+	})
+	MovementGroupBox:AddSlider("VelocitySpeed",{
+		Text = "velocity speed";
+		Default = 99;
+		Min = 1;
+		Max = 1000;
+		Rounding = 0;
+		Compact = true;
+		Suffix = "s";
+	})
+	MovementGroupBox:AddSlider("WalkSpeed",{
+		Text = "walk speed";
+		Default = 16;
+		Min = 1;
+		Max = 1000;
+		Rounding = 0;
+		Compact = true;
+		Suffix = "s";
+	})
+	MovementGroupBox:AddSlider("JumpPower",{
+		Text = "jump power";
+		Default = 50;
+		Min = 1;
+		Max = 1000;
+		Rounding = 0;
+		Compact = true;
+		Suffix = "s";
+	})
+
+	-- \\VISUALS TAB//
+	local ESPGroupBox = Tabs.Visuals:AddLeftGroupbox("esp")
+	
+	-- Esp Group Box
+	ESPGroupBox:AddToggle("ESPBox",{
+	Text = "box";
+	}):AddColorPicker("ESPBoxColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	ESPGroupBox:AddToggle("ESPName",{
+		Text = "name";
+	}):AddColorPicker("ESPNameColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	ESPGroupBox:AddToggle("ESPWeapon",{
+		Text = "weapon"
+	}):AddColorPicker("ESPWeaponColor",{
+		Default = Color3.fromRGB(255,255,255)
+	})
+	ESPGroupBox:AddToggle("ESPDistance",{
+		Text = "distance"
+	}):AddColorPicker("ESPDistanceColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local ESPHealthTG = ESPGroupBox:AddToggle("ESPHealth",{
+		Text = "healthbar"
+	})
+	ESPHealthTG:AddColorPicker("ESPHealthUpperColor",{
+		Default = Color3.fromRGB(60, 255, 100),
+		Title = "upper"
+	})
+	ESPHealthTG:AddColorPicker("ESPHealthMidColor",{
+		Default = Color3.fromRGB(255, 220, 60),
+		Title = "middle"
+	})
+	ESPHealthTG:AddColorPicker("ESPHealthLowerColor",{
+		Default = Color3.fromRGB(255, 60, 60),
+		Title = "lower"
+	})
+	ESPGroupBox:AddDropdown("ESPNametype",{
+		Text = "name type";
+		Values = {"username","displayname"};
+		Default = 1;
+		Mutli = false;
+	})
+
+    Library.KeybindFrame.Visible = true
+	Library.ToggleKeybind = Enum.KeyCode.RightControl
+
+	-- \\SETTINGS TAB//
+
+	local RainbowGroupBox = Tabs.Settings:AddLeftGroupbox("rainbow setting")
+	RainbowGroupBox:AddRainbowAccentToggle("RainbowAccent",{
+		Text = "rainbow accent";
+		Default = false;
+	})
+
+	SaveManager:SetLibrary(Library)
+	ThemeManager:SetLibrary(Library)
+	SaveManager:IgnoreThemeSettings()
+	SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+	SaveManager:BuildConfigSection(Tabs.Settings)
+	SaveManager:LoadAutoloadConfig()
+	ThemeManager:ApplyTheme("Solitaire Universal")
+
+	return {
+		Library = Library,
+		Toggles = Toggles,
+		Options = Options,
+	}
+end
+
+return UI
