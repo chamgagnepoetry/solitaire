@@ -203,11 +203,6 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255, 60, 60),
 		Title = "lower"
 	})
-	local ESPHealthDepBox = ESPGroupBox:AddDependencyBox()
-	ESPHealthDepBox:SetupDependencies({Toggles.ESPHealthTG, true})
-	ESPHealthDepBox:AddToggle("ESPHealthOutline"{
-		Text = "outline"
-	})
 
 	ESPGroupBox:AddDivider()
 
