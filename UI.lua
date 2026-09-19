@@ -22,9 +22,11 @@ function UI:Initialize()
 
     -- \\MAIN TAB//
     local CameraGroupBox = Tabs.Main:AddLeftGroupbox("camera")
+	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
 	-- Camera Group Box
+
     CameraGroupBox:AddToggle("CameraLock", {
         Text = "cam lock"
     }):AddKeyPicker("CameraLockKey",{
@@ -72,6 +74,58 @@ function UI:Initialize()
 		Text = "toggle type";
 		Callback = function(Value)
 			Options.CameraLockKey.Mode = tostring(Value)
+		end,
+	})
+
+	-- Mouse Group Box
+
+	MouseGroupBox:AddToggle("MouseLock", {
+        Text = "mouse lock"
+    }):AddKeyPicker("MouseLockKey",{
+        Text = "mouse lock";
+        Default = "F";
+        Mode = "Toggle";
+        NoUI = false;
+    })
+	local MouseDepBox = MouseGroupBox:AddDependencyBox()
+	MouseDepBox:SetupDependencies({
+		{Toggles.MouseLock, true}
+	})
+	MouseDepBox:AddToggle("MouseFriendCheck",{
+		Text = "friend check"
+	})
+	MouseDepBox:AddToggle("MouseTeamCheck",{
+		Text = "team check"
+	})
+	MouseDepBox:AddToggle("MouseWallCheck",{
+		Text = "wall check"
+	})
+	MouseDepBox:AddToggle("MouseDeadCheck",{
+		Text = "dead check"
+	})
+	MouseDepBox:AddToggle("MouseRadius",{
+		Text = "lock radius"
+	})
+	local MouseRadiusDepBox = MouseDepBox:AddDependencyBox()
+	MouseRadiusDepBox:SetupDependencies({
+		{Toggles.MouseRadius, true}
+	})
+	MouseRadiusDepBox:AddSlider("MouseRadiusSize",{
+		Text = "size";
+		Default = 200;
+		Min = 50;
+		Max = 800;
+		Rounding = 2;
+		Compact = false;
+	})
+	MouseGroupBox:AddDivider()
+	MouseGroupBox:AddDropdown("MouseLockToggleType",{
+		Values = {"Toggle","Hold"};
+		Default = 1;
+		Multi = false;
+		Text = "toggle type";
+		Callback = function(Value)
+			Options.MouseLockKey.Mode = tostring(Value)
 		end,
 	})
 
