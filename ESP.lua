@@ -22,7 +22,6 @@ local Style = {
 		Size = 13,
 		Center = true,
 		Font = 2,
-		Outline = true,
 		OutlineColor = Color3.fromRGB(0, 0, 0),
 		Transparency = 1
 	},
@@ -31,7 +30,6 @@ local Style = {
 		Size = 13,
 		Center = true,
 		Font = 2,
-		Outline = true,
 		OutlineColor = Color3.fromRGB(0, 0, 0),
 		Transparency = 1
 	},
@@ -40,7 +38,6 @@ local Style = {
 		Size = 13,
 		Center = true,
 		Font = 2,
-		Outline = true,
 		OutlineColor = Color3.fromRGB(0, 0, 0),
 		Transparency = 1
 	},
@@ -80,11 +77,19 @@ local function GetHealthColor(HealthPercent)
 
 	if HealthPercent >= 0.5 then
 		local Alpha = (HealthPercent - 0.5) * 2
-		return Color3.new(MidColor.R + (HealthColor.R - MidColor.R) * Alpha, MidColor.G + (HealthColor.G - MidColor.G) * Alpha, MidColor.B + (HealthColor.B - MidColor.B) * Alpha)
+		return Color3.new(
+			MidColor.R + (HealthColor.R - MidColor.R) * Alpha,
+			MidColor.G + (HealthColor.G - MidColor.G) * Alpha,
+			MidColor.B + (HealthColor.B - MidColor.B) * Alpha
+		)
 	end
 
 	local Alpha = HealthPercent * 2
-	return Color3.new(LowColor.R + (MidColor.R - LowColor.R) * Alpha, LowColor.G + (MidColor.G - LowColor.G) * Alpha, LowColor.B + (MidColor.B - LowColor.B) * Alpha)
+	return Color3.new(
+		LowColor.R + (MidColor.R - LowColor.R) * Alpha,
+		LowColor.G + (MidColor.G - LowColor.G) * Alpha,
+		LowColor.B + (MidColor.B - LowColor.B) * Alpha
+	)
 end
 
 local function GetEquippedToolName(Character)
@@ -194,8 +199,8 @@ local function UpdateESP(Player, EspData)
 	end
 
 	local CharacterWidth = CharacterHeight * BoxWidthRatio
-	local BoxSize = Vector2.new(CharacterWidth,CharacterHeight)
-	local BoxPosition = Vector2.new(CenterX - CharacterWidth / 2,TopY)
+	local BoxSize = Vector2.new(CharacterWidth, CharacterHeight)
+	local BoxPosition = Vector2.new(CenterX - CharacterWidth / 2, TopY)
 
 	if Toggles.ESPBox.Value then
 		EspData.BoxOutline.Size = BoxSize
@@ -203,7 +208,7 @@ local function UpdateESP(Player, EspData)
 		EspData.BoxOutline.Color = Style.Box.OutlineColor
 		EspData.BoxOutline.Thickness = Style.Box.OutlineThickness
 		EspData.BoxOutline.Transparency = Style.Box.OutlineTransparency
-		EspData.BoxOutline.Visible = true
+		EspData.BoxOutline.Visible = Toggles.ESPBoxOutline.Value
 
 		EspData.Box.Size = BoxSize
 		EspData.Box.Position = BoxPosition
@@ -219,8 +224,9 @@ local function UpdateESP(Player, EspData)
 	if Toggles.ESPName.Value then
 		local NameType = Options.ESPNametype.Value
 		EspData.Name.Text = (NameType == "displayname") and Player.DisplayName or Player.Name
-		EspData.Name.Position = Vector2.new(CenterX,TopY - 6)
+		EspData.Name.Position = Vector2.new(CenterX, TopY - 6)
 		EspData.Name.Color = Options.ESPNameColor.Value
+		EspData.Name.Outline = Toggles.ESPNameOutline.Value
 		EspData.Name.Visible = true
 	else
 		EspData.Name.Visible = false
@@ -234,6 +240,7 @@ local function UpdateESP(Player, EspData)
 		local Distance = (LocalRoot.Position - RootPart.Position).Magnitude
 		EspData.Distance.Text = string.format("%d studs", math.floor(Distance + 0.5))
 		EspData.Distance.Color = Options.ESPDistanceColor.Value
+		EspData.Distance.Outline = Toggles.ESPDistanceOutline.Value
 
 		DistanceShown = true
 	else
@@ -246,6 +253,7 @@ local function UpdateESP(Player, EspData)
 		if WeaponName then
 			EspData.Weapon.Text = "[" .. WeaponName .. "]"
 			EspData.Weapon.Color = Options.ESPWeaponColor.Value
+			EspData.Weapon.Outline = Toggles.ESPWeaponOutline.Value
 
 			WeaponShown = true
 		else
@@ -258,16 +266,16 @@ local function UpdateESP(Player, EspData)
 	local TextGap = 3
 	local TextSpacing = 2
 	if WeaponShown and DistanceShown then
-		EspData.Weapon.Position = Vector2.new(CenterX,BottomY + TextGap)
+		EspData.Weapon.Position = Vector2.new(CenterX, BottomY + TextGap)
 		EspData.Weapon.Visible = true
 
-		EspData.Distance.Position = Vector2.new(CenterX,BottomY + TextGap + EspData.Weapon.Size + TextSpacing)
+		EspData.Distance.Position = Vector2.new(CenterX, BottomY + TextGap + EspData.Weapon.Size + TextSpacing)
 		EspData.Distance.Visible = true
 	elseif WeaponShown then
-		EspData.Weapon.Position = Vector2.new(CenterX,BottomY + TextGap)
+		EspData.Weapon.Position = Vector2.new(CenterX, BottomY + TextGap)
 		EspData.Weapon.Visible = true
 	elseif DistanceShown then
-		EspData.Distance.Position = Vector2.new(CenterX,BottomY + TextGap)
+		EspData.Distance.Position = Vector2.new(CenterX, BottomY + TextGap)
 		EspData.Distance.Visible = true
 	end
 
@@ -277,29 +285,30 @@ local function UpdateESP(Player, EspData)
 		local HealthPercent = 0
 
 		if MaxHealth > 0 then 
-			HealthPercent = math.clamp(Health / MaxHealth,0,1)
+			HealthPercent = math.clamp(Health / MaxHealth, 0, 1)
 		end
 
 		local BackgroundWidth = Style.Health.BackgroundWidth
 		local HealthWidth = Style.Health.Width
 		local Padding = Style.Health.Padding
-		local HealthX =	CenterX - CharacterWidth / 2 - BackgroundWidth - 4
-		EspData.HealthBackground.Position = Vector2.new(HealthX,TopY)
-		EspData.HealthBackground.Size = Vector2.new(BackgroundWidth,CharacterHeight)
+		local HealthX = CenterX - CharacterWidth / 2 - BackgroundWidth - 4
+
+		EspData.HealthBackground.Position = Vector2.new(HealthX, TopY)
+		EspData.HealthBackground.Size = Vector2.new(BackgroundWidth, CharacterHeight)
 		EspData.HealthBackground.Visible = true
 
-		local InnerHeight = math.max(CharacterHeight - Padding * 2,0)
+		local InnerHeight = math.max(CharacterHeight - Padding * 2, 0)
 		local HealthHeight = InnerHeight * HealthPercent
 		local HealthXInner = HealthX + (BackgroundWidth - HealthWidth) / 2
 		local HealthY = TopY + Padding + InnerHeight - HealthHeight
 
-		EspData.Health.Position = Vector2.new(HealthXInner,HealthY)
-		EspData.Health.Size = Vector2.new(HealthWidth,HealthHeight)
+		EspData.Health.Position = Vector2.new(HealthXInner, HealthY)
+		EspData.Health.Size = Vector2.new(HealthWidth, HealthHeight)
 		EspData.Health.Color = GetHealthColor(HealthPercent)
 		EspData.Health.Visible = true
 
-		EspData.HealthOutline.Position = Vector2.new(HealthXInner,TopY + Padding)
-		EspData.HealthOutline.Size = Vector2.new(HealthWidth,InnerHeight)
+		EspData.HealthOutline.Position = Vector2.new(HealthXInner, TopY + Padding)
+		EspData.HealthOutline.Size = Vector2.new(HealthWidth, InnerHeight)
 		EspData.HealthOutline.Visible = true
 	else
 		EspData.HealthBackground.Visible = false
