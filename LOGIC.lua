@@ -211,6 +211,15 @@ function Logic:Initialize(UIReference)
 	-- MAIN TAB
 	local CameraTarget = nil
 	runLoop("CameraLockKey", function()
+		if CameraTarget then
+			local TargetCharacter = CameraTarget.Character
+			local TargetHumanoid = TargetCharacter and TargetCharacter:FindFirstChildOfClass("Humanoid")
+	
+			if Toggles.CameraDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+				CameraTarget = nil
+			end
+		end
+	
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(nil, {
 				CameraFriendCheck = Toggles.CameraFriendCheck.Value,
@@ -256,8 +265,10 @@ function Logic:Initialize(UIReference)
 				TargetModel = TargetModel.Parent
 			end
 		end
-	
+
 		if not TargetHumanoid then
+			return
+		elseif Toggles.GunTriggerBotDeadCheck.Value and TargetHumanoid.Health <= 0 then
 			return
 		end
 	
