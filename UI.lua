@@ -141,21 +141,53 @@ function UI:Initialize()
 	}):AddColorPicker("ESPBoxColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
+	local ESPBoxDepBox = ESPGroupBox:AddDependencyBox()
+	ESPBoxDepBox:SetupDependencies({Toggles.ESPBox, true})
+	ESPBoxDepBox:AddToggle("ESPBoxOutline"{
+		Text = "outline"
+	})
+
+	ESPGroupBox:AddDivider()
+
 	ESPGroupBox:AddToggle("ESPName",{
 		Text = "name";
 	}):AddColorPicker("ESPNameColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
+	local ESPNameDepBox = ESPGroupBox:AddDependencyBox()
+	ESPNameDepBox:SetupDependencies({Toggles.ESPName, true})
+	ESPNameDepBox:AddToggle("ESPNameOutline"{
+		Text = "outline"
+	})
+
+	ESPGroupBox:AddDivider()
+
 	ESPGroupBox:AddToggle("ESPWeapon",{
 		Text = "weapon"
 	}):AddColorPicker("ESPWeaponColor",{
 		Default = Color3.fromRGB(255,255,255)
 	})
+	local ESPWeaponDepBox = ESPGroupBox:AddDependencyBox()
+	ESPWeaponDepBox:SetupDependencies({Toggles.ESPWeaponColor, true})
+	ESPWeaponDepBox:AddToggle("ESPWeaponOutline"{
+		Text = "outline"
+	})
+
+	ESPGroupBox:AddDivider()
+
 	ESPGroupBox:AddToggle("ESPDistance",{
 		Text = "distance"
 	}):AddColorPicker("ESPDistanceColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
+	local ESPDistanceDepBox = ESPGroupBox:AddDependencyBox()
+	ESPDistanceDepBox:SetupDependencies({Toggles.ESPDistance, true})
+	ESPDistanceDepBox:AddToggle("ESPDistanceOutline"{
+		Text = "outline"
+	})
+
+	ESPGroupBox:AddDivider()
+
 	local ESPHealthTG = ESPGroupBox:AddToggle("ESPHealth",{
 		Text = "healthbar"
 	})
@@ -171,6 +203,14 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255, 60, 60),
 		Title = "lower"
 	})
+	local ESPHealthDepBox = ESPGroupBox:AddDependencyBox()
+	ESPHealthDepBox:SetupDependencies({Toggles.ESPHealthTG, true})
+	ESPHealthDepBox:AddToggle("ESPHealthOutline"{
+		Text = "outline"
+	})
+
+	ESPGroupBox:AddDivider()
+
 	ESPGroupBox:AddDropdown("ESPNametype",{
 		Text = "name type";
 		Values = {"username","displayname"};
