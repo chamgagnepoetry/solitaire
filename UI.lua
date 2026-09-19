@@ -53,6 +53,8 @@ function UI:Initialize()
 	})
 	CameraLockDepBox:AddToggle("CameraRadius",{
 		Text = "lock radius"
+	}):AddColorPicker("CameraRadiusColor", {
+		Default = Color3.fromRGB(255,255,255)
 	})
 	local CameraRadiusDepBox = CameraLockDepBox:AddDependencyBox()
 	CameraRadiusDepBox:SetupDependencies({
