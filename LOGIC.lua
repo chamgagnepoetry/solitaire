@@ -1,4 +1,3 @@
-print('udated545')
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -300,7 +299,14 @@ function Logic:Initialize(UIReference)
 				local TargetHeadPart = MouseTarget.Character:FindFirstChild("Head")
 				if TargetHeadPart then
 					local screenPos, onScreen = Camera:WorldToViewportPoint(TargetHeadPart.Position)
-					if onScreen and isrbxactive() then
+					if not onScreen then
+						MouseTarget = FindPlayerToMouse(radiusSize, {
+							FriendCheck = Toggles.MouseFriendCheck.Value,
+							TeamCheck = Toggles.MouseTeamCheck.Value,
+							WallCheck = Toggles.MouseWallCheck.Value,
+							DeadCheck = Toggles.MouseDeadCheck.Value
+						})
+					elseif onScreen and isrbxactive() then
 						mousemoveabs(screenPos.X,screenPos.Y)
 					end
 				end
