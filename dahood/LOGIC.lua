@@ -1,4 +1,3 @@
-print('updateee')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -422,9 +421,7 @@ function Logic:Initialize(UIReference)
 		if not gun then
 			return
 		end
-		print("gun yes")
 		if not checkLocalPlayerKnocked() and gun.Ammo.Value < 1 then
-			print("firing event")
 			MainEvent:FireServer("Reload",gun)
 		end
 	end)
