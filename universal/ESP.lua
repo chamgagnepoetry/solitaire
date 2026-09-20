@@ -60,10 +60,6 @@ local Data = {}
 
 local Toggles, Options, Library
 
-local function checkTeam(target)
-	return target.Team == LocalPlayer.Team
-end
-
 local function ApplyStyle(Object, StyleProperties)
 	for Property, Value in pairs(StyleProperties) do
 		pcall(function()
