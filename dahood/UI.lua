@@ -1,3 +1,4 @@
+print("updated")
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
@@ -194,7 +195,12 @@ function UI:Initialize()
 	TriggerBotDepBox:AddToggle("GunTriggerBotKnockedCheck",{
 		Text = "knocked check"
 	})
+
 	GunGroupBox:AddDivider()
+
+	GunGroupBox:AddToggle("GunAutoReload",{
+		Text = "auto reload"
+	})
 
     -- \\CHARACTER TAB//
     local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
