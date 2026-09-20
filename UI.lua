@@ -52,9 +52,7 @@ function UI:Initialize()
 		Text = "dead check"
 	})
 	CameraLockDepBox:AddToggle("CameraRadius",{
-		Text = "lock radius"
-	}):AddColorPicker("CameraRadiusColor", {
-		Default = Color3.fromRGB(255,255,255)
+		Text = "radius"
 	})
 	local CameraRadiusDepBox = CameraLockDepBox:AddDependencyBox()
 	CameraRadiusDepBox:SetupDependencies({
@@ -114,9 +112,7 @@ function UI:Initialize()
 		Text = "dead check"
 	})
 	MouseDepBox:AddToggle("MouseRadius",{
-		Text = "lock radius"
-	}):AddColorPicker("MouseRadiusColor", {
-		Default = Color3.fromRGB(255,255,255)
+		Text = "radius"
 	})
 	local MouseRadiusDepBox = MouseDepBox:AddDependencyBox()
 	MouseRadiusDepBox:SetupDependencies({
