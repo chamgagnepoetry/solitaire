@@ -74,24 +74,6 @@ local Data = {}
 
 local Toggles, Options, Library
 
-local function checkCrew(target)
-	local function getCrew(player)
-		local data = player:FindFirstChild("DataFolder")
-		local info = data and data:FindFirstChild("Information")
-		local crew = info and info:FindFirstChild("Crew")
-		return crew and crew.Value or ""
-	end
-
-	local ourCrew = getCrew(LocalPlayer)
-	local theirCrew = getCrew(target)
-
-	return ourCrew ~= "" and ourCrew == theirCrew
-end
-
-local function checkTeam(target)
-	return target.Team == LocalPlayer.Team
-end
-
 local function ApplyStyle(Object, StyleProperties)
 	for Property, Value in pairs(StyleProperties) do
 		pcall(function()
