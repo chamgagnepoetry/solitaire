@@ -1,4 +1,3 @@
-print('updated')
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -306,9 +305,7 @@ function Logic:Initialize(UIReference)
 							DeadCheck = Toggles.MouseDeadCheck.Value
 						})
 					elseif onScreen and isrbxactive() then
-						local m = UserInputService:GetMouseLocation()
-						mousemoverel(screenPos.X - m.X, screenPos.Y - m.Y)
-						--mousemoveabs(screenPos.X,screenPos.Y)
+						mousemoveabs(screenPos.X,screenPos.Y)
 					end
 				end
 			end
