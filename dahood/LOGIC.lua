@@ -4,6 +4,9 @@ local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
 
+local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
+local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
+
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
@@ -71,8 +74,31 @@ local function checkWall(target)
 	return Result ~= nil
 end
 
-local function checkFriend(target)
-	return LocalPlayer:IsFriendsWith(target.UserId)
+local function checkCrew(target)
+	local function getCrew(player)
+		local data = player:FindFirstChild("DataFolder")
+		local info = data and data:FindFirstChild("Information")
+		local crew = info and info:FindFirstChild("Crew")
+		return crew and crew.Value or ""
+	end
+
+	local ourCrew = getCrew(LocalPlayer)
+	local theirCrew = getCrew(target)
+
+	return ourCrew ~= "" and ourCrew == theirCrew
+end
+
+local function checkKnocked(target)
+	local bodyEffects = target.Character:FindFirstChild("BodyEffects")
+	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
+end
+
+local function checkKnocked(target)
+	local character = target and target.Character
+	local bodyEffects = character and character:FindFirstChild("BodyEffects")
+	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
+
+	return KO ~= nil and KO.Value == true
 end
 
 local function checkTeam(target)
@@ -94,19 +120,19 @@ local function FindPlayerToMouse(radius, configurations)
 			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
 
 			if targetRootPart and targetHumanoid then
-				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
-					continue
-				end
-
 				if configurations.FriendCheck and checkFriend(target) then
 					continue
 				end
 
-				if configurations.TeamCheck and checkTeam(target) then
+				if configurations.CrewCheck and checkCrew(target) then
 					continue
 				end
 
 				if configurations.WallCheck and checkWall(target) then
+					continue
+				end
+
+				if configurations.KnockedCheck and (targetHumanoid.Health <= 0 or checkKnocked(target)) then
 					continue
 				end
 
@@ -116,7 +142,6 @@ local function FindPlayerToMouse(radius, configurations)
 					local screenVector = Vector2.new(screenPos.X, screenPos.Y)
 					local distance = (screenVector - MousePos).Magnitude
 
-					-- Only apply radius check if radius was provided
 					if radius and distance > radius then
 						continue
 					end
@@ -239,20 +264,20 @@ function Logic:Initialize(UIReference)
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(radiusSize, {
 				FriendCheck = Toggles.CameraFriendCheck.Value,
-				TeamCheck = Toggles.CameraTeamCheck.Value,
+				CrewCheck = Toggles.CameraCrewCheck.Value,
 				WallCheck = Toggles.CameraWallCheck.Value,
-				DeadCheck = Toggles.CameraDeadCheck.Value
+				KnockedCheck = Toggles.CameraKnockedCheck.Value
 			})
 		end
 
 		if CameraTarget and CameraTarget.Character then
 			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.CameraDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+			if Toggles.CameraKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
 				CameraTarget = FindPlayerToMouse(radiusSize, {
 					FriendCheck = Toggles.CameraFriendCheck.Value,
-					TeamCheck = Toggles.CameraTeamCheck.Value,
+					CrewCheck = Toggles.CameraCrewCheck.Value,
 					WallCheck = Toggles.CameraWallCheck.Value,
-					DeadCheck = Toggles.CameraDeadCheck.Value
+					KnockedCheck = Toggles.CameraKnockedCheck.Value
 				})
 			end
 
@@ -276,20 +301,20 @@ function Logic:Initialize(UIReference)
 		if not MouseTarget then
 			MouseTarget = FindPlayerToMouse(radiusSize, {
 				FriendCheck = Toggles.MouseFriendCheck.Value,
-				TeamCheck = Toggles.MouseTeamCheck.Value,
+				CrewCheck = Toggles.MouseCrewCheck.Value,
 				WallCheck = Toggles.MouseWallCheck.Value,
-				DeadCheck = Toggles.MouseDeadCheck.Value
+				KnockedCheck = Toggles.MouseKnockedCheck.Value
 			})
 		end
 
 		if MouseTarget and MouseTarget.Character then
 			local TargetHumanoid = MouseTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.MouseDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+			if Toggles.MouseKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
 				MouseTarget = FindPlayerToMouse(radiusSize, {
 					FriendCheck = Toggles.MouseFriendCheck.Value,
-					TeamCheck = Toggles.MouseTeamCheck.Value,
+					CrewCheck = Toggles.MouseCrewCheck.Value,
 					WallCheck = Toggles.MouseWallCheck.Value,
-					DeadCheck = Toggles.MouseDeadCheck.Value
+					KnockedCheck = Toggles.MouseKnockedCheck.Value
 				})
 			end
 
@@ -300,9 +325,9 @@ function Logic:Initialize(UIReference)
 					if not onScreen then
 						MouseTarget = FindPlayerToMouse(radiusSize, {
 							FriendCheck = Toggles.MouseFriendCheck.Value,
-							TeamCheck = Toggles.MouseTeamCheck.Value,
+							CrewCheck = Toggles.MouseCrewCheck.Value,
 							WallCheck = Toggles.MouseWallCheck.Value,
-							DeadCheck = Toggles.MouseDeadCheck.Value
+							KnockedCheck = Toggles.MouseKnockedCheck.Value
 						})
 					elseif onScreen and isrbxactive() then
 						mousemoveabs(screenPos.X,screenPos.Y)
