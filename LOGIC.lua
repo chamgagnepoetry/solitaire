@@ -16,10 +16,8 @@ local Logic = {}
 local Library, Toggles, Options
 
 local CameraRadius = Drawing.new("Circle")
-CameraRadius.Transparency = 0.5
 
 local MouseRadius = Drawing.new("Circle")
-MouseRadius.Transparency = 0.5
 
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
@@ -371,6 +369,7 @@ function Logic:Initialize(UIReference)
 		CameraRadius.Radius = Options.CameraRadiusSize.Value
 		CameraRadius.Color = Library.AccentColor
 		CameraRadius.Thickness = Options.CameraRadiusThickness.Value
+		CameraRadius.Transparency = Options.CameraRadiusTransparency.Value
 		CameraRadius.Visible = true
 	end, function()
 		CameraRadius.Visible = false
@@ -383,6 +382,7 @@ function Logic:Initialize(UIReference)
 		MouseRadius.Radius = Options.MouseRadiusSize.Value
 		MouseRadius.Color = Library.AccentColor
 		MouseRadius.Thickness = Options.MouseRadiusThickness.Value
+		MouseRadius.Transparency = Options.MouseRadiusTransparency.Value
 		MouseRadius.Visible = true
 	end, function()
 		MouseRadius.Visible = false
