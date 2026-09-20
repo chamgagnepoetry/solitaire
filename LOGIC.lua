@@ -364,10 +364,11 @@ function Logic:Initialize(UIReference)
 
 	runLoop(Toggles.CameraRadius, function()
 		local MouseLocation = UserInputService:GetMouseLocation()
+		local Color = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusColor.Value
 
 		CameraRadius.Position = MouseLocation
 		CameraRadius.Radius = Options.CameraRadiusSize.Value
-		CameraRadius.Color = Library.AccentColor
+		CameraRadius.Color = Color
 		CameraRadius.Thickness = Options.CameraRadiusThickness.Value
 		CameraRadius.Transparency = Options.CameraRadiusTransparency.Value
 		CameraRadius.Visible = true
@@ -377,10 +378,11 @@ function Logic:Initialize(UIReference)
 
 	runLoop(Toggles.MouseRadius, function()
 		local MouseLocation = UserInputService:GetMouseLocation()
+		local Color = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusColor.Value
 
 		MouseRadius.Position = MouseLocation
 		MouseRadius.Radius = Options.MouseRadiusSize.Value
-		MouseRadius.Color = Library.AccentColor
+		MouseRadius.Color = Color
 		MouseRadius.Thickness = Options.MouseRadiusThickness.Value
 		MouseRadius.Transparency = Options.MouseRadiusTransparency.Value
 		MouseRadius.Visible = true
