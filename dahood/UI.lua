@@ -1,3 +1,6 @@
+local TextChatService = game:GetService("TextChatService")
+local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
+
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
@@ -17,6 +20,7 @@ function UI:Initialize()
         Main = Window:AddTab("main");
         Character = Window:AddTab("character");
 		Visuals = Window:AddTab("visuals");
+		Misc = Window:AddTab("misc");
         Settings = Window:AddTab("settings");
     }
 
@@ -358,6 +362,19 @@ function UI:Initialize()
 		Values = {"username","displayname"};
 		Default = 1;
 		Mutli = false;
+	})
+
+	-- \\MISC TAB//
+	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
+
+	ChatGroupBox:AddToggle("ChatSpy",{
+		Text = "chat spy";
+		Callback = function(Value)
+			TextChatService.ChatWindowConfiguration.Enabled = Value
+		end,
+	})
+	ChatGroupBox:AddToggle("ChatShitTalk",{
+		Text = "shit talk"
 	})
 
 	-- \\SETTINGS TAB//
