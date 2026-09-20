@@ -40,6 +40,7 @@ local function getEquippedTool()
 	end
 	return false
 end
+getgenv().getEquippedTool = getEquippedTool
 
 local function checkWall(target)
 	if not LocalHumanoidRootPart then
@@ -70,14 +71,17 @@ local function checkWall(target)
 
 	return Result ~= nil
 end
+getgenv().checkWall = checkWall
 
 local function checkFriend(target)
 	return LocalPlayer:IsFriendsWith(target.UserId)
 end
+getgenv().checkFriend = checkFriend
 
 local function checkTeam(target)
 	return target.Team == LocalPlayer.Team
 end
+getgenv().checkTeam = checkTeam
 
 local function FindPlayerToMouse(radius, configurations)
 	if not LocalHumanoidRootPart then
@@ -94,10 +98,6 @@ local function FindPlayerToMouse(radius, configurations)
 			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
 
 			if targetRootPart and targetHumanoid then
-				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
-					continue
-				end
-
 				if configurations.FriendCheck and checkFriend(target) then
 					continue
 				end
@@ -110,13 +110,16 @@ local function FindPlayerToMouse(radius, configurations)
 					continue
 				end
 
+				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
+					continue
+				end
+
 				local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
 
 				if onScreen then
 					local screenVector = Vector2.new(screenPos.X, screenPos.Y)
 					local distance = (screenVector - MousePos).Magnitude
 
-					-- Only apply radius check if radius was provided
 					if radius and distance > radius then
 						continue
 					end
@@ -132,6 +135,7 @@ local function FindPlayerToMouse(radius, configurations)
 
 	return ClosestPlayer
 end
+getgenv().FindPlayerToMouse = FindPlayerToMouse
 
 local function runLoop(controlObj, loopFn, stopFn)
 	if type(controlObj) == "string" then
