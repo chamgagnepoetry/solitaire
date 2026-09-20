@@ -1,26 +1,26 @@
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
+local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
 
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
+
+local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
 
-local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
+local CameraRadius = Drawing.new("Circle")
+local MouseRadius = Drawing.new("Circle")
 local NotificationTime = 3
 
-local Logic = {}
-
 local Library, Toggles, Options
-
-local CameraRadius = Drawing.new("Circle")
-
-local MouseRadius = Drawing.new("Circle")
+local Logic = {}
 
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
@@ -44,6 +44,26 @@ local function getEquippedTool()
 	return false
 end
 getgenv().getEquippedTool = getEquippedTool
+
+local function getEquippedGun()
+	local Tool
+	for _, object in pairs(LocalCharacter:GetChildren()) do
+		if object:FindFirstChild("Ammo") and object:FindFirstChild("MaxAmmo") then 
+			Tool = object
+			return Tool
+		end
+	end
+	return false
+end
+getgenv().getEquippedGun = getEquippedGun
+
+local function checkLocalPlayerKnocked()
+	local bodyEffects = LocalCharacter and LocalCharacter:FindFirstChild("BodyEffects")
+	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
+
+	return KO ~= nil and KO.Value == true
+end
+getgenv().checkLocalPlayerKnocked = checkLocalPlayerKnocked
 
 local function checkWall(target)
 	if not LocalHumanoidRootPart then
@@ -393,6 +413,16 @@ function Logic:Initialize(UIReference)
 
 		if not FriendCheck and not CrewCheck and isrbxactive() then
 			mouse1click()
+		end
+	end)
+
+	runLoop(Toggles.GunAutoReload, function()
+		local gun = getEquippedGun()
+		if not gun then
+			return
+		end
+		if not checkLocalPlayerKnocked() and gun.Ammo.Value < 1 then
+			MainEvent:FireServer("Reload",EquippedGun)
 		end
 	end)
 
