@@ -6,7 +6,7 @@ local UI = {}
 
 function UI:Initialize()
     local Window = Library:CreateWindow({
-        Title = "SOLITAIRE UNIVERSAL";
+        Title = "SOLITAIRE-universal";
         Centre = true;
         AutoShow = true;
         TabPadding = 12;
