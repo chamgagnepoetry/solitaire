@@ -221,7 +221,7 @@ local function RemoveESP(Player)
 end
 
 local function UpdateESP(Player, EspData)
-	if Toggles.ESPTeamCheck.Value and checkTeam(Player) then
+	if Toggles.ESPCrewCheck.Value and checkCrew(Player) then
 		HideESP(EspData)
 		return
 	end
