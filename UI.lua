@@ -328,6 +328,11 @@ function UI:Initialize()
 		Default = false;
 	})
 
+	local MouseGroupBox = Tabs.Settings:AddRightGroupbox("mouse settings")
+	MouseGroupBox:AddMouseIconChanger("MouseIcon", {
+		AlwaysOn = true;
+	})
+
 	SaveManager:SetLibrary(Library)
 	ThemeManager:SetLibrary(Library)
 	SaveManager:IgnoreThemeSettings()
