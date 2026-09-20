@@ -43,6 +43,7 @@ local function getEquippedTool()
 	end
 	return false
 end
+getgenv().getEquippedTool = getEquippedTool
 
 local function checkWall(target)
 	if not LocalHumanoidRootPart then
@@ -73,6 +74,7 @@ local function checkWall(target)
 
 	return Result ~= nil
 end
+getgenv().checkWall = checkWall
 
 local function checkCrew(target)
 	local function getCrew(player)
@@ -87,11 +89,7 @@ local function checkCrew(target)
 
 	return ourCrew ~= "" and ourCrew == theirCrew
 end
-
-local function checkKnocked(target)
-	local bodyEffects = target.Character:FindFirstChild("BodyEffects")
-	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
-end
+getgenv().checkCrew = checkCrew
 
 local function checkKnocked(target)
 	local character = target and target.Character
@@ -100,14 +98,17 @@ local function checkKnocked(target)
 
 	return KO ~= nil and KO.Value == true
 end
+getgenv().checkKnocked = checkKnocked
 
 local function checkFriend(target)
 	return LocalPlayer:IsFriendsWith(target.UserId)
 end
+getgenv().checkFriend = checkFriend
 
 local function checkTeam(target)
 	return target.Team == LocalPlayer.Team
 end
+getgenv().checkTeam = checkTeam
 
 local function FindPlayerToMouse(radius, configurations)
 	if not LocalHumanoidRootPart then
@@ -161,6 +162,7 @@ local function FindPlayerToMouse(radius, configurations)
 
 	return ClosestPlayer
 end
+getgenv().FindPlayerToMouse = FindPlayerToMouse
 
 local function runLoop(controlObj, loopFn, stopFn)
 	if type(controlObj) == "string" then
