@@ -363,9 +363,10 @@ function Logic:Initialize(UIReference)
 		if not TargetModel then
 			return
 		end
-	
+
+		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
 		local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
-	
+
 		if not TargetHumanoid and TargetModel.Parent then
 			TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
 			if TargetHumanoid then
@@ -375,23 +376,22 @@ function Logic:Initialize(UIReference)
 
 		if not TargetHumanoid then
 			return
-		elseif Toggles.GunTriggerBotDeadCheck.Value and TargetHumanoid.Health <= 0 then
+		elseif Toggles.GunTriggerBotKnockedCheck.Value and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
 			return
 		end
 	
-		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
 		local FriendCheck = false
-		local TeamCheck = false
+		local CrewCheck = false
 		
-		if Toggles.GunTriggerBotTeamCheck.Value then
-			TeamCheck = checkTeam(TargetPlayer)
+		if Toggles.GunTriggerBotCrewCheck.Value then
+			CrewCheck = checkCrew(TargetPlayer)
 		end
 
 		if Toggles.GunTriggerBotFriendCheck.Value then
 			FriendCheck = checkFriend(TargetPlayer)
 		end
 
-		if not FriendCheck and not TeamCheck and isrbxactive() then
+		if not FriendCheck and not CrewCheck and isrbxactive() then
 			mouse1click()
 		end
 	end)
