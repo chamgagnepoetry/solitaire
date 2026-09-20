@@ -1,3 +1,4 @@
+print('updated')
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -234,7 +235,7 @@ function Logic:Initialize(UIReference)
 	end)--]]
 	-- MAIN TAB
 	local CameraTarget = nil
-	runLoop("CameraLockKey", function()
+	runLoop("!CameraLockKey", function()
 		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius or nil
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(radiusSize, {
@@ -271,7 +272,7 @@ function Logic:Initialize(UIReference)
 	end)
 
 	local MouseTarget = nil
-	runLoop("MouseLockKey", function()
+	runLoop("!MouseLockKey", function()
 		local radiusSize = Toggles.MouseRadius.Value and MouseRadius.Radius or nil
 		if not MouseTarget then
 			MouseTarget = FindPlayerToMouse(radiusSize, {
@@ -305,7 +306,9 @@ function Logic:Initialize(UIReference)
 							DeadCheck = Toggles.MouseDeadCheck.Value
 						})
 					elseif onScreen and isrbxactive() then
-						mousemoveabs(screenPos.X,screenPos.Y)
+						local m = UserInputService:GetMouseLocation()
+						mousemoverel(screenPos.X - m.X, screenPos.Y - m.Y)
+						--mousemoveabs(screenPos.X,screenPos.Y)
 					end
 				end
 			end
