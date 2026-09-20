@@ -7,6 +7,8 @@ local HeadOff = Vector3.new(0, 0.5, 0)
 local LegOff = Vector3.new(0, 3, 0)
 
 local BoxWidthRatio = 0.5 -- box width as a fraction of box height; raise this to make the box wider
+local MaxArmor = 130 -- max armor value (same as your old code)
+local BarGap = 4 -- gap between the box, health bar and armor bar
 
 local Style = {
 	Box = {
@@ -43,6 +45,18 @@ local Style = {
 	},
 
 	Health = {
+		BackgroundColor = Color3.fromRGB(0, 0, 0),
+		BackgroundTransparency = 0.15,
+
+		OutlineColor = Color3.fromRGB(0, 0, 0),
+		OutlineThickness = 1.5,
+
+		Width = 4,
+		BackgroundWidth = 6,
+		Padding = 1
+	},
+
+	Armor = {
 		BackgroundColor = Color3.fromRGB(0, 0, 0),
 		BackgroundTransparency = 0.15,
 
@@ -96,6 +110,30 @@ local function GetHealthColor(HealthPercent)
 	)
 end
 
+local function GetArmorColor(ArmorPercent)
+	ArmorPercent = math.clamp(ArmorPercent, 0, 1)
+
+	local ArmorColor = Options.ESPArmorUpperColor.Value
+	local MidColor = Options.ESPArmorMidColor.Value
+	local LowColor = Options.ESPArmorLowerColor.Value
+
+	if ArmorPercent >= 0.5 then
+		local Alpha = (ArmorPercent - 0.5) * 2
+		return Color3.new(
+			MidColor.R + (ArmorColor.R - MidColor.R) * Alpha,
+			MidColor.G + (ArmorColor.G - MidColor.G) * Alpha,
+			MidColor.B + (ArmorColor.B - MidColor.B) * Alpha
+		)
+	end
+
+	local Alpha = ArmorPercent * 2
+	return Color3.new(
+		LowColor.R + (MidColor.R - LowColor.R) * Alpha,
+		LowColor.G + (MidColor.G - LowColor.G) * Alpha,
+		LowColor.B + (MidColor.B - LowColor.B) * Alpha
+	)
+end
+
 local function GetEquippedToolName(Character)
 	local Tool = Character:FindFirstChildOfClass("Tool")
 	return Tool and Tool.Name or nil
@@ -124,7 +162,11 @@ local function CreateESP(Player)
 
 		HealthBackground = Drawing.new("Square"),
 		Health = Drawing.new("Square"),
-		HealthOutline = Drawing.new("Square")
+		HealthOutline = Drawing.new("Square"),
+
+		ArmorBackground = Drawing.new("Square"),
+		Armor = Drawing.new("Square"),
+		ArmorOutline = Drawing.new("Square")
 	}
 
 	ApplyStyle(EspData.BoxOutline, Style.Box)
@@ -145,6 +187,18 @@ local function CreateESP(Player)
 	EspData.HealthOutline.Thickness = Style.Health.OutlineThickness
 	EspData.HealthOutline.Transparency = 1
 	EspData.HealthOutline.Color = Style.Health.OutlineColor
+
+	EspData.ArmorBackground.Filled = true
+	EspData.ArmorBackground.Transparency = Style.Armor.BackgroundTransparency
+	EspData.ArmorBackground.Color = Style.Armor.BackgroundColor
+
+	EspData.Armor.Filled = true
+	EspData.Armor.Transparency = 1
+
+	EspData.ArmorOutline.Filled = false
+	EspData.ArmorOutline.Thickness = Style.Armor.OutlineThickness
+	EspData.ArmorOutline.Transparency = 1
+	EspData.ArmorOutline.Color = Style.Armor.OutlineColor
 
 	Data[Player] = EspData
 end
@@ -182,6 +236,9 @@ local function UpdateESP(Player, EspData)
 	local RootPart = Character:FindFirstChild("HumanoidRootPart")
 	local Head = Character:FindFirstChild("Head")
 
+	-- optional: may not be loaded yet after a respawn, so it must not stop the rest of the ESP
+	local BodyEffects = Character:FindFirstChild("BodyEffects")
+
 	if not Humanoid or not RootPart or not Head then
 		HideESP(EspData)
 		return
@@ -211,6 +268,7 @@ local function UpdateESP(Player, EspData)
 	local BoxSize = Vector2.new(CharacterWidth, CharacterHeight)
 	local BoxPosition = Vector2.new(CenterX - CharacterWidth / 2, TopY)
 
+	-- BOX
 	if Toggles.ESPBox.Value then
 		EspData.BoxOutline.Size = BoxSize
 		EspData.BoxOutline.Position = BoxPosition
@@ -230,6 +288,7 @@ local function UpdateESP(Player, EspData)
 		EspData.BoxOutline.Visible = false
 	end
 
+	-- NAME
 	if Toggles.ESPName.Value then
 		local NameType = Options.ESPNametype.Value
 		EspData.Name.Text = (NameType == "displayname") and Player.DisplayName or Player.Name
@@ -241,6 +300,7 @@ local function UpdateESP(Player, EspData)
 		EspData.Name.Visible = false
 	end
 
+	-- DISTANCE
 	local LocalCharacter = LocalPlayer.Character
 	local LocalRoot = LocalCharacter and LocalCharacter:FindFirstChild("HumanoidRootPart")
 
@@ -256,6 +316,7 @@ local function UpdateESP(Player, EspData)
 		EspData.Distance.Visible = false
 	end
 
+	-- WEAPON
 	local WeaponShown = false
 	if Toggles.ESPWeapon.Value then
 		local WeaponName = GetEquippedToolName(Character)
@@ -288,19 +349,24 @@ local function UpdateESP(Player, EspData)
 		EspData.Distance.Visible = true
 	end
 
+	-- BARS: stack outward from the box. Health first, then armor to its left.
+	-- If health is off, armor takes health's spot.
+	local NextBarRight = CenterX - CharacterWidth / 2 - BarGap
+
+	-- HEALTH
 	if Toggles.ESPHealth.Value then
 		local Health = Humanoid.Health
 		local MaxHealth = Humanoid.MaxHealth
 		local HealthPercent = 0
 
-		if MaxHealth > 0 then 
+		if MaxHealth > 0 then
 			HealthPercent = math.clamp(Health / MaxHealth, 0, 1)
 		end
 
 		local BackgroundWidth = Style.Health.BackgroundWidth
 		local HealthWidth = Style.Health.Width
 		local Padding = Style.Health.Padding
-		local HealthX = CenterX - CharacterWidth / 2 - BackgroundWidth - 4
+		local HealthX = NextBarRight - BackgroundWidth
 
 		EspData.HealthBackground.Position = Vector2.new(HealthX, TopY)
 		EspData.HealthBackground.Size = Vector2.new(BackgroundWidth, CharacterHeight)
@@ -319,10 +385,46 @@ local function UpdateESP(Player, EspData)
 		EspData.HealthOutline.Position = Vector2.new(HealthXInner, TopY + Padding)
 		EspData.HealthOutline.Size = Vector2.new(HealthWidth, InnerHeight)
 		EspData.HealthOutline.Visible = true
+
+		NextBarRight = HealthX - BarGap -- armor goes left of this
 	else
 		EspData.HealthBackground.Visible = false
 		EspData.Health.Visible = false
 		EspData.HealthOutline.Visible = false
+	end
+
+	-- ARMOR
+	local ArmorObject = BodyEffects and BodyEffects:FindFirstChild("Armor")
+
+	if Toggles.ESPArmor.Value and ArmorObject then
+		local ArmorPercent = math.clamp(ArmorObject.Value / MaxArmor, 0, 1)
+
+		local BackgroundWidth = Style.Armor.BackgroundWidth
+		local ArmorWidth = Style.Armor.Width
+		local Padding = Style.Armor.Padding
+		local ArmorX = NextBarRight - BackgroundWidth
+
+		EspData.ArmorBackground.Position = Vector2.new(ArmorX, TopY)
+		EspData.ArmorBackground.Size = Vector2.new(BackgroundWidth, CharacterHeight)
+		EspData.ArmorBackground.Visible = true
+
+		local InnerHeight = math.max(CharacterHeight - Padding * 2, 0)
+		local ArmorHeight = InnerHeight * ArmorPercent
+		local ArmorXInner = ArmorX + (BackgroundWidth - ArmorWidth) / 2
+		local ArmorY = TopY + Padding + InnerHeight - ArmorHeight
+
+		EspData.Armor.Position = Vector2.new(ArmorXInner, ArmorY)
+		EspData.Armor.Size = Vector2.new(ArmorWidth, ArmorHeight)
+		EspData.Armor.Color = GetArmorColor(ArmorPercent)
+		EspData.Armor.Visible = true
+
+		EspData.ArmorOutline.Position = Vector2.new(ArmorXInner, TopY + Padding)
+		EspData.ArmorOutline.Size = Vector2.new(ArmorWidth, InnerHeight)
+		EspData.ArmorOutline.Visible = true
+	else
+		EspData.ArmorBackground.Visible = false
+		EspData.Armor.Visible = false
+		EspData.ArmorOutline.Visible = false
 	end
 end
 
