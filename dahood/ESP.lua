@@ -1,4 +1,3 @@
-print('upodatedd')
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -7,9 +6,9 @@ local Camera = workspace.CurrentCamera
 local HeadOff = Vector3.new(0, 0.5, 0)
 local LegOff = Vector3.new(0, 3, 0)
 
-local BoxWidthRatio = 0.5 -- box width as a fraction of box height; raise this to make the box wider
-local MaxArmor = 130 -- max armor value (same as your old code)
-local BarGap = 4 -- gap between the box, health bar and armor bar
+local BoxWidthRatio = 0.5
+local MaxArmor = 130
+local BarGap = 2
 
 local Style = {
 	Box = {
