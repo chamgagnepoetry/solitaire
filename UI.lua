@@ -74,6 +74,14 @@ function UI:Initialize()
 		Rounding = 2;
 		Compact = true;
 	})
+	CameraRadiusDepBox:AddSlider("CameraRadiusTransparency",{
+		Text = "transparency";
+		Default = 1;
+		Min = 0;
+		Max = 1;
+		Rounding = 1;
+		Compact = true;
+	})
 	CameraGroupBox:AddDivider()
 	CameraGroupBox:AddDropdown("CameraLockToggleType",{
 		Values = {"Toggle","Hold"};
@@ -132,6 +140,14 @@ function UI:Initialize()
 		Min = 1;
 		Max = 10;
 		Rounding = 2;
+		Compact = true;
+	})
+	MouseRadiusDepBox:AddSlider("MouseRadiusTransparency",{
+		Text = "transparency";
+		Default = 1;
+		Min = 0;
+		Max = 1;
+		Rounding = 1;
 		Compact = true;
 	})
 	MouseGroupBox:AddDivider()
