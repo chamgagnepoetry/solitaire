@@ -6,7 +6,7 @@ local UI = {}
 
 function UI:Initialize()
     local Window = Library:CreateWindow({
-        Title = "SOLITAIRE UNIVERSAL";
+        Title = "SOLITAIRE-dahood";
         Centre = true;
         AutoShow = true;
         TabPadding = 12;
@@ -42,14 +42,14 @@ function UI:Initialize()
 	CameraLockDepBox:AddToggle("CameraFriendCheck",{
 		Text = "friend check"
 	})
-	CameraLockDepBox:AddToggle("CameraTeamCheck",{
-		Text = "team check"
+	CameraLockDepBox:AddToggle("CameraCrewCheck",{
+		Text = "crew check"
 	})
 	CameraLockDepBox:AddToggle("CameraWallCheck",{
 		Text = "wall check"
 	})
-	CameraLockDepBox:AddToggle("CameraDeadCheck",{
-		Text = "dead check"
+	CameraLockDepBox:AddToggle("CameraKnockedCheck",{
+		Text = "knocked check"
 	})
 	CameraLockDepBox:AddToggle("CameraRadius",{
 		Text = "radius"
@@ -115,14 +115,14 @@ function UI:Initialize()
 	MouseDepBox:AddToggle("MouseFriendCheck",{
 		Text = "friend check"
 	})
-	MouseDepBox:AddToggle("MouseTeamCheck",{
-		Text = "team check"
+	MouseDepBox:AddToggle("MouseCrewCheck",{
+		Text = "crew check"
 	})
 	MouseDepBox:AddToggle("MouseWallCheck",{
 		Text = "wall check"
 	})
-	MouseDepBox:AddToggle("MouseDeadCheck",{
-		Text = "dead check"
+	MouseDepBox:AddToggle("MouseKnockedCheck",{
+		Text = "knocked check"
 	})
 	MouseDepBox:AddToggle("MouseRadius",{
 		Text = "radius"
@@ -188,11 +188,11 @@ function UI:Initialize()
 	TriggerBotDepBox:AddToggle("GunTriggerBotFriendCheck",{
 		Text = "friend check"
 	})
-	TriggerBotDepBox:AddToggle("GunTriggerBotTeamCheck",{
-		Text = "team check"
+	TriggerBotDepBox:AddToggle("GunTriggerBotCrewCheck",{
+		Text = "crew check"
 	})
-	TriggerBotDepBox:AddToggle("GunTriggerBotDeadCheck",{
-		Text = "dead check"
+	TriggerBotDepBox:AddToggle("GunTriggerBotKnockedCheck",{
+		Text = "knocked check"
 	})
 	GunGroupBox:AddDivider()
 
@@ -210,11 +210,9 @@ function UI:Initialize()
 	})
 	MovementGroupBox:AddToggle("WalkSpeedToggle",{
 		Text = "walk speed",
-		Tooltip = "only works if the game has any sort of changing speed"
 	})
 	MovementGroupBox:AddToggle("JumpPowerToggle",{
 		Text = "jump power",
-		Tooltip = "only works if the game has any sort of changing jump power"
 	})
 	MovementGroupBox:AddSlider("VelocitySpeed",{
 		Text = "velocity speed";
@@ -308,14 +306,14 @@ function UI:Initialize()
 
 	ESPGroupBox:AddDivider()
 
-	ESPGroupBox:AddToggle("ESPTeamCheck",{
-		Text = "team check"
+	ESPGroupBox:AddToggle("ESPCrewCheck",{
+		Text = "crew check"
 	})
 
 	ESPGroupBox:AddDivider()
 
 	local ESPHealthTG = ESPGroupBox:AddToggle("ESPHealth",{
-		Text = "healthbar"
+		Text = "health bar"
 	})
 	ESPHealthTG:AddColorPicker("ESPHealthUpperColor",{
 		Default = Color3.fromRGB(60, 255, 100),
@@ -327,6 +325,24 @@ function UI:Initialize()
 	})
 	ESPHealthTG:AddColorPicker("ESPHealthLowerColor",{
 		Default = Color3.fromRGB(255, 60, 60),
+		Title = "lower"
+	})
+
+	ESPGroupBox:AddDivider()
+
+	local ESPArmorTG = ESPGroupBox:AddToggle("ESPArmor",{
+		Text = "armor bar"
+	})
+	ESPArmorTG:AddColorPicker("ESPArmorUpperColor",{
+		Default = Color3.fromRGB(27, 27, 209),
+		Title = "upper"
+	})
+	ESPArmorTG:AddColorPicker("ESPArmorMidColor",{
+		Default = Color3.fromRGB(27, 27, 209),
+		Title = "middle"
+	})
+	ESPArmorTG:AddColorPicker("ESPArmorLowerColor",{
+		Default = Color3.fromRGB(27, 27, 209),
 		Title = "lower"
 	})
 
