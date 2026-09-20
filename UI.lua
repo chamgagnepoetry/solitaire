@@ -317,21 +317,36 @@ function UI:Initialize()
 		Mutli = false;
 	})
 
-    Library.KeybindFrame.Visible = true
-	Library.ToggleKeybind = Enum.KeyCode.RightControl
-
 	-- \\SETTINGS TAB//
 
-	local RainbowGroupBox = Tabs.Settings:AddLeftGroupbox("rainbow setting")
-	RainbowGroupBox:AddRainbowAccentToggle("RainbowAccent",{
+	local UIGroupBox = Tabs.Settings:AddLeftGroupbox("ui settings")
+	UIGroupBox:AddRainbowAccentToggle("RainbowAccent",{
 		Text = "rainbow accent";
 		Default = false;
 	})
-
-	local MouseGroupBox = Tabs.Settings:AddRightGroupbox("mouse settings")
-	MouseGroupBox:AddMouseIconChanger("MouseIcon", {
+	UIGroupBox:AddMouseIconChanger("MouseIcon", {
 		AlwaysOn = true;
 	})
+
+	UIGroupBox:AddDivider()
+
+	UIGroupBox:AddToggle("KeybindFrame",{
+		Text = "keybind frame";
+		Default = true;
+
+		Callback = function(Value)
+			Library.KeybindFrame.Visible = Value
+		end
+	})
+
+	UIGroupBox:AddLabel("MenuToggle"):AddKeyPicker("MenuKeybind",{
+		Default = "RightControl",
+		NoUI = true,
+		Text = "menu keybind"
+	})
+
+	Library.KeybindFrame.Visible = Toggles.KeybindFrame.Value
+	Library.ToggleKeybind = Options.MenuKeybind
 
 	SaveManager:SetLibrary(Library)
 	ThemeManager:SetLibrary(Library)
