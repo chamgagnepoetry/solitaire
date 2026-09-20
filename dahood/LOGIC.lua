@@ -1,3 +1,4 @@
+print("u0pdated v2")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -166,7 +167,7 @@ local function runLoop(controlObj, loopFn, stopFn)
 			keybind = Options[controlObj:sub(2)]
 
 			task.spawn(function()
-				pcall(function()
+				--pcall(function()
 					while true do
 						local state = keybind:GetState()
 
@@ -180,13 +181,13 @@ local function runLoop(controlObj, loopFn, stopFn)
 
 						RunService.Heartbeat:Wait()
 					end
-				end)
+				--end)
 			end)
 		else
 			keybind = Options[controlObj]
 
 			task.spawn(function()
-				pcall(function()
+				--pcall(function()
 					while true do
 						local state = keybind:GetState()
 
@@ -200,7 +201,7 @@ local function runLoop(controlObj, loopFn, stopFn)
 
 						task.wait()
 					end
-				end)
+				--end)
 			end)
 		end
 
@@ -241,7 +242,9 @@ function Logic:Initialize(UIReference)
 	Options = UIReference.Options
 	Library = UIReference.Library
 
-	--[[pcall(function()
+	-- HOOK FUNCTIONS
+	
+	pcall(function()
 		LPH_NO_VIRTUALIZE = function(...) return (...) end
 		local newindex; newindex = hookmetamethod(game, "__newindex", LPH_NO_VIRTUALIZE(function(self, key, value)
 			if key == 'WalkSpeed' then 
@@ -256,7 +259,8 @@ function Logic:Initialize(UIReference)
 			end
 			return newindex(self, key, value)
 		end))
-	end)--]]
+	end)
+
 	-- MAIN TAB
 	local CameraTarget = nil
 	runLoop("!CameraLockKey", function()
@@ -425,20 +429,6 @@ function Logic:Initialize(UIReference)
 			local vertical = velocity.Y
 			local horizontal = direction * Options.VelocitySpeed.Value
 			LocalHumanoidRootPart.AssemblyLinearVelocity = Vector3.new(horizontal.X,vertical, horizontal.Z)
-		end
-	end)
-
-	Toggles.WalkSpeedToggle:OnChanged(function()
-		if Toggles.WalkSpeedToggle.Value then
-			--Library:Notify("USE AT YOUR OWN RISK!", NotificationTime)
-			Library:Notify("DISABLED UNTIL FURTHER NOTICE (Security Reasons)", NotificationTime)
-		end
-	end)
-
-	Toggles.JumpPowerToggle:OnChanged(function()
-		if Toggles.JumpPowerToggle.Value then
-			--Library:Notify("USE AT YOUR OWN RISK!", NotificationTime)
-			Library:Notify("DISABLED UNTIL FURTHER NOTICE (Security Reasons)", NotificationTime)
 		end
 	end)
 end
