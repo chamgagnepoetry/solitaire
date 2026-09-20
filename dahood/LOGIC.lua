@@ -1,4 +1,3 @@
-print("u0pdated v2")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -100,6 +99,10 @@ local function checkKnocked(target)
 	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
 
 	return KO ~= nil and KO.Value == true
+end
+
+local function checkFriend(target)
+	return LocalPlayer:IsFriendsWith(target.UserId)
 end
 
 local function checkTeam(target)
@@ -243,7 +246,7 @@ function Logic:Initialize(UIReference)
 	Library = UIReference.Library
 
 	-- HOOK FUNCTIONS
-	
+
 	pcall(function()
 		LPH_NO_VIRTUALIZE = function(...) return (...) end
 		local newindex; newindex = hookmetamethod(game, "__newindex", LPH_NO_VIRTUALIZE(function(self, key, value)
