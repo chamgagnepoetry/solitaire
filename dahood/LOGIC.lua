@@ -1,3 +1,4 @@
+print("updated22")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -15,11 +16,16 @@ local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
 
-local CameraRadius = Drawing.new("Circle")
 local CameraRadiusFill = Drawing.new("Circle")
+local CameraRadius = Drawing.new("Circle")
+CameraRadiusFill.Thickness = 0
+CameraRadiusFill.Fill = true
 
-local MouseRadius = Drawing.new("Circle")
 local MouseRadiusFill = Drawing.new("Circle")
+local MouseRadius = Drawing.new("Circle")
+MouseRadiusFill.Thickness = 0
+local MouseRadiusFill = Drawing.new("Circle")
+.Fill = true
 
 local NotificationTime = 3
 
@@ -444,7 +450,6 @@ function Logic:Initialize(UIReference)
 		CameraRadiusFill.Position = MouseLocation
 		CameraRadiusFill.Radius = Options.CameraRadiusSize.Value
 		CameraRadiusFill.Color = FillColor
-		CameraRadiusFill.Thickness = 0
 		CameraRadiusFill.Transparency = Options.CameraRadiusTransparency.Value
 
 		CameraRadiusFill.Visible = FillVisib
@@ -468,7 +473,6 @@ function Logic:Initialize(UIReference)
 		MouseRadiusFill.Position = MouseLocation
 		MouseRadiusFill.Radius = Options.MouseRadiusSize.Value
 		MouseRadiusFill.Color = FillColor
-		MouseRadiusFill.Thickness = 0
 		MouseRadiusFill.Transparency = Options.MouseRadiusTransparency.Value
 
 		MouseRadiusFill.Visible = FillVisib
