@@ -68,6 +68,11 @@ function UI:Initialize()
 	CameraRadiusDepBox:SetupDependencies({
 		{Toggles.CameraRadius, true}
 	})
+	CameraLockDepBox:AddToggle("CameraRadiusFill",{
+		Text = "fill"
+	}):AddColorPicker("CameraRadiusFillColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
 	CameraRadiusDepBox:AddSlider("CameraRadiusSize",{
 		Text = "size";
 		Default = 200;
@@ -140,6 +145,11 @@ function UI:Initialize()
 	local MouseRadiusDepBox = MouseDepBox:AddDependencyBox()
 	MouseRadiusDepBox:SetupDependencies({
 		{Toggles.MouseRadius, true}
+	})
+	MouseRadiusDepBox:AddToggle("MouseRadiusFill",{
+		Text = "fill"
+	}):AddColorPicker("MouseRadiusFillColor", {
+		Default = Color3.fromRGB(255,255,255)
 	})
 	MouseRadiusDepBox:AddSlider("MouseRadiusSize",{
 		Text = "size";
