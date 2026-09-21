@@ -1,4 +1,4 @@
-print("yep")
+print("yep2323")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
@@ -71,7 +71,7 @@ function UI:Initialize()
 	}):AddColorPicker("CameraRadiusFillColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
-	CameraLockDepBox:AddToggle("CameraRadiusMatchAccent",{
+	CameraRadiusDepBox:AddToggle("CameraRadiusMatchAccent",{
 		Text = "match accent"
 	})
 	CameraRadiusDepBox:AddSlider("CameraRadiusSize",{
