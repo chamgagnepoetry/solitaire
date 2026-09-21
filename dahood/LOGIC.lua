@@ -456,6 +456,12 @@ function Logic:Initialize(UIReference)
 		CameraRadiusFill.Visible = false
 		CameraRadius.Visible = false
 	end)
+	Toggles.CameraRadius:OnChanged(function()
+		if not Toggles.CameraRadius.Value then
+			CameraRadiusFill.Visible = false
+			CameraRadius.Visible = false
+		end
+	end)
 
 	runLoop(Toggles.MouseRadius, function()
 		local MouseLocation = UserInputService:GetMouseLocation()
@@ -478,6 +484,12 @@ function Logic:Initialize(UIReference)
 	end, function()
 		MouseRadiusFill.Visible = false
 		MouseRadius.Visible = false
+	end)
+	Toggles.MouseRadius:OnChanged(function()
+		if not Toggles.MouseRadius.Value then
+			MouseRadiusFill.Visible = false
+			MouseRadius.Visible = false
+		end
 	end)
 
 	-- CHARACTER TAB
