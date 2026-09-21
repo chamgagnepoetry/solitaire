@@ -394,7 +394,7 @@ function Logic:Initialize(UIReference)
 		CameraRadius.Visible = false
 	end)
 	Toggles.CameraRadius:OnChanged(function()
-		if not Toggles.CameraRadius.Value then
+		if Toggles.CameraRadius.Value == false then
 			CameraRadiusFill.Visible = false
 			CameraRadius.Visible = false
 		end
@@ -423,7 +423,7 @@ function Logic:Initialize(UIReference)
 		MouseRadius.Visible = false
 	end)
 	Toggles.MouseRadius:OnChanged(function()
-		if not Toggles.MouseRadius.Value then
+		if Toggles.MouseRadius.Value == false then
 			MouseRadiusFill.Visible = false
 			MouseRadius.Visible = false
 		end
