@@ -9,7 +9,7 @@ local UI = {}
 
 function UI:Initialize()
     local Window = Library:CreateWindow({
-        Title = "SOLITAIRE ON GEAR";
+        Title = "SOLITAIRE BOOSTED";
 		SubTitle = "universal";
         Centre = true;
         AutoShow = true;
