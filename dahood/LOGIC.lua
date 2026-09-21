@@ -1,4 +1,3 @@
-print("updated224444")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -19,12 +18,12 @@ Mouse.TargetFilter = LocalCharacter
 local CameraRadiusFill = Drawing.new("Circle")
 local CameraRadius = Drawing.new("Circle")
 CameraRadiusFill.Thickness = 0
-CameraRadiusFill.Fill = true
+CameraRadiusFill.Filled = true
 
 local MouseRadiusFill = Drawing.new("Circle")
 local MouseRadius = Drawing.new("Circle")
 MouseRadiusFill.Thickness = 0
-MouseRadiusFill.Fill = true
+MouseRadiusFill.Filled = true
 
 local NotificationTime = 3
 
