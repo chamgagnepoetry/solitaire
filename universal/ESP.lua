@@ -18,6 +18,11 @@ local Style = {
 		OutlineTransparency = 1
 	},
 
+	BoxFill = {
+		Thickness = 0,
+		Transparency = 0.5,
+	},
+
 	Name = {
 		Size = 13,
 		Center = true,
@@ -111,6 +116,7 @@ local function CreateESP(Player)
 	end
 
 	local EspData = {
+		BoxFill = Drawing.new("Square"),
 		BoxOutline = Drawing.new("Square"),
 		Box = Drawing.new("Square"),
 
@@ -122,6 +128,8 @@ local function CreateESP(Player)
 		Health = Drawing.new("Square"),
 		HealthOutline = Drawing.new("Square")
 	}
+	ApplyStyle(EspData.BoxFill, Style.BoxFill)
+	EspData.BoxFill.Filled = true 
 
 	ApplyStyle(EspData.BoxOutline, Style.Box)
 	ApplyStyle(EspData.Box, Style.Box)
@@ -208,6 +216,12 @@ local function UpdateESP(Player, EspData)
 	local BoxPosition = Vector2.new(CenterX - CharacterWidth / 2, TopY)
 
 	if Toggles.ESPBox.Value then
+		EspData.BoxFill.Size = BoxSize
+		EspData.BoxFill.Position = BoxPosition
+		EspData.BoxFill.Color = Options.ESPBoxFillColor.Value
+		EspData.BoxFill.Transparency = Style.BoxFill.Transparency
+		EspData.BoxFill.Visible = Toggles.ESPBoxFill.Value
+
 		EspData.BoxOutline.Size = BoxSize
 		EspData.BoxOutline.Position = BoxPosition
 		EspData.BoxOutline.Color = Style.Box.OutlineColor
