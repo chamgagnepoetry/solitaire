@@ -62,17 +62,17 @@ function UI:Initialize()
 	}):AddColorPicker("CameraRadiusColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
-	CameraLockDepBox:AddToggle("CameraRadiusMatchAccent",{
-		Text = "match accent"
-	})
 	local CameraRadiusDepBox = CameraLockDepBox:AddDependencyBox()
 	CameraRadiusDepBox:SetupDependencies({
 		{Toggles.CameraRadius, true}
 	})
-	CameraLockDepBox:AddToggle("CameraRadiusFill",{
+	CameraRadiusDepBox:AddToggle("CameraRadiusFill",{
 		Text = "fill"
 	}):AddColorPicker("CameraRadiusFillColor", {
 		Default = Color3.fromRGB(255,255,255)
+	})
+	CameraLockDepBox:AddToggle("CameraRadiusMatchAccent",{
+		Text = "match accent"
 	})
 	CameraRadiusDepBox:AddSlider("CameraRadiusSize",{
 		Text = "size";
@@ -140,9 +140,6 @@ function UI:Initialize()
 	}):AddColorPicker("MouseRadiusColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
-	MouseDepBox:AddToggle("MouseRadiusMatchAccent",{
-		Text = "match accent"
-	})
 	local MouseRadiusDepBox = MouseDepBox:AddDependencyBox()
 	MouseRadiusDepBox:SetupDependencies({
 		{Toggles.MouseRadius, true}
@@ -151,6 +148,9 @@ function UI:Initialize()
 		Text = "fill"
 	}):AddColorPicker("MouseRadiusFillColor", {
 		Default = Color3.fromRGB(255,255,255)
+	})
+	MouseRadiusDepBox:AddToggle("MouseRadiusMatchAccent",{
+		Text = "match accent"
 	})
 	MouseRadiusDepBox:AddSlider("MouseRadiusSize",{
 		Text = "size";
