@@ -1,4 +1,4 @@
-print("456")
+print("yep2323")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
@@ -92,13 +92,15 @@ function UI:Initialize()
 	})
 	CameraRadiusDepBox:AddSlider("CameraRadiusTransparency",{
 		Text = "transparency";
-		Default = 1;
+		Default = 0.5;
 		Min = 0;
 		Max = 1;
 		Rounding = 1;
 		Compact = true;
 	})
+	
 	CameraGroupBox:AddDivider()
+
 	CameraGroupBox:AddDropdown("CameraLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
@@ -170,13 +172,15 @@ function UI:Initialize()
 	})
 	MouseRadiusDepBox:AddSlider("MouseRadiusTransparency",{
 		Text = "transparency";
-		Default = 1;
+		Default = 0.5;
 		Min = 0;
 		Max = 1;
 		Rounding = 1;
 		Compact = true;
 	})
+
 	MouseGroupBox:AddDivider()
+
 	MouseGroupBox:AddDropdown("MouseLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
@@ -278,6 +282,11 @@ function UI:Initialize()
 	})
 	ESPBoxDepBox:AddToggle("ESPBoxOutline",{
 		Text = "outline"
+	})
+	ESPBoxDepBox:AddToggle("ESPBoxFill",{
+		Text = "fill"
+	}):AddColorPicker("ESPBoxFillColor", {
+		Default = Color3.fromRGB(255,255,255)
 	})
 
 	ESPGroupBox:AddDivider()
