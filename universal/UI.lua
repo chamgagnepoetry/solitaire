@@ -32,7 +32,7 @@ function UI:Initialize()
 
 	-- Camera Group Box
 
-    CameraGroupBox:AddToggle("CameraLock", {
+	CameraGroupBox:AddToggle("CameraLock", {
         Text = "cam lock"
     }):AddKeyPicker("CameraLockKey",{
         Text = "cam lock";
@@ -61,12 +61,17 @@ function UI:Initialize()
 	}):AddColorPicker("CameraRadiusColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
-	CameraLockDepBox:AddToggle("CameraRadiusMatchAccent",{
-		Text = "match accent"
-	})
 	local CameraRadiusDepBox = CameraLockDepBox:AddDependencyBox()
 	CameraRadiusDepBox:SetupDependencies({
 		{Toggles.CameraRadius, true}
+	})
+	CameraRadiusDepBox:AddToggle("CameraRadiusFill",{
+		Text = "fill"
+	}):AddColorPicker("CameraRadiusFillColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	CameraRadiusDepBox:AddToggle("CameraRadiusMatchAccent",{
+		Text = "match accent"
 	})
 	CameraRadiusDepBox:AddSlider("CameraRadiusSize",{
 		Text = "size";
@@ -86,13 +91,15 @@ function UI:Initialize()
 	})
 	CameraRadiusDepBox:AddSlider("CameraRadiusTransparency",{
 		Text = "transparency";
-		Default = 1;
+		Default = 0.5;
 		Min = 0;
 		Max = 1;
 		Rounding = 1;
 		Compact = true;
 	})
+	
 	CameraGroupBox:AddDivider()
+
 	CameraGroupBox:AddDropdown("CameraLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
@@ -134,12 +141,17 @@ function UI:Initialize()
 	}):AddColorPicker("MouseRadiusColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
-	MouseDepBox:AddToggle("MouseRadiusMatchAccent",{
-		Text = "match accent"
-	})
 	local MouseRadiusDepBox = MouseDepBox:AddDependencyBox()
 	MouseRadiusDepBox:SetupDependencies({
 		{Toggles.MouseRadius, true}
+	})
+	MouseRadiusDepBox:AddToggle("MouseRadiusFill",{
+		Text = "fill"
+	}):AddColorPicker("MouseRadiusFillColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	MouseRadiusDepBox:AddToggle("MouseRadiusMatchAccent",{
+		Text = "match accent"
 	})
 	MouseRadiusDepBox:AddSlider("MouseRadiusSize",{
 		Text = "size";
@@ -159,13 +171,15 @@ function UI:Initialize()
 	})
 	MouseRadiusDepBox:AddSlider("MouseRadiusTransparency",{
 		Text = "transparency";
-		Default = 1;
+		Default = 0.5;
 		Min = 0;
 		Max = 1;
 		Rounding = 1;
 		Compact = true;
 	})
+
 	MouseGroupBox:AddDivider()
+
 	MouseGroupBox:AddDropdown("MouseLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
@@ -264,6 +278,11 @@ function UI:Initialize()
 	})
 	ESPBoxDepBox:AddToggle("ESPBoxOutline",{
 		Text = "outline"
+	})
+	ESPBoxDepBox:AddToggle("ESPBoxFill",{
+		Text = "fill"
+	}):AddColorPicker("ESPBoxFillColor", {
+		Default = Color3.fromRGB(255,255,255)
 	})
 
 	ESPGroupBox:AddDivider()
