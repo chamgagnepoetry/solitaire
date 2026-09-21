@@ -16,7 +16,11 @@ local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
 
 local CameraRadius = Drawing.new("Circle")
+local CameraRadiusFill = Drawing.new("Circle")
+
 local MouseRadius = Drawing.new("Circle")
+local MouseRadiusFill = Drawing.new("Circle")
+
 local NotificationTime = 3
 
 local Library, Toggles, Options
@@ -429,30 +433,48 @@ function Logic:Initialize(UIReference)
 	runLoop(Toggles.CameraRadius, function()
 		local MouseLocation = UserInputService:GetMouseLocation()
 		local Color = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusColor.Value
-		local Visibility = Toggles.CameraRadius.Value and true or false
+		local FillColor = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusFillColor.Value
+		local FillVisib = Toggles.CameraRadiusFill.Value and true or false
 
 		CameraRadius.Position = MouseLocation
 		CameraRadius.Radius = Options.CameraRadiusSize.Value
 		CameraRadius.Color = Color
 		CameraRadius.Thickness = Options.CameraRadiusThickness.Value
-		CameraRadius.Transparency = Options.CameraRadiusTransparency.Value
-		CameraRadius.Visible = Visibility
+
+		CameraRadiusFill.Position = MouseLocation
+		CameraRadiusFill.Radius = Options.CameraRadiusSize.Value
+		CameraRadiusFill.Color = FillColor
+		CameraRadiusFill.Thickness = 0
+		CameraRadiusFill.Transparency = Options.CameraRadiusTransparency.Value
+
+		CameraRadiusFill.Visible = FillVisib
+		CameraRadius.Visible = true
 	end, function()
+		CameraRadiusFill.Visible = false
 		CameraRadius.Visible = false
 	end)
 
 	runLoop(Toggles.MouseRadius, function()
 		local MouseLocation = UserInputService:GetMouseLocation()
 		local Color = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusColor.Value
-		local Visibility = Toggles.MouseRadis.Value and true or false
+		local FillColor = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusFillColor.Value
+		local FillVisib = Toggles.MouseRadiusFill.Value and true or false
 
 		MouseRadius.Position = MouseLocation
 		MouseRadius.Radius = Options.MouseRadiusSize.Value
 		MouseRadius.Color = Color
 		MouseRadius.Thickness = Options.MouseRadiusThickness.Value
-		MouseRadius.Transparency = Options.MouseRadiusTransparency.Value
-		MouseRadius.Visible = Visibility
+
+		MouseRadiusFill.Position = MouseLocation
+		MouseRadiusFill.Radius = Options.MouseRadiusSize.Value
+		MouseRadiusFill.Color = FillColor
+		MouseRadiusFill.Thickness = 0
+		MouseRadiusFill.Transparency = Options.MouseRadiusTransparency.Value
+
+		MouseRadiusFill.Visible = FillVisib
+		MouseRadius.Visible = true
 	end, function()
+		MouseRadiusFill.Visible = false
 		MouseRadius.Visible = false
 	end)
 
