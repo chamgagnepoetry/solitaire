@@ -243,7 +243,7 @@ local function UpdateESP(Player, EspData)
 	if Toggles.ESPName.Value then
 		local NameType = Options.ESPNametype.Value
 		EspData.Name.Text = (NameType == "displayname") and Player.DisplayName or Player.Name
-		EspData.Name.Position = Vector2.new(CenterX, TopY - 6)
+		EspData.Name.Position = Vector2.new(CenterX, TopY - 4)
 		EspData.Name.Color = Options.ESPNameColor.Value
 		EspData.Name.Outline = Toggles.ESPNameOutline.Value
 		EspData.Name.Visible = true
