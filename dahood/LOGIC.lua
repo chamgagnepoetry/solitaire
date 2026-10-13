@@ -376,51 +376,62 @@ function Logic:Initialize(UIReference)
 		MouseTarget = nil
 	end)
 
+	local botGun = nil -- gun the trigger bot is currently holding down
+
 	runLoop("GunTriggerBotKey", function()
 		local Gun = getEquippedGun()
-		if not Gun then
-			return
-		end
-	
-		local TargetPart = Mouse.Target
-		if not TargetPart then
-			return
-		end
-	
-		local TargetModel = TargetPart.Parent
-		if not TargetModel then
-			return
-		end
+		local shouldFire = false
 
-		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
-		local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
+		repeat
+			if not Gun then break end
 
-		if not TargetHumanoid and TargetModel.Parent then
-			TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
-			if TargetHumanoid then
-				TargetModel = TargetModel.Parent
+			local TargetPart = Mouse.Target
+			if not TargetPart then break end
+
+			local TargetModel = TargetPart.Parent
+			if not TargetModel then break end
+
+			local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
+			local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
+
+			if not TargetHumanoid and TargetModel.Parent then
+				TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
+				if TargetHumanoid then
+					TargetModel = TargetModel.Parent
+				end
 			end
+
+			if not TargetHumanoid then break end
+
+			if Toggles.GunTriggerBotKnockedCheck.Value
+				and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
+				break
+			end
+
+			if Toggles.GunTriggerBotCrewCheck.Value and checkCrew(TargetPlayer) then break end
+			if Toggles.GunTriggerBotFriendCheck.Value and checkFriend(TargetPlayer) then break end
+
+			shouldFire = true
+		until true
+
+		if botGun and botGun ~= Gun then
+			botGun:Deactivate()
+			botGun = nil
 		end
 
-		if not TargetHumanoid then
-			return
-		elseif Toggles.GunTriggerBotKnockedCheck.Value and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
-			return
+		if shouldFire then
+			if not botGun then
+				botGun = Gun
+				Gun:Activate()
+			end
+		elseif botGun then
+			botGun:Deactivate()
+			botGun = nil
 		end
-	
-		local FriendCheck = false
-		local CrewCheck = false
-		
-		if Toggles.GunTriggerBotCrewCheck.Value then
-			CrewCheck = checkCrew(TargetPlayer)
-		end
-
-		if Toggles.GunTriggerBotFriendCheck.Value then
-			FriendCheck = checkFriend(TargetPlayer)
-		end
-
-		if not FriendCheck and not CrewCheck and isrbxactive() then
-			Gun:Activate()
+	end, function()
+		if botGun then
+			botGun:Deactivate()
+			botGun = nil
 		end
 	end)
 
