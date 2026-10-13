@@ -26,9 +26,31 @@ function UI:Initialize()
     }
 
     -- \\MAIN TAB//
+	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
     local CameraGroupBox = Tabs.Main:AddLeftGroupbox("camera")
 	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
+
+	-- Gameplay group box
+	
+	GameplayGroupBox:AddToggle("AutoStompToggle", {
+        Text = "auto stomp"
+    })
+	local AutoStompDepBox = GameplayGroupBox:AddDependencyBox()
+	AutoStompDepBox:SetupDependencies({
+		{Toggles.AutoStompToggle, true}
+	})
+	AutoStompDepBox:AddToggle("AutoStompPlayAnimationToggle", {
+        Text = "stomp animation"
+    })
+	AutoStompDepBox:AddDivider()
+
+	GameplayGroupBox:AddToggle("AutoMaskToggle", {
+        Text = "auto mask"
+    })
+	GameplayGroupBox:AddToggle("AutoArmorToggle", {
+        Text = "auto armor"
+    })
 
 	-- Camera Group Box
 
@@ -192,6 +214,9 @@ function UI:Initialize()
 
 	-- Gun Group Box
 
+	GunGroupBox:AddToggle("GunNoRecoil",{
+		Text = "no recoil"
+	})
 	GunGroupBox:AddToggle("GunTriggerBot",{
 		Text = "trigger bot"
 	}):AddKeyPicker("GunTriggerBotKey",{
@@ -274,6 +299,9 @@ function UI:Initialize()
 		Default = "V";
 		Mode = "Toggle";
 		NoUI = false;
+	})
+	CharacterExploitsGroupBox:AddToggle("AntiStompToggle",{
+		Text = "anti stomp"
 	})
 
 	-- \\VISUALS TAB//
