@@ -10,7 +10,7 @@ local UI = {}
 function UI:Initialize()
     local Window = Library:CreateWindow({
         Title = "SOLITAIRE";
-		SubTitle = "dahood";
+		SubTitle = "universal";
         Centre = true;
         AutoShow = true;
         TabPadding = 12;
@@ -26,35 +26,13 @@ function UI:Initialize()
     }
 
     -- \\MAIN TAB//
-	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
     local CameraGroupBox = Tabs.Main:AddLeftGroupbox("camera")
 	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
-	-- Gameplay group box
-	
-	GameplayGroupBox:AddToggle("AutoStompToggle", {
-        Text = "auto stomp"
-    })
-	local AutoStompDepBox = GameplayGroupBox:AddDependencyBox()
-	AutoStompDepBox:SetupDependencies({
-		{Toggles.AutoStompToggle, true}
-	})
-	AutoStompDepBox:AddToggle("AutoStompPlayAnimationToggle", {
-        Text = "stomp animation"
-    })
-	AutoStompDepBox:AddDivider()
-
-	GameplayGroupBox:AddToggle("AutoMaskToggle", {
-        Text = "auto mask"
-    })
-	GameplayGroupBox:AddToggle("AutoArmorToggle", {
-        Text = "auto armor"
-    })
-
 	-- Camera Group Box
 
-    CameraGroupBox:AddToggle("CameraLock", {
+	CameraGroupBox:AddToggle("CameraLock", {
         Text = "cam lock"
     }):AddKeyPicker("CameraLockKey",{
         Text = "cam lock";
@@ -69,14 +47,14 @@ function UI:Initialize()
 	CameraLockDepBox:AddToggle("CameraFriendCheck",{
 		Text = "friend check"
 	})
-	CameraLockDepBox:AddToggle("CameraCrewCheck",{
-		Text = "crew check"
+	CameraLockDepBox:AddToggle("CameraTeamCheck",{
+		Text = "team check"
 	})
 	CameraLockDepBox:AddToggle("CameraWallCheck",{
 		Text = "wall check"
 	})
-	CameraLockDepBox:AddToggle("CameraKnockedCheck",{
-		Text = "knocked check"
+	CameraLockDepBox:AddToggle("CameraDeadCheck",{
+		Text = "dead check"
 	})
 	CameraLockDepBox:AddToggle("CameraRadius",{
 		Text = "radius"
@@ -147,14 +125,14 @@ function UI:Initialize()
 	MouseDepBox:AddToggle("MouseFriendCheck",{
 		Text = "friend check"
 	})
-	MouseDepBox:AddToggle("MouseCrewCheck",{
-		Text = "crew check"
+	MouseDepBox:AddToggle("MouseTeamCheck",{
+		Text = "team check"
 	})
 	MouseDepBox:AddToggle("MouseWallCheck",{
 		Text = "wall check"
 	})
-	MouseDepBox:AddToggle("MouseKnockedCheck",{
-		Text = "knocked check"
+	MouseDepBox:AddToggle("MouseDeadCheck",{
+		Text = "dead check"
 	})
 	MouseDepBox:AddToggle("MouseRadius",{
 		Text = "radius"
@@ -210,9 +188,6 @@ function UI:Initialize()
 
 	-- Gun Group Box
 
-	GunGroupBox:AddToggle("GunNoRecoil",{
-		Text = "no recoil"
-	})
 	GunGroupBox:AddToggle("GunTriggerBot",{
 		Text = "trigger bot"
 	}):AddKeyPicker("GunTriggerBotKey",{
@@ -228,20 +203,16 @@ function UI:Initialize()
 	TriggerBotDepBox:AddToggle("GunTriggerBotFriendCheck",{
 		Text = "friend check"
 	})
-	TriggerBotDepBox:AddToggle("GunTriggerBotCrewCheck",{
-		Text = "crew check"
+	TriggerBotDepBox:AddToggle("GunTriggerBotTeamCheck",{
+		Text = "team check"
 	})
-	TriggerBotDepBox:AddToggle("GunTriggerBotKnockedCheck",{
-		Text = "knocked check"
-	})
-	TriggerBotDepBox:AddToggle("GunAutoReload",{
-		Text = "auto reload"
+	TriggerBotDepBox:AddToggle("GunTriggerBotDeadCheck",{
+		Text = "dead check"
 	})
 	TriggerBotDepBox:AddDivider()
 
     -- \\CHARACTER TAB//
     local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
-	local CharacterExploitsGroupBox = Tabs.Character:AddRightGroupbox("character exploits")
 
 	-- Movement Group Box
     MovementGroupBox:AddToggle("VelocityToggle",{
@@ -254,9 +225,11 @@ function UI:Initialize()
 	})
 	MovementGroupBox:AddToggle("WalkSpeedToggle",{
 		Text = "walk speed",
+		Tooltip = "only works if the game has any sort of changing speed"
 	})
 	MovementGroupBox:AddToggle("JumpPowerToggle",{
 		Text = "jump power",
+		Tooltip = "only works if the game has any sort of changing jump power"
 	})
 	MovementGroupBox:AddSlider("VelocitySpeed",{
 		Text = "velocity speed";
@@ -284,18 +257,6 @@ function UI:Initialize()
 		Rounding = 0;
 		UltraCompact = true;
 		Suffix = "s";
-	})
-
-	CharacterExploitsGroupBox:AddToggle("VelocityBreakerToggle",{
-		Text = "velocity breaker"
-	}):AddKeyPicker("VelocityBreakerKey",{
-		Text = "velocity breaker";
-		Default = "V";
-		Mode = "Toggle";
-		NoUI = false;
-	})
-	CharacterExploitsGroupBox:AddToggle("AntiStompToggle",{
-		Text = "anti stomp"
 	})
 
 	-- \\VISUALS TAB//
@@ -361,16 +322,17 @@ function UI:Initialize()
 	ESPDistanceDepBox:AddToggle("ESPDistanceOutline",{
 		Text = "outline"
 	})
+
 	ESPDistanceDepBox:AddDivider()
 
-	ESPGroupBox:AddToggle("ESPCrewCheck",{
-		Text = "crew check"
+	ESPGroupBox:AddToggle("ESPTeamCheck",{
+		Text = "team check"
 	})
 
 	ESPGroupBox:AddDivider()
 
 	local ESPHealthTG = ESPGroupBox:AddToggle("ESPHealth",{
-		Text = "health bar"
+		Text = "healthbar"
 	})
 	ESPHealthTG:AddColorPicker("ESPHealthUpperColor",{
 		Default = Color3.fromRGB(60, 255, 100),
@@ -384,24 +346,8 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255, 60, 60),
 		Title = "lower"
 	})
-	ESPHealthTG:AddDivider()
 
-	local ESPArmorTG = ESPGroupBox:AddToggle("ESPArmor",{
-		Text = "armor bar"
-	})
-	ESPArmorTG:AddColorPicker("ESPArmorUpperColor",{
-		Default = Color3.fromRGB(27, 27, 209),
-		Title = "upper"
-	})
-	ESPArmorTG:AddColorPicker("ESPArmorMidColor",{
-		Default = Color3.fromRGB(27, 27, 209),
-		Title = "middle"
-	})
-	ESPArmorTG:AddColorPicker("ESPArmorLowerColor",{
-		Default = Color3.fromRGB(27, 27, 209),
-		Title = "lower"
-	})
-	ESPArmorTG:AddDivider()
+	ESPGroupBox:AddDivider()
 
 	ESPGroupBox:AddDropdown("ESPNametype",{
 		Text = "name type";
@@ -425,7 +371,7 @@ function UI:Initialize()
 
 	-- \\SETTINGS TAB//
 
-	local UIGroupBox = Tabs.Settings:AddLeftGroupbox("ui settings")
+	local UIGroupBox = Tabs.Settings:AddLeftGroupbox("ui")
 	UIGroupBox:AddRainbowAccentToggle("RainbowAccent",{
 		Text = "rainbow accent";
 		Default = false;
