@@ -335,7 +335,7 @@ function Logic:Initialize(UIReference)
 	local stompAnimationCooldown
 	runLoop(Toggles.AutoStompToggle, function()
 		MainEvent:FireServer("Stomp")
-		if Toggles.AutoStompAnimationToggle.Value and not stompAnimationCooldown and LocalHumanoid then
+		if Toggles.AutoStompAnimation.Value and not stompAnimationCooldown and LocalHumanoid then
 			if not canStompBelow() then return end
 
 			stompAnimationCooldown = true
