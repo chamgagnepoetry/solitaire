@@ -119,10 +119,7 @@ function UI:Initialize()
 		Rounding = 1;
 		Compact = true;
 	})
-	
-	CameraGroupBox:AddDivider()
-
-	CameraGroupBox:AddDropdown("CameraLockToggleType",{
+	CameraRadiusDepBox:AddDropdown("CameraLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
 		Multi = false;
@@ -131,6 +128,7 @@ function UI:Initialize()
 			Options.CameraLockKey.Mode = tostring(Value)
 		end,
 	})
+	CameraRadiusDepBox:AddDivider()
 
 	-- Mouse Group Box
 
@@ -199,10 +197,7 @@ function UI:Initialize()
 		Rounding = 1;
 		Compact = true;
 	})
-
-	MouseGroupBox:AddDivider()
-
-	MouseGroupBox:AddDropdown("MouseLockToggleType",{
+	MouseRadiusDepBox:AddDropdown("MouseLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
 		Multi = false;
@@ -211,6 +206,7 @@ function UI:Initialize()
 			Options.MouseLockKey.Mode = tostring(Value)
 		end,
 	})
+	MouseRadiusDepBox:AddDivider()
 
 	-- Gun Group Box
 
@@ -238,12 +234,10 @@ function UI:Initialize()
 	TriggerBotDepBox:AddToggle("GunTriggerBotKnockedCheck",{
 		Text = "knocked check"
 	})
-
-	GunGroupBox:AddDivider()
-
-	GunGroupBox:AddToggle("GunAutoReload",{
+	TriggerBotDepBox:AddToggle("GunAutoReload",{
 		Text = "auto reload"
 	})
+	TriggerBotDepBox:AddDivider()
 
     -- \\CHARACTER TAB//
     local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
@@ -325,8 +319,7 @@ function UI:Initialize()
 	}):AddColorPicker("ESPBoxFillColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
-
-	ESPGroupBox:AddDivider()
+	ESPBoxDepBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPName",{
 		Text = "name";
@@ -340,8 +333,7 @@ function UI:Initialize()
 	ESPNameDepBox:AddToggle("ESPNameOutline",{
 		Text = "outline"
 	})
-
-	ESPGroupBox:AddDivider()
+	ESPNameDepBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPWeapon",{
 		Text = "weapon"
@@ -355,8 +347,7 @@ function UI:Initialize()
 	ESPWeaponDepBox:AddToggle("ESPWeaponOutline",{
 		Text = "outline"
 	})
-
-	ESPGroupBox:AddDivider()
+	ESPWeaponDepBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPDistance",{
 		Text = "distance"
@@ -370,8 +361,7 @@ function UI:Initialize()
 	ESPDistanceDepBox:AddToggle("ESPDistanceOutline",{
 		Text = "outline"
 	})
-
-	ESPGroupBox:AddDivider()
+	ESPDistanceDepBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPCrewCheck",{
 		Text = "crew check"
@@ -394,8 +384,7 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255, 60, 60),
 		Title = "lower"
 	})
-
-	ESPGroupBox:AddDivider()
+	ESPHealthTG:AddDivider()
 
 	local ESPArmorTG = ESPGroupBox:AddToggle("ESPArmor",{
 		Text = "armor bar"
@@ -412,8 +401,7 @@ function UI:Initialize()
 		Default = Color3.fromRGB(27, 27, 209),
 		Title = "lower"
 	})
-
-	ESPGroupBox:AddDivider()
+	ESPArmorTG:AddDivider()
 
 	ESPGroupBox:AddDropdown("ESPNametype",{
 		Text = "name type";
