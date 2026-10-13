@@ -483,11 +483,6 @@ function Logic:Initialize(UIReference)
 		else
 			Gun:Deactivate()
 		end
-	end, function()
-		local Gun = getEquippedGun()
-		if Gun then
-			Gun:Deactivate()
-		end
 	end)
 
 	--[[runLoop(Toggles.GunNoRecoil, function()
