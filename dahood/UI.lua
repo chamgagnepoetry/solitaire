@@ -40,7 +40,7 @@ function UI:Initialize()
 	AutoStompDepBox:SetupDependencies({
 		{Toggles.AutoStompToggle, true}
 	})
-	AutoStompDepBox:AddToggle("AutoStompPlayAnimationToggle", {
+	AutoStompDepBox:AddToggle("AutoStompAnimation", {
         Text = "stomp animation"
     })
 	AutoStompDepBox:AddDivider()
@@ -213,6 +213,9 @@ function UI:Initialize()
 	GunGroupBox:AddToggle("GunNoRecoil",{
 		Text = "no recoil"
 	})
+	GunGroupBox:AddToggle("GunAutoReload",{
+		Text = "auto reload"
+	})
 	GunGroupBox:AddToggle("GunTriggerBot",{
 		Text = "trigger bot"
 	}):AddKeyPicker("GunTriggerBotKey",{
@@ -233,9 +236,6 @@ function UI:Initialize()
 	})
 	TriggerBotDepBox:AddToggle("GunTriggerBotKnockedCheck",{
 		Text = "knocked check"
-	})
-	TriggerBotDepBox:AddToggle("GunAutoReload",{
-		Text = "auto reload"
 	})
 
     -- \\CHARACTER TAB//
