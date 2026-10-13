@@ -378,7 +378,6 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255, 60, 60),
 		Title = "lower"
 	})
-	ESPHealthTG:AddDivider()
 
 	local ESPArmorTG = ESPGroupBox:AddToggle("ESPArmor",{
 		Text = "armor bar"
@@ -395,7 +394,8 @@ function UI:Initialize()
 		Default = Color3.fromRGB(27, 27, 209),
 		Title = "lower"
 	})
-	ESPArmorTG:AddDivider()
+	
+	ESPGroupBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPCrewCheck",{
 		Text = "crew check"
