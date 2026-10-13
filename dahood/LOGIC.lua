@@ -8,6 +8,7 @@ local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
 
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
+local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
@@ -192,6 +193,42 @@ local function FindPlayerToMouse(radius, configurations)
 end
 getgenv().FindPlayerToMouse = FindPlayerToMouse
 
+local function getHumanoid(part)
+	local inst = part
+	for _ = 1, 6 do -- climb up to 6 parents
+		inst = inst.Parent
+		if not inst then return nil end
+		local hum = inst:FindFirstChildOfClass("Humanoid")
+		if hum then return hum end
+	end
+	return nil
+end
+getgenv().getHumanoid = getHumanoid
+
+local function canStompBelow()
+	local lower = LocalCharacter:FindFirstChild("LowerTorso")
+	local upper = LocalCharacter:FindFirstChild("UpperTorso")
+	if not (lower and upper) then return false end
+
+	local part = workspace:FindPartOnRayWithIgnoreList(
+		Ray.new(lower.Position, Vector3.new(0, -upper.Size.Y * 4.5, 0)),
+		{ LocalCharacter, unpack(require(ReplicatedStorage.MainModule).Ignored) }
+	)
+	if not part then return false end
+
+	local hum = getHumanoid(part)
+	if not hum then return false end
+
+	local char = hum.Parent
+	local be = char:FindFirstChild("BodyEffects")
+	if not be then return false end
+
+	return be["K.O"].Value == true
+		and be["Dead"].Value == false
+		and not char:FindFirstChild("GRABBING_CONSTRAINT")
+end
+getgenv().canStompBelow = canStompBelow
+
 local function runLoop(controlObj, loopFn, stopFn)
 	if type(controlObj) == "string" then
 		local keybind
@@ -295,6 +332,22 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MAIN TAB
+	local stompAnimationCooldown
+	runLoop(Toggles.AutoStompToggle, function()
+		MainEvent:FireServer("Stomp")
+		if Toggles.AutoStompAnimationToggle.Value and not stompAnimationCooldown and LocalHumanoid then
+			if not canStompBelow()
+
+			stompAnimationCooldown = true
+			task.delay(1.3, function()
+				stompAnimationCooldown = false
+			end)
+	
+			local stompAnimation = LocalHumanoid.Animator:LoadAnimation(ClientAnimations.Stomp)
+			stompAnimation:Play(0.100000001, 1, 1.5)
+		end
+	end)
+
 	local CameraTarget = nil
 	runLoop("!CameraLockKey", function()
 		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius or nil
@@ -376,62 +429,68 @@ function Logic:Initialize(UIReference)
 		MouseTarget = nil
 	end)
 
-	local botGun = nil -- gun the trigger bot is currently holding down
-
 	runLoop("GunTriggerBotKey", function()
 		local Gun = getEquippedGun()
-		local shouldFire = false
-
-		repeat
-			if not Gun then break end
-
-			local TargetPart = Mouse.Target
-			if not TargetPart then break end
-
-			local TargetModel = TargetPart.Parent
-			if not TargetModel then break end
-
-			local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
-			local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
-
-			if not TargetHumanoid and TargetModel.Parent then
-				TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
-				if TargetHumanoid then
-					TargetModel = TargetModel.Parent
-				end
-			end
-
-			if not TargetHumanoid then break end
-
-			if Toggles.GunTriggerBotKnockedCheck.Value
-				and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
-				break
-			end
-
-			if Toggles.GunTriggerBotCrewCheck.Value and checkCrew(TargetPlayer) then break end
-			if Toggles.GunTriggerBotFriendCheck.Value and checkFriend(TargetPlayer) then break end
-
-			shouldFire = true
-		until true
-
-		if botGun and botGun ~= Gun then
-			botGun:Deactivate()
-			botGun = nil
+		if not Gun then
+			return
 		end
-
-		if shouldFire then
-			if not botGun then
-				botGun = Gun
-				Gun:Activate()
+	
+		local TargetPart = Mouse.Target
+		if not TargetPart then
+			Gun:Deactivate()
+			return
+		end
+	
+		local TargetModel = TargetPart.Parent
+		if not TargetModel then
+			Gun:Deactivate()
+			return
+		end
+	
+		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
+		local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
+	
+		if not TargetHumanoid and TargetModel.Parent then
+			TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
+			if TargetHumanoid then
+				TargetModel = TargetModel.Parent
 			end
-		elseif botGun then
-			botGun:Deactivate()
-			botGun = nil
+		end
+	
+		if not TargetHumanoid then
+			Gun:Deactivate()
+			return
+		elseif Toggles.GunTriggerBotKnockedCheck.Value and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
+			Gun:Deactivate()
+			return
+		end
+	
+		local FriendCheck = false
+		local CrewCheck = false
+	
+		if Toggles.GunTriggerBotCrewCheck.Value then
+			CrewCheck = checkCrew(TargetPlayer)
+		end
+	
+		if Toggles.GunTriggerBotFriendCheck.Value then
+			FriendCheck = checkFriend(TargetPlayer)
+		end
+	
+		if not FriendCheck and not CrewCheck then
+			Gun:Activate()
+		else
+			Gun:Deactivate()
 		end
 	end, function()
-		if botGun then
-			botGun:Deactivate()
-			botGun = nil
+		local Gun = getEquippedGun()
+		if Gun then
+			Gun:Deactivate()
+		end
+	end)
+
+	runLoop(Toggles.GunNoRecoil, function()
+		if LocalHumanoid then
+			LocalHumanoid.CameraOffset = Vector3.new(0,0,0)
 		end
 	end)
 
@@ -522,6 +581,17 @@ function Logic:Initialize(UIReference)
 			LocalHumanoidRootPart.Velocity = type(Velocity) == "vector" and Velocity or Velocity(RVelocity)
 			RunService.RenderStepped:Wait()
 			LocalHumanoidRootPart.Velocity = RVelocity
+		end
+	end)
+
+	runLoop(Toggles.AntiStompToggle, function()
+		if checkLocalPlayerKnocked() then
+			if LocalCharacter then
+				local LocalHead = LocalCharacter:FindFirstChild("Head")
+				if LocalHead then
+					LocalHead:Destroy()
+				end
+			end
 		end
 	end)
 end
