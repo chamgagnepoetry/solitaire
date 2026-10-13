@@ -336,7 +336,7 @@ function Logic:Initialize(UIReference)
 	runLoop(Toggles.AutoStompToggle, function()
 		MainEvent:FireServer("Stomp")
 		if Toggles.AutoStompAnimationToggle.Value and not stompAnimationCooldown and LocalHumanoid then
-			if not canStompBelow()
+			if not canStompBelow() then return end
 
 			stompAnimationCooldown = true
 			task.delay(1.3, function()
