@@ -237,7 +237,6 @@ function UI:Initialize()
 	TriggerBotDepBox:AddToggle("GunAutoReload",{
 		Text = "auto reload"
 	})
-	TriggerBotDepBox:AddDivider()
 
     -- \\CHARACTER TAB//
     local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
@@ -394,7 +393,7 @@ function UI:Initialize()
 		Default = Color3.fromRGB(27, 27, 209),
 		Title = "lower"
 	})
-	
+
 	ESPGroupBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPCrewCheck",{
