@@ -377,8 +377,8 @@ function Logic:Initialize(UIReference)
 	end)
 
 	runLoop("GunTriggerBotKey", function()
-		local Tool = getEquippedTool()
-		if not Tool then
+		local Gun = getEquippedGun()
+		if not Gun then
 			return
 		end
 	
@@ -420,7 +420,7 @@ function Logic:Initialize(UIReference)
 		end
 
 		if not FriendCheck and not CrewCheck and isrbxactive() then
-			mouse1click()
+			Gun:Activate()
 		end
 	end)
 
@@ -500,6 +500,17 @@ function Logic:Initialize(UIReference)
 			local vertical = velocity.Y
 			local horizontal = direction * Options.VelocitySpeed.Value
 			LocalHumanoidRootPart.AssemblyLinearVelocity = Vector3.new(horizontal.X,vertical, horizontal.Z)
+		end
+	end)
+
+	local RVelocity
+	local Velocity = Vector3.new(200,0,200)
+	runLoop("VelocityBreakerKey", function()
+		if LocalHumanoid and LocalHumanoidRootPart then
+			RVelocity = LocalHumanoidRootPart.Velocity
+			LocalHumanoidRootPart.Velocity = type(Velocity) == "vector" and Velocity or Velocity(RVelocity)
+			RunService.RenderStepped:Wait()
+			LocalHumanoidRootPart.Velocity = RVelocity
 		end
 	end)
 end
