@@ -209,7 +209,6 @@ function UI:Initialize()
 	TriggerBotDepBox:AddToggle("GunTriggerBotDeadCheck",{
 		Text = "dead check"
 	})
-	TriggerBotDepBox:AddDivider()
 
     -- \\CHARACTER TAB//
     local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
@@ -339,7 +338,7 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255, 60, 60),
 		Title = "lower"
 	})
-	
+
 	ESPGroupBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPTeamCheck",{
