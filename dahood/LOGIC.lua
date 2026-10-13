@@ -4,11 +4,13 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
+local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
 
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
+local Framework = LocalPlayerGui:WaitForChild("Framework")
 
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
@@ -315,12 +317,14 @@ function Logic:Initialize(UIReference)
 	pcall(function()
 		LPH_NO_VIRTUALIZE = function(...) return (...) end
 		local newindex; newindex = hookmetamethod(game, "__newindex", LPH_NO_VIRTUALIZE(function(self, key, value)
-			if key == 'WalkSpeed' then 
+			local callingscript = getcallingscript()
+			if key == "CFrame" and Framework and callingscript == Framework and self:IsA("Camera") and Toggles.GunNoRecoil.Value then
+				return
+			elseif key == 'WalkSpeed' then 
 				if Toggles.WalkSpeedToggle.Value then
 					value = Options.WalkSpeed.Value
 				end
-			end
-			if key == "JumpPower" then 
+			elseif key == "JumpPower" then 
 				if Toggles.JumpPowerToggle.Value then
 					value = Options.JumpPower.Value
 				end
@@ -486,11 +490,11 @@ function Logic:Initialize(UIReference)
 		end
 	end)
 
-	runLoop(Toggles.GunNoRecoil, function()
+	--[[runLoop(Toggles.GunNoRecoil, function()
 		if LocalHumanoid then
 			LocalHumanoid.CameraOffset = Vector3.new(0,0,0)
 		end
-	end)
+	end)--]]
 
 	runLoop(Toggles.GunAutoReload, function()
 		local gun = getEquippedGun()
