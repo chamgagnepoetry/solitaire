@@ -195,7 +195,7 @@ getgenv().FindPlayerToMouse = FindPlayerToMouse
 
 local function getHumanoid(part)
 	local inst = part
-	for _ = 1, 6 do -- climb up to 6 parents
+	for i = 1, 6 do
 		inst = inst.Parent
 		if not inst then return nil end
 		local hum = inst:FindFirstChildOfClass("Humanoid")
@@ -224,8 +224,6 @@ local function canStompBelow()
 	if not be then return false end
 
 	return be["K.O"].Value == true
-		and be["Dead"].Value == false
-		and not char:FindFirstChild("GRABBING_CONSTRAINT")
 end
 getgenv().canStompBelow = canStompBelow
 
