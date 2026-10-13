@@ -339,7 +339,8 @@ function UI:Initialize()
 		Default = Color3.fromRGB(255, 60, 60),
 		Title = "lower"
 	})
-	ESPHealthTG:AddDivider()
+	
+	ESPGroupBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPTeamCheck",{
 		Text = "team check"
