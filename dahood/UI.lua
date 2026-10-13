@@ -9,7 +9,7 @@ local UI = {}
 
 function UI:Initialize()
     local Window = Library:CreateWindow({
-        Title = "SOLITAIRE BOOSTED";
+        Title = "SOLITAIRE";
 		SubTitle = "dahood";
         Centre = true;
         AutoShow = true;
@@ -222,6 +222,7 @@ function UI:Initialize()
 
     -- \\CHARACTER TAB//
     local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
+	local CharacterExploitsGroupBox = Tabs.Character:AddRightGroupbox("character exploits")
 
 	-- Movement Group Box
     MovementGroupBox:AddToggle("VelocityToggle",{
@@ -264,6 +265,15 @@ function UI:Initialize()
 		Rounding = 0;
 		UltraCompact = true;
 		Suffix = "s";
+	})
+
+	CharacterExploitsGroupBox:AddToggle("VelocityBreakerToggle",{
+		Text = "velocity breaker"
+	}):AddKeyPicker("VelocityBreakerKey",{
+		Text = "velocity breaker";
+		Default = "V";
+		Mode = "Toggle";
+		NoUI = false;
 	})
 
 	-- \\VISUALS TAB//
