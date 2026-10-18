@@ -64,3 +64,57 @@ local function checkWall(target)
 	return Result ~= nil
 end
 getgenv().checkWall = checkWall
+
+local function FindPlayerToMouse(radius, configurations)
+	if not LocalHumanoidRootPart then
+		return false
+	end
+
+	local ClosestPlayer = nil
+	local ShortestDistance = math.huge
+	local MousePos = Vector2.new(Mouse.X, Mouse.Y)
+
+	for _, target in ipairs(Players:GetPlayers()) do
+		if target ~= LocalPlayer and target.Character then
+			local targetRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
+
+			if targetRootPart and targetHumanoid then
+				if configurations.FriendCheck and checkFriend(target) then
+					continue
+				end
+
+				if configurations.TeamCheck and checkTeam(target) then
+					continue
+				end
+
+				if configurations.WallCheck and checkWall(target) then
+					continue
+				end
+
+				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
+					continue
+				end
+
+				local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
+
+				if onScreen then
+					local screenVector = Vector2.new(screenPos.X, screenPos.Y)
+					local distance = (screenVector - MousePos).Magnitude
+
+					if radius and distance > radius then
+						continue
+					end
+
+					if distance < ShortestDistance then
+						ShortestDistance = distance
+						ClosestPlayer = target
+					end
+				end
+			end
+		end
+	end
+
+	return ClosestPlayer
+end
+getgenv().FindPlayerToMouse = FindPlayerToMouse
