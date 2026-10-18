@@ -119,7 +119,7 @@ function UI:Initialize()
 		Rounding = 1;
 		Compact = true;
 	})
-	CameraRadiusDepBox:AddDropdown("CameraLockToggleType",{
+	CameraLockDepBox:AddDropdown("CameraLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
 		Multi = false;
@@ -128,7 +128,7 @@ function UI:Initialize()
 			Options.CameraLockKey.Mode = tostring(Value)
 		end,
 	})
-	CameraRadiusDepBox:AddDivider()
+	CameraLockDepBox:AddDivider()
 
 	-- Mouse Group Box
 
@@ -197,7 +197,7 @@ function UI:Initialize()
 		Rounding = 1;
 		Compact = true;
 	})
-	MouseRadiusDepBox:AddDropdown("MouseLockToggleType",{
+	MouseDepBox:AddDropdown("MouseLockToggleType",{
 		Values = {"Toggle","Hold"};
 		Default = 1;
 		Multi = false;
@@ -206,7 +206,7 @@ function UI:Initialize()
 			Options.MouseLockKey.Mode = tostring(Value)
 		end,
 	})
-	MouseRadiusDepBox:AddDivider()
+	MouseDepBox:AddDivider()
 
 	-- Gun Group Box
 
