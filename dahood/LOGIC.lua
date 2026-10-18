@@ -10,7 +10,7 @@ local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
-local Framework = LocalPlayerGui:WaitForChild("Framework")
+local Framework
 
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
@@ -39,6 +39,8 @@ local function Setup(newCharacter)
 	LocalHumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
 
 	Mouse.TargetFilter = newCharacter
+
+	Framework = LocalPlayerGui:WaitForChild("Framework")
 end
 
 LocalPlayer.CharacterAdded:Connect(Setup)
