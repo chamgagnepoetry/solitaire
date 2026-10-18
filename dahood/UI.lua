@@ -128,7 +128,6 @@ function UI:Initialize()
 			Options.CameraLockKey.Mode = tostring(Value)
 		end,
 	})
-	CameraLockDepBox:AddDivider()
 
 	-- Mouse Group Box
 
@@ -206,7 +205,6 @@ function UI:Initialize()
 			Options.MouseLockKey.Mode = tostring(Value)
 		end,
 	})
-	MouseDepBox:AddDivider()
 
 	-- Gun Group Box
 
