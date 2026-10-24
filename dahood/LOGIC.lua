@@ -314,7 +314,7 @@ function Logic:Initialize(UIReference)
 			local Method = getnamecallmethod()
 			local Arguments = {...}
 			local self = Arguments[1]
-			local chance = CalculateChance(SilentAimSettings.HitChance)
+			local chance = CalculateChance(100)
 			if Toggles.SilentAimToggle.Value then
 				if Method == "Raycast" and self == workspace and not checkcaller() and chance == true then
 					print("chance")
