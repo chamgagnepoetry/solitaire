@@ -3,9 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
-local LocalPlayer = Players.LocalPlayer
 local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
 
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
@@ -42,16 +40,10 @@ local MouseRadius = Drawing.new("Circle")
 MouseRadiusFill.Thickness = 0
 MouseRadiusFill.Filled = true
 
-local NotificationTime = 3
-
 local Library, Toggles, Options
 local Logic = {}
 
 local function Setup(newCharacter)
-	LocalCharacter = newCharacter
-	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
-	LocalHumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
-
 	Mouse.TargetFilter = newCharacter
 
 	Framework = LocalPlayerGui:WaitForChild("Framework")
@@ -277,7 +269,7 @@ function Logic:Initialize(UIReference)
 
 	-- HOOK FUNCTIONS
 
-	--[[pcall(function()
+	pcall(function()
 		LPH_NO_VIRTUALIZE = function(...) return (...) end
 		local newindex; newindex = hookmetamethod(game, "__newindex", LPH_NO_VIRTUALIZE(function(self, key, value)
 			local callingscript = getcallingscript()
@@ -294,57 +286,7 @@ function Logic:Initialize(UIReference)
 			end
 			return newindex(self, key, value)
 		end))
-	end)--]]
-
-	local SilentAimTarget = nil
-	--pcall(function()
-		local oldNamecall
-		oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
-			local Method = getnamecallmethod()
-			local Arguments = {...}
-			local self = Arguments[1]
-			if Toggles.SilentAimToggle.Value then
-				if Method == "Raycast" and self == workspace and not checkcaller() then
-					print("new")
-					if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
-						print("valid")
-						local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
-						if not SilentAimTarget then
-							SilentAimTarget = FindPlayerToMouse(radiusSize, {
-								FriendCheck = Toggles.SilentAimFriendCheck.Value,
-								CrewCheck = Toggles.SilentAimCrewCheck.Value,
-								WallCheck = Toggles.SilentAimWallCheck.Value,
-								KnockedCheck = Toggles.SilentAimKnockedCheck.Value
-							})
-						end
-
-						if SilentAimTarget and SilentAimTarget.Character then
-							local TargetHumanoid = SilentAimTarget.Character:FindFirstChildOfClass("Humanoid")
-							if Toggles.SilentAimKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-								SilentAimTarget = FindPlayerToMouse(radiusSize, {
-									FriendCheck = Toggles.SilentAimFriendCheck.Value,
-									CrewCheck = Toggles.SilentAimCrewCheck.Value,
-									WallCheck = Toggles.SilentAimWallCheck.Value,
-									KnockedCheck = Toggles.SilentAimKnockedCheck.Value
-								})
-							end
-				
-							if SilentAimTarget and SilentAimTarget.Character then
-								local TargetHeadPart = SilentAimTarget.Character:FindFirstChild("Head")
-								if TargetHeadPart then
-									local A_Origin = Arguments[2]
-									Arguments[3] = getDirection(A_Origin, TargetHeadPart.Position)
-									print('raycast')
-									return oldNamecall(unpack(Arguments))
-								end
-							end
-						end
-					end
-				end
-			end
-			return oldNamecall(...)
-		end))
-	--end)
+	end)
 
 	-- MAIN TAB
 	local stompAnimationCooldown
@@ -364,9 +306,9 @@ function Logic:Initialize(UIReference)
 	end)
 
 	runLoop(Toggles.SilentAimToggle, function()
-
+		Library:Notify("DISABLED UNTIL FURTHER NOTICE (Security Reasons)", NotificationTime)
 	end,function()
-		SilentAimTarget = nil
+		
 	end)
 
 	local CameraTarget = nil
