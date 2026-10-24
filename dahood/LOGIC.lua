@@ -18,6 +18,11 @@ local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
 
+local SilentAimRadiusFill = Drawing.new("Circle")
+local SilentAimRadius = Drawing.new("Circle")
+SilentAimRadiusFill.Thickness = 0
+SilentAimRadiusFill.Filled = true
+
 local CameraRadiusFill = Drawing.new("Circle")
 local CameraRadius = Drawing.new("Circle")
 CameraRadiusFill.Thickness = 0
@@ -498,6 +503,35 @@ function Logic:Initialize(UIReference)
 		end
 	end)
 
+	runLoop(Toggles.SilentAimRadius, function()
+		local MouseLocation = UserInputService:GetMouseLocation()
+		local Color = Toggles.SilentAimRadiusMatchAccent.Value and Library.AccentColor or Options.SilentAimRadiusColor.Value
+		local FillColor = Toggles.SilentAimRadiusMatchAccent.Value and Library.AccentColor or Options.SilentAimRadiusFillColor.Value
+		local FillVisib = Toggles.SilentAimRadiusFill.Value and true or false
+
+		SilentAimRadius.Position = MouseLocation
+		SilentAimRadius.Radius = Options.SilentAimRadiusSize.Value
+		SilentAimRadius.Color = Color
+		SilentAimRadius.Thickness = Options.SilentAimRadiusThickness.Value
+
+		SilentAimRadiusFill.Position = MouseLocation
+		SilentAimRadiusFill.Radius = Options.SilentAimRadiusSize.Value
+		SilentAimRadiusFill.Color = FillColor
+		SilentAimRadiusFill.Transparency = Options.SilentAimRadiusTransparency.Value
+
+		SilentAimRadiusFill.Visible = FillVisib
+		SilentAimRadius.Visible = true
+	end, function()
+		SilentAimRadiusFill.Visible = false
+		SilentAimRadius.Visible = false
+	end)
+	Toggles.SilentAimRadius:OnChanged(function()
+		if Toggles.SilentAimRadius.Value == false then
+			SilentAimRadiusFill.Visible = false
+			SilentAimRadius.Visible = false
+		end
+	end)
+
 	runLoop(Toggles.CameraRadius, function()
 		local MouseLocation = UserInputService:GetMouseLocation()
 		local Color = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusColor.Value
@@ -522,7 +556,7 @@ function Logic:Initialize(UIReference)
 	end)
 	Toggles.CameraRadius:OnChanged(function()
 		if Toggles.CameraRadius.Value == false then
-			MouseRadiusFill.Visible = false
+			CameraRadiusFill.Visible = false
 			CameraRadius.Visible = false
 		end
 	end)
