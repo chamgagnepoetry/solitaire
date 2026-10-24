@@ -1,7 +1,11 @@
 local Players = game:GetService("Players")
 
-local LocalPlayer = Players.LocalPlayer
-local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
+getgenv().LocalPlayer
+getgenv().LocalCharacter
+getgenv().LocalHumanoid
+getgenv().LocalHumanoidRootPart
+
+getgenv().NotificationTime = 3
 
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
@@ -12,6 +16,11 @@ end
 LocalPlayer.CharacterAdded:Connect(Setup)
 Setup(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
 
+local function getDirection(Origin, Position)
+    return (Position - Origin).Unit * 1000
+end
+getgenv().getDirection = getDirection
+
 local function checkFriend(target)
 	return LocalPlayer:IsFriendsWith(target.UserId)
 end
@@ -21,6 +30,20 @@ local function checkTeam(target)
 	return target.Team == LocalPlayer.Team
 end
 getgenv().checkTeam = checkTeam
+
+local function ValidateArguments(Args, RayMethod)
+    local Matches = 0
+    if #Args < RayMethod.ArgCountRequired then
+        return false
+    end
+    for Pos, Argument in next, Args do
+        if typeof(Argument) == RayMethod.Args[Pos] then
+            Matches = Matches + 1
+        end
+    end
+    return Matches >= RayMethod.ArgCountRequired
+end
+getgenv().ValidateArguments = ValidateArguments
 
 local function getEquippedTool()
 	local Tool
