@@ -2,9 +2,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
-local LocalPlayer = Players.LocalPlayer
-local LocalCharacter, LocalHumanoid, LocalHumanoidRootPart
-
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
@@ -19,16 +16,10 @@ local MouseRadius = Drawing.new("Circle")
 MouseRadiusFill.Thickness = 0
 MouseRadiusFill.Filled = true
 
-local NotificationTime = 3
-
 local Library, Toggles, Options
 local Logic = {}
 
 local function Setup(newCharacter)
-	LocalCharacter = newCharacter
-	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
-	LocalHumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
-
 	Mouse.TargetFilter = newCharacter
 end
 
