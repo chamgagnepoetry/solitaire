@@ -59,7 +59,7 @@ function UI:Initialize()
     })
 	local SilentAimDepBox = SilentAimGroupBox:AddDependencyBox()
 	SilentAimDepBox:SetupDependencies({
-		{Toggles.SilentAim, true}
+		{Toggles.SilentAimToggle, true}
 	})
 	SilentAimDepBox:AddToggle("SilentAimFriendCheck",{
 		Text = "friend check"
