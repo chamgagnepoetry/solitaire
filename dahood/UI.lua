@@ -27,6 +27,7 @@ function UI:Initialize()
 
     -- \\MAIN TAB//
 	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
+	local SilentAimGroupBox = Tabs.Main:AddLeftGroupbox("silent aim")
     local CameraGroupBox = Tabs.Main:AddLeftGroupbox("camera")
 	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
@@ -51,6 +52,68 @@ function UI:Initialize()
 	GameplayGroupBox:AddToggle("AutoArmorToggle", {
         Text = "auto armor"
     })
+
+	-- Silent Aim group box
+	SilentAimGroupBox:AddToggle("SilentAimToggle", {
+        Text = "silent aim"
+    })
+	local SilentAimDepBox = SilentAimGroupBox:AddDependencyBox()
+	SilentAimDepBox:SetupDependencies({
+		{Toggles.SilentAim, true}
+	})
+	SilentAimDepBox:AddToggle("SilentAimFriendCheck",{
+		Text = "friend check"
+	})
+	SilentAimDepBox:AddToggle("SilentAimCrewCheck",{
+		Text = "crew check"
+	})
+	SilentAimDepBox:AddToggle("SilentAimWallCheck",{
+		Text = "wall check"
+	})
+	SilentAimDepBox:AddToggle("SilentAimKnockedCheck",{
+		Text = "knocked check"
+	})
+	SilentAimDepBox:AddToggle("SilentAimRadius",{
+		Text = "radius"
+	}):AddColorPicker("SilentAimColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local SilentAimRadiusDepBox = SilentAimDepBox:AddDependencyBox()
+	SilentAimRadiusDepBox:SetupDependencies({
+		{Toggles.SilentAimRadius, true}
+	})
+	SilentAimRadiusDepBox:AddToggle("SilentAimRadiusFill",{
+		Text = "fill"
+	}):AddColorPicker("SilentAimRadiusFillColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	SilentAimRadiusDepBox:AddToggle("SilentAimRadiusMatchAccent",{
+		Text = "match accent"
+	})
+	SilentAimRadiusDepBox:AddSlider("SilentAimRadiusSize",{
+		Text = "size";
+		Default = 200;
+		Min = 50;
+		Max = 800;
+		Rounding = 2;
+		Compact = true;
+	})
+	SilentAimRadiusDepBox:AddSlider("SilentAimRadiusThickness",{
+		Text = "thickness";
+		Default = 2;
+		Min = 1;
+		Max = 10;
+		Rounding = 2;
+		Compact = true;
+	})
+	SilentAimRadiusDepBox:AddSlider("SilentAimRadiusTransparency",{
+		Text = "transparency";
+		Default = 0.5;
+		Min = 0;
+		Max = 1;
+		Rounding = 1;
+		Compact = true;
+	})
 
 	-- Camera Group Box
 
