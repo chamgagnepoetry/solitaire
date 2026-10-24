@@ -282,6 +282,54 @@ function Logic:Initialize(UIReference)
 		end))
 	end)
 
+	local SilentAimTarget = nil
+	--pcall(function()
+		local oldNamecall
+		oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
+			local Method = getnamecallmethod()
+			local Arguments = {...}
+			local self = Arguments[1]
+			if Toggles.SilentAimToggle.Value then
+				if Method == "Raycast" then
+					--if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
+						local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
+						if not SilentAimTarget then
+							SilentAimTarget = FindPlayerToMouse(radiusSize, {
+								FriendCheck = Toggles.SilentAimFriendCheck.Value,
+								CrewCheck = Toggles.SilentAimCrewCheck.Value,
+								WallCheck = Toggles.SilentAimWallCheck.Value,
+								KnockedCheck = Toggles.SilentAimKnockedCheck.Value
+							})
+						end
+
+						if SilentAimTarget and SilentAimTarget.Character then
+							local TargetHumanoid = SilentAimTarget.Character:FindFirstChildOfClass("Humanoid")
+							if Toggles.SilentAimKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+								SilentAimTarget = FindPlayerToMouse(radiusSize, {
+									FriendCheck = Toggles.SilentAimFriendCheck.Value,
+									CrewCheck = Toggles.SilentAimCrewCheck.Value,
+									WallCheck = Toggles.SilentAimWallCheck.Value,
+									KnockedCheck = Toggles.SilentAimKnockedCheck.Value
+								})
+							end
+				
+							if SilentAimTarget and SilentAimTarget.Character then
+								local TargetHeadPart = SilentAimTarget.Character:FindFirstChild("Head")
+								if TargetHeadPart then
+									local A_Origin = Arguments[2]
+									Arguments[3] = getDirection(A_Origin, TargetHeadPart.Position)
+									print('raycast')
+									return oldNamecall(unpack(Arguments))
+								end
+							end
+						end
+					--end
+				end
+			end
+			return oldNamecall(...)
+		end))
+	--end)
+
 	-- MAIN TAB
 	local stompAnimationCooldown
 	runLoop(Toggles.AutoStompToggle, function()
@@ -297,6 +345,12 @@ function Logic:Initialize(UIReference)
 			local stompAnimation = LocalHumanoid.Animator:LoadAnimation(ClientAnimations.Stomp)
 			stompAnimation:Play(0.100000001, 1, 1.5)
 		end
+	end)
+
+	runLoop(Toggles.SilentAimToggle, function()
+
+	end,function()
+		SilentAimTarget = nil
 	end)
 
 	local CameraTarget = nil
