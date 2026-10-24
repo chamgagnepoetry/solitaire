@@ -12,6 +12,15 @@ local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 local Framework
 
+local ExpectedArguments = {
+    Raycast = {
+        ArgCountRequired = 3,
+        Args = {
+            "Instance", "Vector3", "Vector3", "RaycastParams"
+        }
+    }
+}
+
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
 local Mouse = LocalPlayer:GetMouse()
@@ -296,7 +305,7 @@ function Logic:Initialize(UIReference)
 			local self = Arguments[1]
 			if Toggles.SilentAimToggle.Value then
 				if Method == "Raycast" and self == workspace and not checkcaller() then
-					--if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
+					if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
 						local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
 						if not SilentAimTarget then
 							SilentAimTarget = FindPlayerToMouse(radiusSize, {
@@ -328,7 +337,7 @@ function Logic:Initialize(UIReference)
 								end
 							end
 						end
-					--end
+					end
 				end
 			end
 			return oldNamecall(...)
@@ -526,7 +535,7 @@ function Logic:Initialize(UIReference)
 		SilentAimRadius.Visible = false
 	end)
 	Toggles.SilentAimRadius:OnChanged(function()
-		if Toggles.SilentAimRadius.Value == false then
+		if not Toggles.SilentAimRadius.Value then
 			SilentAimRadiusFill.Visible = false
 			SilentAimRadius.Visible = false
 		end
@@ -555,7 +564,7 @@ function Logic:Initialize(UIReference)
 		CameraRadius.Visible = false
 	end)
 	Toggles.CameraRadius:OnChanged(function()
-		if Toggles.CameraRadius.Value == false then
+		if not Toggles.CameraRadius.Value then
 			CameraRadiusFill.Visible = false
 			CameraRadius.Visible = false
 		end
@@ -584,7 +593,7 @@ function Logic:Initialize(UIReference)
 		MouseRadius.Visible = false
 	end)
 	Toggles.MouseRadius:OnChanged(function()
-		if Toggles.MouseRadius.Value == false then
+		if not Toggles.MouseRadius.Value then
 			MouseRadiusFill.Visible = false
 			MouseRadius.Visible = false
 		end
