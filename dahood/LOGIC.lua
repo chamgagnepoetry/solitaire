@@ -305,7 +305,9 @@ function Logic:Initialize(UIReference)
 			local self = Arguments[1]
 			if Toggles.SilentAimToggle.Value then
 				if Method == "Raycast" and self == workspace and not checkcaller() then
+					print('1')
 					if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
+						print("valid")
 						local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
 						if not SilentAimTarget then
 							SilentAimTarget = FindPlayerToMouse(radiusSize, {
