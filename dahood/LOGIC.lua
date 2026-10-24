@@ -268,17 +268,6 @@ local function runLoop(controlObj, loopFn, stopFn)
 	end
 end
 
-function CalculateChance(Percentage)
-    -- // Floor the percentage
-    Percentage = math.floor(Percentage)
-
-    -- // Get the chance
-    local chance = math.floor(Random.new().NextNumber(Random.new(), 0, 1) * 100) / 100
-
-    -- // Return
-    return chance <= Percentage / 100
-end
-
 function Logic:Initialize(UIReference)
     _G.Toggles = UIReference.Toggles
 	_G.Options = UIReference.Options
@@ -288,7 +277,7 @@ function Logic:Initialize(UIReference)
 
 	-- HOOK FUNCTIONS
 
-	pcall(function()
+	--[[pcall(function()
 		LPH_NO_VIRTUALIZE = function(...) return (...) end
 		local newindex; newindex = hookmetamethod(game, "__newindex", LPH_NO_VIRTUALIZE(function(self, key, value)
 			local callingscript = getcallingscript()
@@ -305,7 +294,7 @@ function Logic:Initialize(UIReference)
 			end
 			return newindex(self, key, value)
 		end))
-	end)
+	end)--]]
 
 	local SilentAimTarget = nil
 	--pcall(function()
@@ -314,10 +303,9 @@ function Logic:Initialize(UIReference)
 			local Method = getnamecallmethod()
 			local Arguments = {...}
 			local self = Arguments[1]
-			local chance = CalculateChance(100)
 			if Toggles.SilentAimToggle.Value then
-				if Method == "Raycast" and self == workspace and not checkcaller() and chance == true then
-					print("chance")
+				if Method == "Raycast" and self == workspace and not checkcaller() then
+					print("new")
 					if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
 						print("valid")
 						local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
