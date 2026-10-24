@@ -290,7 +290,7 @@ function Logic:Initialize(UIReference)
 			local Arguments = {...}
 			local self = Arguments[1]
 			if Toggles.SilentAimToggle.Value then
-				if Method == "Raycast" then
+				if Method == "Raycast" and self == workspace and not checkcaller() then
 					--if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
 						local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
 						if not SilentAimTarget then
