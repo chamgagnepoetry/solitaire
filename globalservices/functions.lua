@@ -7,6 +7,21 @@ getgenv().LocalHumanoidRootPart = nil
 
 getgenv().NotificationTime = 3
 
+getgenv().SilentAimRadiusFill = Drawing.new("Circle")
+getgenv().SilentAimRadius = Drawing.new("Circle")
+getgenv().SilentAimRadiusFill.Thickness = 0
+getgenv().SilentAimRadiusFill.Filled = true
+
+getgenv().CameraRadiusFill = Drawing.new("Circle")
+getgenv().CameraRadius = Drawing.new("Circle")
+getgenv().CameraRadiusFill.Thickness = 0
+getgenv().CameraRadiusFill.Filled = true
+
+getgenv().MouseRadiusFill = Drawing.new("Circle")
+getgenv().MouseRadius = Drawing.new("Circle")
+getgenv().MouseRadiusFill.Thickness = 0
+getgenv().MouseRadiusFill.Filled = true
+
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
 	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
