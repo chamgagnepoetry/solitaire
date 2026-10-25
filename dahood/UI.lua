@@ -471,7 +471,7 @@ function UI:Initialize()
 	-- \\MISC TAB//
 	local ShopGroupBox = Tabs.Misc:AddLeftGroupbox("shop")
 	ShopGroupBox:AddDropdown("DahoodShop",{
-		Values = "",
+		Values = {},
 		Default = 0,
 		Multi = false,
 		Text = "item to buy";
