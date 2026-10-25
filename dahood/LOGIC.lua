@@ -1,4 +1,4 @@
-print('eshay')
+print('eeeetswa')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -41,20 +41,46 @@ end
 LocalPlayer.CharacterAdded:Connect(Setup)
 Setup(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
 
+local function getEquippedGun()
+	local Tool
+	for _, object in pairs(LocalCharacter:GetChildren()) do
+		if object:FindFirstChild("Ammo") and object:FindFirstChild("MaxAmmo") then 
+			Tool = object
+			return Tool
+		end
+	end
+	return false
+end
+getgenv().getEquippedGun = getEquippedGun
+
 local function TryPurchase(Item)
+	local Bracketed = Item.Name:match("%[.-%]")
+	local IsAmmoOrArmor = Item.Name:find("Ammo") or Item.Name:find("Armor")
+
+	if Item:FindFirstChild("Amount") then
+		if not Bracketed then return false end
+
+		local GunName = (Bracketed:gsub(" Ammo", ""))
+		if not searchForTool(GunName) then return false end
+	end
+
+	if not IsAmmoOrArmor and Bracketed then
+		if searchForTool(Bracketed) then return false end
+	end
+
 	while true do
-		if not Item or not Item.Parent or not Item:FindFirstChild("Head") or not Item:FindFirstChild("ClickDetector") then
+		if not Item or not Item.Parent or not Item:FindFirstChild("Head") or not Item:FindFirstChild("ClickDetector") or LocalCurrency.Value < Item.Price.Value then
 			return false
 		end
 
-		local ValueBeforeNigger = LocalCurrency.Value
+		local ValueBefore = LocalCurrency.Value
 
 		LocalHumanoidRootPart.CFrame = Item.Head.CFrame
 		task.wait(0.15)
 		fireclickdetector(Item.ClickDetector)
 		task.wait(0.15)
 
-		if LocalCurrency.Value < ValueBeforeNigger then
+		if LocalCurrency.Value < ValueBefore then
 			return true
 		end
 	end
@@ -85,18 +111,6 @@ local function PurchaseItem(Name)
 	end
 end
 getgenv().PurchaseItem = PurchaseItem
-
-local function getEquippedGun()
-	local Tool
-	for _, object in pairs(LocalCharacter:GetChildren()) do
-		if object:FindFirstChild("Ammo") and object:FindFirstChild("MaxAmmo") then 
-			Tool = object
-			return Tool
-		end
-	end
-	return false
-end
-getgenv().getEquippedGun = getEquippedGun
 
 local function checkLocalPlayerKnocked()
 	local bodyEffects = LocalCharacter and LocalCharacter:FindFirstChild("BodyEffects")
