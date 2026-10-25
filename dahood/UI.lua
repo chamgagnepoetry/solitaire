@@ -469,6 +469,39 @@ function UI:Initialize()
 	})
 
 	-- \\MISC TAB//
+	local ShopGroupBox = Tabs.Misc:AddLeftGroupbox("shop")
+	ShopGroupBox:AddDropdown("DahoodShop",{
+		Values = "",
+		Default = 0,
+		Multi = false,
+		Text = "item to buy";
+		Tooltip = "select item to buy";
+	})
+	ShopGroupBox:AddInput("DahoodShopSearch",{
+		Text = "shop search",
+		Placeholder = "search",
+		Tooltip = "press enter to search",
+		Numeric = false,
+		Finished = true,
+
+		Callback = function(value)
+			if table.find(Options.DahoodShop.Values, value) then
+				Options.DahoodShop:SetValue({value = true})
+			end
+		end,
+	})
+	ShopGroupBox:AddButton({
+		Text = "buy item";
+		Func = function()
+
+		end,
+	}):AddButton({
+		Text = "buy held ammo";
+		Func = function()
+
+		end,
+	})
+
 	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
 
 	ChatGroupBox:AddToggle("ChatSpy",{
