@@ -6,16 +6,6 @@ local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
 
-local CameraRadiusFill = Drawing.new("Circle")
-local CameraRadius = Drawing.new("Circle")
-CameraRadiusFill.Thickness = 0
-CameraRadiusFill.Filled = true
-
-local MouseRadiusFill = Drawing.new("Circle")
-local MouseRadius = Drawing.new("Circle")
-MouseRadiusFill.Thickness = 0
-MouseRadiusFill.Filled = true
-
 local Library, Toggles, Options
 local Logic = {}
 
