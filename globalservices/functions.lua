@@ -1,9 +1,9 @@
 local Players = game:GetService("Players")
 
-getgenv().LocalPlayer
-getgenv().LocalCharacter
-getgenv().LocalHumanoid
-getgenv().LocalHumanoidRootPart
+getgenv().LocalPlayer = nil
+getgenv().LocalCharacter = nil
+getgenv().LocalHumanoid = nil
+getgenv().LocalHumanoidRootPart = nil
 
 getgenv().NotificationTime = 3
 
