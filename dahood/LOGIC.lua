@@ -10,10 +10,11 @@ local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 
 local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
+local LocalHumanoidHealthChangedConnection = nil
 
 local Framework
-getgenv().IgnoredShop = {}
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
+getgenv().IgnoredShop = {}
 
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
@@ -35,6 +36,13 @@ local function Setup(newCharacter)
 	Mouse.TargetFilter = newCharacter
 
 	Framework = LocalPlayerGui:WaitForChild("Framework")
+
+	if LocalHumanoidHealthChangedConnection then
+		LocalHumanoidHealthChangedConnection:Disconnect()
+		LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function()
+			print('damage')
+		end)
+	end
 end
 
 LocalPlayer.CharacterAdded:Connect(Setup)
