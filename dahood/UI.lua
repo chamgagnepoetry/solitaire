@@ -1,4 +1,3 @@
-print('eetsdflsdfjksdf')
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
