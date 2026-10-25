@@ -1,6 +1,6 @@
 local Players = game:GetService("Players")
 
-getgenv().LocalPlayer = nil
+getgenv().LocalPlayer = Players.LocalPlayer
 getgenv().LocalCharacter = nil
 getgenv().LocalHumanoid = nil
 getgenv().LocalHumanoidRootPart = nil
