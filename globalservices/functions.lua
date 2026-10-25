@@ -97,6 +97,24 @@ local function getEquippedTool()
 end
 getgenv().getEquippedTool = getEquippedTool
 
+local function searchForTool(ToolName)
+	local Tool
+	for _, object in pairs(LocalCharacter:GetChildren()) do
+		if object:IsA("Tool") and object.Name == ToolName then
+			Tool = object
+			return Tool
+		end
+	end
+	for _, object in pairs(LocalPlayer.Backpack:GetChildren()) do
+		if object:IsA("Tool") and object.Name == ToolName then
+			Tool = object
+			return Tool
+		end
+	end
+	return false
+end
+getgenv().searchForTool = searchForTool
+
 local function checkWall(target)
 	if not LocalHumanoidRootPart then
 		return false
