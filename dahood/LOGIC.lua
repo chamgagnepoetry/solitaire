@@ -9,6 +9,8 @@ local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 
+local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
+
 local Framework
 local IgnoredShop = {}
 local IgnoredShopNames = {}
@@ -17,6 +19,9 @@ local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
+
+local IsProcessing = false
+local PurchaseQueue = {}
 
 local Library, Toggles, Options
 local Logic = {}
@@ -42,13 +47,46 @@ end
 LocalPlayer.CharacterAdded:Connect(Setup)
 Setup(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
 
-local function BuyItem(Item)
-	LocalHumanoidRootPart.CFrame = Item.Head.CFrame
-	task.wait(0.15)
-	fireclickdetector(Item.ClickDetector)
-	task.wait(0.15)
+local function TryPurchase(Item)
+	while true do
+		if not Item or not Item.Parent or not Item:FindFirstChild("Head") or not Item:FindFirstChild("ClickDetector") then
+			return false
+		end
+
+		local ValueBeforeNigger = LocalCurrency.Value
+
+		LocalHumanoidRootPart.CFrame = Item.Head.CFrame
+		task.wait(0.15)
+		fireclickdetector(Item.ClickDetector)
+		task.wait(0.15)
+
+		if LocalCurrency.Value < ValueBeforeNigger then
+			return true
+		end
+	end
 end
-getgenv().BuyItem = BuyItem
+
+local function ProcessQueue()
+	if IsProcessing then return end
+	IsProcessing = true
+
+	local OriginalCFrame = LocalHumanoidRootPart.CFrame
+
+	while #PurchaseQueue > 0 do
+		local Item = table.remove(PurchaseQueue, 1)
+		TryPurchase(Item)
+	end
+
+	LocalHumanoidRootPart.CFrame = OriginalCFrame
+	IsProcessing = false
+end
+
+local function PurchaseItem(Item)
+	if not table.find(IgnoredShop, Item) then return end
+	table.insert(PurchaseQueue, Item)
+	task.spawn(ProcessQueue)
+end
+getgenv().PurchaseItem = PurchaseItem
 
 local function getEquippedGun()
 	local Tool
