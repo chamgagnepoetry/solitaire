@@ -10,8 +10,8 @@ local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 
 local Framework
-local IgnoredShop
-local IgnoredShopNames
+local IgnoredShop = {}
+local IgnoredShopNames = {}
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
 local Mouse = LocalPlayer:GetMouse()
@@ -41,6 +41,14 @@ end
 
 LocalPlayer.CharacterAdded:Connect(Setup)
 Setup(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
+
+local function BuyItem(Item)
+	LocalHumanoidRootPart.CFrame = Item.Head.CFrame
+	task.wait(0.15)
+	fireclickdetector(Item.ClickDetector)
+	task.wait(0.15)
+end
+getgenv().BuyItem = BuyItem
 
 local function getEquippedGun()
 	local Tool
