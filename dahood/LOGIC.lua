@@ -1,3 +1,4 @@
+print('eshay')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -13,7 +14,6 @@ local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
 
 local Framework
 local IgnoredShop = {}
-local IgnoredShopNames = {}
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
 local Mouse = LocalPlayer:GetMouse()
@@ -29,12 +29,6 @@ local Logic = {}
 for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShop,v) then
 		table.insert(IgnoredShop,v)
-	end
-end
-
-for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
-	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShopNames,v.Name) then
-		table.insert(IgnoredShopNames,v.Name)
 	end
 end
 
@@ -81,10 +75,14 @@ local function ProcessQueue()
 	IsProcessing = false
 end
 
-local function PurchaseItem(Item)
-	if not table.find(IgnoredShop, Item) then return end
-	table.insert(PurchaseQueue, Item)
-	task.spawn(ProcessQueue)
+local function PurchaseItem(Name)
+	for _, Item in ipairs(IgnoredShop) do
+		if Item.Name == Name then
+			table.insert(PurchaseQueue, Item)
+			task.spawn(ProcessQueue)
+			break
+		end
+	end
 end
 getgenv().PurchaseItem = PurchaseItem
 
@@ -613,8 +611,6 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
-
-	Options.DahoodShop:SetValues(IgnoredShopNames)
 end
 
 return Logic
