@@ -1,4 +1,3 @@
-print('yosa')
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
@@ -7,10 +6,8 @@ local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
 
 local IgnoredShopNames = {}
-for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
-	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShopNames,v.Name) then
-		table.insert(IgnoredShopNames,v.Name)
-	end
+for i,v in ipairs(IgnoredShop) do
+	table.insert(IgnoredShopNames,v.Name)
 end
 
 local UI = {}
@@ -507,7 +504,17 @@ function UI:Initialize()
 	}):AddButton({
 		Text = "buy held ammo";
 		Func = function()
-
+			local gun = getEquippedGun()
+			if not gun then return end
+	
+			local AmmoName = gun.Name:gsub("%]$", " Ammo]")
+	
+			for _, Item in ipairs(IgnoredShop) do
+				if Item:FindFirstChild("Amount") and Item.Name:find(AmmoName, 1, true) then
+					PurchaseItem(Item.Name)
+					break
+				end
+			end
 		end,
 	})
 
