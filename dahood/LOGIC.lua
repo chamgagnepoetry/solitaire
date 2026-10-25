@@ -1,4 +1,3 @@
-print('eeeetswa')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -13,7 +12,7 @@ local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
 
 local Framework
-local IgnoredShop = {}
+getgenv().IgnoredShop = {}
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
 local Mouse = LocalPlayer:GetMouse()
