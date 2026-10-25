@@ -1,3 +1,4 @@
+print("ahlan")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
@@ -493,7 +494,7 @@ function UI:Initialize()
 	ShopGroupBox:AddButton({
 		Text = "buy item";
 		Func = function()
-
+			PurchaseItem(Options.DahoodShop.Value)
 		end,
 	}):AddButton({
 		Text = "buy held ammo";
