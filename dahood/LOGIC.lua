@@ -8,40 +8,30 @@ local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
+
 local Framework
-
-local ExpectedArguments = {
-    Raycast = {
-        ArgCountRequired = 3,
-        Args = {
-            "Instance", "Vector3", "Vector3", "RaycastParams"
-        }
-    }
-}
-
+local IgnoredShop
+local IgnoredShopNames
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
 
-local SilentAimRadiusFill = Drawing.new("Circle")
-local SilentAimRadius = Drawing.new("Circle")
-SilentAimRadiusFill.Thickness = 0
-SilentAimRadiusFill.Filled = true
-
-local CameraRadiusFill = Drawing.new("Circle")
-local CameraRadius = Drawing.new("Circle")
-CameraRadiusFill.Thickness = 0
-CameraRadiusFill.Filled = true
-
-local MouseRadiusFill = Drawing.new("Circle")
-local MouseRadius = Drawing.new("Circle")
-MouseRadiusFill.Thickness = 0
-MouseRadiusFill.Filled = true
-
 local Library, Toggles, Options
 local Logic = {}
+
+for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
+	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShop,v) then
+		table.insert(IgnoredShop,v)
+	end
+end
+
+for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
+	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShopNames,v.Name) then
+		table.insert(IgnoredShopNames,v.Name)
+	end
+end
 
 local function Setup(newCharacter)
 	Mouse.TargetFilter = newCharacter
@@ -575,6 +565,10 @@ function Logic:Initialize(UIReference)
 			end
 		end
 	end)
+
+	-- MISC TAB
+
+	Options.DahoodShop:SetValues(IgnoredShopNames)
 end
 
 return Logic
