@@ -6,8 +6,10 @@ local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
 
 local IgnoredShopNames = {}
-for i,v in ipairs(IgnoredShop) do
-	table.insert(IgnoredShopNames,v.Name)
+for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
+	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShopNames,v.Name) then
+		table.insert(IgnoredShopNames,v.Name)
+	end
 end
 
 local UI = {}
