@@ -1,10 +1,17 @@
-print("ahlan")
+print('yosa')
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
+
+local IgnoredShopNames = {}
+for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
+	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShopNames,v.Name) then
+		table.insert(IgnoredShopNames,v.Name)
+	end
+end
 
 local UI = {}
 
@@ -471,23 +478,24 @@ function UI:Initialize()
 
 	-- \\MISC TAB//
 	local ShopGroupBox = Tabs.Misc:AddLeftGroupbox("shop")
-	ShopGroupBox:AddDropdown("DahoodShop",{
-		Values = {},
+	ShopGroupBox:AddDropdown("DahoodShop", {
+		Values = IgnoredShopNames,
 		Default = 0,
 		Multi = false,
 		Text = "item to buy";
 		Tooltip = "select item to buy";
 	})
-	ShopGroupBox:AddInput("DahoodShopSearch",{
+	ShopGroupBox:AddInput("DahoodShopSearch", {
 		Text = "shop search",
 		Placeholder = "search",
 		Tooltip = "press enter to search",
 		Numeric = false,
 		Finished = true,
-
+	
 		Callback = function(value)
-			if table.find(Options.DahoodShop.Values, value) then
-				Options.DahoodShop:SetValue({value = true})
+			local Match = FindBestMatch(value, Options.DahoodShop.Values)
+			if Match then
+				Options.DahoodShop:SetValue(Match)
 			end
 		end,
 	})
