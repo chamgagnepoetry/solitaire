@@ -46,19 +46,44 @@ local function checkTeam(target)
 end
 getgenv().checkTeam = checkTeam
 
-local function ValidateArguments(Args, RayMethod)
-    local Matches = 0
-    if #Args < RayMethod.ArgCountRequired then
-        return false
-    end
-    for Pos, Argument in next, Args do
-        if typeof(Argument) == RayMethod.Args[Pos] then
-            Matches = Matches + 1
-        end
-    end
-    return Matches >= RayMethod.ArgCountRequired
+local function FindBestMatch(Query, Names)
+	Query = Query:lower():gsub("^%s+", ""):gsub("%s+$", "")
+	if Query == "" then return nil end
+
+	local BestName, BestScore = nil, 0
+
+	for _, Name in ipairs(Names) do
+		local Lower = Name:lower()
+		local Score = 0
+
+		if Lower == Query then
+			Score = 1000 -- exact match
+		elseif Lower:sub(1, #Query) == Query then
+			Score = 800 - (#Lower - #Query)
+		elseif Lower:find(Query, 1, true) then
+			Score = 600 - (#Lower - #Query)
+		else
+			local QueryIndex = 1
+			for i = 1, #Lower do
+				if Lower:sub(i, i) == Query:sub(QueryIndex, QueryIndex) then
+					QueryIndex += 1
+					if QueryIndex > #Query then break end
+				end
+			end
+			if QueryIndex > #Query then
+				Score = 300 - (#Lower - #Query)
+			end
+		end
+
+		if Score > BestScore then
+			BestScore = Score
+			BestName = Name
+		end
+	end
+
+	return BestName
 end
-getgenv().ValidateArguments = ValidateArguments
+getgenv().FindBestMatch = FindBestMatch
 
 local function getEquippedTool()
 	local Tool
