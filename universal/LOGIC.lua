@@ -2,6 +2,11 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
+local LocalPlayer = Players.LocalPlayer
+local LocalCharacter = nil
+local LocalHumanoid = nil
+local LocalHumanoidRootPart = nil
+
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
@@ -10,6 +15,10 @@ local Library, Toggles, Options
 local Logic = {}
 
 local function Setup(newCharacter)
+	LocalCharacter = newCharacter
+	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
+	LocalHumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+
 	Mouse.TargetFilter = newCharacter
 end
 
