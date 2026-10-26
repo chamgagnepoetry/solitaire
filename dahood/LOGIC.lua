@@ -3,7 +3,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
+
+local LocalPlayer = Players.LocalPlayer
 local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local LocalCharacter = nil
+local LocalHumanoid = nil
+local LocalHumanoidRootPart = nil
 
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
@@ -33,6 +38,10 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 end
 
 local function Setup(newCharacter)
+	LocalCharacter = newCharacter
+	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
+	LocalHumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+
 	Mouse.TargetFilter = newCharacter
 
 	Framework = LocalPlayerGui:WaitForChild("Framework")
