@@ -1,8 +1,9 @@
+print('yo')
+
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-
 
 local LocalPlayer = Players.LocalPlayer
 local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -48,10 +49,12 @@ local function Setup(newCharacter)
 
 	if LocalHumanoidHealthChangedConnection then
 		LocalHumanoidHealthChangedConnection:Disconnect()
-		LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function()
-			print('damage')
-		end)
+		LocalHumanoidHealthChangedConnection = nil
 	end
+
+	LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function(health)
+		print("damage", health)
+	end)
 end
 
 LocalPlayer.CharacterAdded:Connect(Setup)
