@@ -1,9 +1,10 @@
+print('updated')
 local Players = game:GetService("Players")
 
-getgenv().LocalPlayer = Players.LocalPlayer
-getgenv().LocalCharacter = nil
-getgenv().LocalHumanoid = nil
-getgenv().LocalHumanoidRootPart = nil
+local LocalPlayer = Players.LocalPlayer
+local LocalCharacter = nil
+local LocalHumanoid = nil
+local LocalHumanoidRootPart = nil
 
 getgenv().NotificationTime = 3
 
