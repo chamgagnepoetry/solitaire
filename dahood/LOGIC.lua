@@ -1,4 +1,4 @@
-print('mashallah')
+print('ezezezezezezezezezezez')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -85,7 +85,7 @@ local function formatCustomNotification(templateString, shooterName, damage, par
         ["{WEAPON}"] = weaponName
     }
     
-    local formattedMessage = templateString:gsub("{%A+}", replacements)
+    local formattedMessage = templateString:gsub("{%a+}", replacements)
     
     return formattedMessage
 end
