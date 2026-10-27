@@ -1,5 +1,3 @@
-print('yo')
-
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -379,10 +377,10 @@ function Logic:Initialize(UIReference)
 
 			print(string.format(
 				"[HITMARKER] You were hit by %s using a %s on your %s!", 
-				damageTaken,
 				shooterName, 
 				weaponName, 
-				partName
+				partName,
+				damageTaken
 			))
 		end
 	end)
