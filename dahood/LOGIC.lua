@@ -1,4 +1,3 @@
-print('aids')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -87,7 +86,7 @@ getgenv().getEquippedGun = getEquippedGun
 local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
     local replacements = {
         ["{NAME}"] = shooterName,
-        ["{DMG}"] = tostring(math.round(damage)),
+        ["{DMG}"] = tostring(math.floor(damage)),
         ["{PART}"] = partName,
         ["{WEAPON}"] = weaponName
     }
