@@ -17,6 +17,7 @@ local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 
 local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
 local LocalHumanoidHealthChangedConnection = nil
+local damageTaken = 0
 
 local Framework
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
@@ -52,8 +53,13 @@ local function Setup(newCharacter)
 		LocalHumanoidHealthChangedConnection = nil
 	end
 
-	LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function(health)
-		print("damage", health)
+	local lastHealth = LocalHumanoid.Health
+	LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function(newHealth)
+		if newHealth < lastHealth then
+			local damage = lastHealth - newHealth
+			damageTaken = damage
+		end
+		lastHealth = newHealth
 	end)
 end
 
@@ -353,6 +359,32 @@ function Logic:Initialize(UIReference)
 			end
 			return newindex(self, key, value)
 		end))
+	end)
+
+	-- MAIN EVENT CONNECTIONS
+	MainEvent.OnClientEvent:Connect(function(...)
+		local args = {...}
+
+		local eventType = args[1]
+		local shooter = args[2]
+		local weaponHandle = args[3]
+		local hitPart = args[6]
+
+		if eventType ~= "ClientBullet" then return end
+
+		if hitPart and hitPart:IsDescendantOf(LocalCharacter) then
+			local shooterName = shooter and shooter.Name or "Unknown Shooter"
+			local weaponName = weaponHandle and weaponHandle.Parent.Name or "Unknown Weapon"
+			local partName = hitPart.Name
+
+			print(string.format(
+				"[HITMARKER] You were hit by %s using a %s on your %s!", 
+				damageTaken,
+				shooterName, 
+				weaponName, 
+				partName
+			))
+		end
 	end)
 
 	-- MAIN TAB
