@@ -1,9 +1,9 @@
-
+print('aids')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-print('sdfjlghjsdljkfghjlkdfsgh')
+
 local LocalPlayer = Players.LocalPlayer
 local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local LocalCharacter = nil
@@ -52,11 +52,18 @@ local function Setup(newCharacter)
 		LocalHumanoidHealthChangedConnection = nil
 	end
 
-	local lastHealth = LocalHumanoid.Health
+	local lastHealth = LocalHumanoid.Health > 0 and LocalHumanoid.Health or LocalHumanoid.MaxHealth
+    
 	LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function(newHealth)
 		if newHealth < lastHealth then
 			local damage = lastHealth - newHealth
 			damageTaken = damage
+
+			task.defer(function()
+				if damageTaken == damage then
+					damageTaken = 0
+				end
+			end)
 		end
 		lastHealth = newHealth
 	end)
