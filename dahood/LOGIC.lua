@@ -1,9 +1,9 @@
-print('ezezezezezezezezezezez')
+
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-
+print('sdfjlghjsdljkfghjlkdfsgh')
 local LocalPlayer = Players.LocalPlayer
 local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local LocalCharacter = nil
