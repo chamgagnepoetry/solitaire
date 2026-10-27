@@ -487,7 +487,7 @@ function UI:Initialize()
 	ShopGroupBox:AddInput("DahoodShopSearch", {
 		Text = "shop search",
 		Placeholder = "search",
-		Tooltip = "press enter to search",
+		Tooltip = "press enter to confirm",
 		Numeric = false,
 		Finished = true,
 	
@@ -520,8 +520,54 @@ function UI:Initialize()
 		end,
 	})
 
-	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
+	local NotificationTabBox = Tabs.Misc:AddRightTabbox("notification")
 
+	local NotifyHitTab = NotificationTabBox:AddTab("notify hit")
+	NotifyHitTab:AddToggle("NotifyHitToggle",{
+		Text = "enabled";
+	})
+	NotifyHitTab:AddSlider("NotifyHitDuration",{
+		Text = "duration";
+		Default = 2;
+		Min = 0.1;
+		Max = 2;
+		Rounding = 1;
+		Compact = true;
+	})
+	NotifyHitTab:AddInput("NotifyHitText", {
+		Text = "text",
+		Default = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Placeholder = "E.G. HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Tooltip = "press enter to confirm",
+		Numeric = false,
+		Finished = true,
+	})
+	NotifyHitTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
+
+	local NotifyDamageTab = NotificationTabBox:AddTab("notify damage")
+	NotifyDamageTab:AddToggle("NotifyDamageToggle",{
+		Text = "enabled";
+	})
+	NotifyDamageTab:AddSlider("NotifyDamageDuration",{
+		Text = "duration";
+		Default = 2;
+		Min = 0.1;
+		Max = 2;
+		Rounding = 1;
+		Compact = true;
+	})
+	NotifyDamageTab:AddInput("NotifyDamageText", {
+		Text = "text",
+		Default = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Placeholder = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Tooltip = "press enter to confirm",
+		Numeric = false,
+		Finished = true,
+
+	})
+	NotifyDamageTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
+
+	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
 	ChatGroupBox:AddToggle("ChatSpy",{
 		Text = "chat spy";
 		Callback = function(Value)
