@@ -119,10 +119,10 @@ local function TryPurchase(Item)
 		local ValueBefore = LocalCurrency.Value
 
 		LocalHumanoidRootPart.CFrame = Item.Head.CFrame
-		task.wait(0.15)
-		fireclickdetector(Item.ClickDetector)
-		task.wait(0.15)
-
+		--task.wait(0.15)
+		fireclickdetector(Item.ClickDetector,0)
+	--	task.wait(0.15)
+		task.wait()
 		if LocalCurrency.Value < ValueBefore then
 			return true
 		end
@@ -391,7 +391,7 @@ function Logic:Initialize(UIReference)
 		if eventType ~= "ClientBullet" then return end
 
 		if hitPart and hitPart:IsDescendantOf(LocalCharacter) then
-			local defaultText = "Hit by {NAME} for {DMG} in the {PART} with {WEAPON}"
+			local defaultText = Options.NotifyHitText.Value or "Hit by {NAME} for {DMG} in the {PART} with {WEAPON}"
 
 			local shooterName = shooter and shooter.Name or "Unknown Shooter"
 			local weaponName = weaponHandle and weaponHandle.Parent.Name or "Unknown Weapon"
