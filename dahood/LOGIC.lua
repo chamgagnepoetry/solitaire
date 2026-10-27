@@ -76,6 +76,19 @@ local function getEquippedGun()
 end
 getgenv().getEquippedGun = getEquippedGun
 
+local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
+    local replacements = {
+        ["{NAME}"] = shooterName,
+        ["{DMG}"] = tostring(math.round(damage)),
+        ["{PART}"] = partName,
+        ["{WEAPON}"] = weaponName
+    }
+    
+    local formattedMessage = templateString:gsub("{%A+}", replacements)
+    
+    return formattedMessage
+end
+
 local function TryPurchase(Item)
 	local Bracketed = Item.Name:match("%[.-%]")
 	local IsAmmoOrArmor = Item.Name:find("Ammo") or Item.Name:find("Armor")
@@ -371,17 +384,15 @@ function Logic:Initialize(UIReference)
 		if eventType ~= "ClientBullet" then return end
 
 		if hitPart and hitPart:IsDescendantOf(LocalCharacter) then
+			local defaultText = "Hit by {NAME} for {DMG} in the {PART} with {WEAPON}"
+
 			local shooterName = shooter and shooter.Name or "Unknown Shooter"
 			local weaponName = weaponHandle and weaponHandle.Parent.Name or "Unknown Weapon"
 			local partName = hitPart.Name
 
-			print(string.format(
-				"[HITMARKER] You were hit by %s using a %s on your %s!", 
-				shooterName, 
-				weaponName, 
-				partName,
-				damageTaken
-			))
+			local notificationText = formatCustomNotification(defaultText, shooterName, damageTaken, partName, weaponName)
+
+			Library:Notify(NotificationText,tonumber(Options.NotifyHitDuration.Value))
 		end
 	end)
 
