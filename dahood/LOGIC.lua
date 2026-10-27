@@ -1,3 +1,4 @@
+print('mashallah')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -392,7 +393,7 @@ function Logic:Initialize(UIReference)
 
 			local notificationText = formatCustomNotification(defaultText, shooterName, damageTaken, partName, weaponName)
 
-			Library:Notify(NotificationText,tonumber(Options.NotifyHitDuration.Value))
+			Library:Notify(notificationText,tonumber(Options.NotifyHitDuration.Value))
 		end
 	end)
 
