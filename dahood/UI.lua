@@ -34,7 +34,7 @@ function UI:Initialize()
 
     -- \\MAIN TAB//
 	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
-	local AimTabBox = Tabs.Main:AddRightTabbox("aim")
+	local AimTabBox = Tabs.Main:AddLeftTabbox("aim")
 	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
