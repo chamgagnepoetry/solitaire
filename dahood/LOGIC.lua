@@ -1,4 +1,3 @@
-print('shaku maku')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -120,9 +119,7 @@ local function TryPurchase(Item)
 		local ValueBefore = LocalCurrency.Value
 
 		LocalHumanoidRootPart.CFrame = Item.Head.CFrame
-		--task.wait(0.15)
 		fireclickdetector(Item.ClickDetector,0)
-	--	task.wait(0.15)
 		task.wait()
 		if LocalCurrency.Value < ValueBefore then
 			return true
@@ -382,25 +379,27 @@ function Logic:Initialize(UIReference)
 
 	-- MAIN EVENT CONNECTIONS
 	MainEvent.OnClientEvent:Connect(function(...)
-		local args = {...}
+		if Toggles.NotifyDamageToggle.Value then
+			local args = {...}
 
-		local eventType = args[1]
-		local shooter = args[2]
-		local weaponHandle = args[3]
-		local hitPart = args[6]
-
-		if eventType ~= "ClientBullet" then return end
-
-		if hitPart and hitPart:IsDescendantOf(LocalCharacter) then
-			local defaultText = Options.NotifyHitText.Value or "Hit by {NAME} for {DMG} in the {PART} with {WEAPON}"
-
-			local shooterName = shooter and shooter.Name or "Unknown Shooter"
-			local weaponName = weaponHandle and weaponHandle.Parent.Name or "Unknown Weapon"
-			local partName = hitPart.Name
-
-			local notificationText = formatCustomNotification(defaultText, shooterName, damageTaken, partName, weaponName)
-
-			Library:Notify(notificationText,tonumber(Options.NotifyHitDuration.Value))
+			local eventType = args[1]
+			local shooter = args[2]
+			local weaponHandle = args[3]
+			local hitPart = args[6]
+	
+			if eventType ~= "ClientBullet" then return end
+	
+			if hitPart and hitPart:IsDescendantOf(LocalCharacter) then
+				local defaultText = Options.NotifyDamageText.Value or "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+	
+				local shooterName = shooter and shooter.Name or "Unknown Shooter"
+				local weaponName = weaponHandle and weaponHandle.Parent.Name or "Unknown Weapon"
+				local partName = hitPart.Name
+	
+				local notificationText = formatCustomNotification(defaultText, shooterName, damageTaken, partName, weaponName)
+	
+				Library:Notify(notificationText,tonumber(Options.NotifyDamageDuration.Value))
+			end
 		end
 	end)
 
