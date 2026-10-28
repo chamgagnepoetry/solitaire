@@ -1,4 +1,3 @@
-print('yo')
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
@@ -35,8 +34,7 @@ function UI:Initialize()
 
     -- \\MAIN TAB//
 	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
-	local SilentAimGroupBox = Tabs.Main:AddLeftGroupbox("silent aim")
-    local CameraGroupBox = Tabs.Main:AddLeftGroupbox("camera")
+	local AimTabBox = Tabs.Main:AddRightTabbox("aim")
 	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
@@ -61,11 +59,11 @@ function UI:Initialize()
         Text = "auto armor"
     })
 
-	-- Silent Aim group box
-	SilentAimGroupBox:AddToggle("SilentAimToggle", {
+	local SilentAimTab = AimTabBox:AddTab("silent aim")
+	SilentAimTab:AddToggle("SilentAimToggle", {
         Text = "silent aim"
     })
-	local SilentAimDepBox = SilentAimGroupBox:AddDependencyBox()
+	local SilentAimDepBox = SilentAimTab:AddDependencyBox()
 	SilentAimDepBox:SetupDependencies({
 		{Toggles.SilentAimToggle, true}
 	})
@@ -124,8 +122,8 @@ function UI:Initialize()
 	})
 
 	-- Camera Group Box
-
-    CameraGroupBox:AddToggle("CameraLock", {
+	local AimbotAimTab = AimTabBox:AddTab("aimbot")
+    AimbotAimTab:AddToggle("CameraLock", {
         Text = "cam lock"
     }):AddKeyPicker("CameraLockKey",{
         Text = "cam lock";
@@ -133,7 +131,7 @@ function UI:Initialize()
         Mode = "Toggle";
         NoUI = false;
     })
-	local CameraLockDepBox = CameraGroupBox:AddDependencyBox()
+	local CameraLockDepBox = AimbotAimTab:AddDependencyBox()
 	CameraLockDepBox:SetupDependencies({
 		{Toggles.CameraLock, true}
 	})
