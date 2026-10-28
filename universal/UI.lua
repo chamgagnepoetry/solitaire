@@ -26,13 +26,13 @@ function UI:Initialize()
     }
 
     -- \\MAIN TAB//
-    local CameraGroupBox = Tabs.Main:AddLeftGroupbox("camera")
+	local AimTabBox = Tabs.Misc:AddRightTabbox("aim")
 	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
 	-- Camera Group Box
-
-	CameraGroupBox:AddToggle("CameraLock", {
+	local AimbotAimTab = AimTabBox:AddTab("aimbot")
+	AimbotAimTab:AddToggle("CameraLock", {
         Text = "cam lock"
     }):AddKeyPicker("CameraLockKey",{
         Text = "cam lock";
@@ -40,7 +40,7 @@ function UI:Initialize()
         Mode = "Toggle";
         NoUI = false;
     })
-	local CameraLockDepBox = CameraGroupBox:AddDependencyBox()
+	local CameraLockDepBox = AimbotAimTab:AddDependencyBox()
 	CameraLockDepBox:SetupDependencies({
 		{Toggles.CameraLock, true}
 	})
