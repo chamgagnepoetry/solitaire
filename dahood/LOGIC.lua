@@ -1,4 +1,4 @@
-print('dikkk')
+print('jlksdfjllskdf')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -381,7 +381,7 @@ function Logic:Initialize(UIReference)
 
 	local SilentAimTarget = nil
 	local oldGetAim; oldGetAim = clonefunction(hookfunction(rawget(GunHandler, "getAim"), newcclosure(function(origin)
-		if Toggles.SilentAimToggle.Value then
+		if Toggles.SilentAimToggle.Value and typeof(origin) == "Vector3" then
 			if LocalCharacter and LocalCharacter:FindFirstChild("HumanoidRootPart") then
 			
 				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
@@ -417,8 +417,8 @@ function Logic:Initialize(UIReference)
 					end
 				end
 			end
-			return oldGetAim(origin)
 		end
+		return oldGetAim(origin)
 	end)))
 
 	-- MAIN EVENT CONNECTIONS
