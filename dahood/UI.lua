@@ -1,3 +1,4 @@
+print('yup')
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
@@ -79,7 +80,7 @@ function UI:Initialize()
 	SilentAimDepBox:AddToggle("SilentAimKnockedCheck",{
 		Text = "knocked check"
 	})
-	SilentAimRadiusDepBox:AddSlider("SilentAimHitRate",{
+	SilentAimDepBox:AddSlider("SilentAimHitRate",{
 		Text = "hit rate";
 		Default = 100;
 		Min = 1;
