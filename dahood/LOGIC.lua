@@ -1,4 +1,4 @@
-print('yo')
+print('dikkk')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -414,6 +414,7 @@ function Logic:Initialize(UIReference)
 						
 						local targetDirection = (targetPart.Position - origin).Unit
 						return targetDirection
+					end
 				end
 			end
 			return oldGetAim(origin)
