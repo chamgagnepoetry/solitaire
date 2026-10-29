@@ -1,4 +1,4 @@
-print('hellllooo')
+print('dickkkkkheeaddd')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -19,6 +19,7 @@ local LocalHumanoidHealthChangedConnection = nil
 local damageTaken = 0
 
 local Framework
+local GunHandler = require(ReplicatedStorage.Modules.GunHandler)
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 getgenv().IgnoredShop = {}
 
