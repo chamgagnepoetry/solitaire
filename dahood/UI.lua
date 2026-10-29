@@ -1,4 +1,3 @@
-print('yup')
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
@@ -85,7 +84,7 @@ function UI:Initialize()
 		Default = 100;
 		Min = 1;
 		Max = 100;
-		Rounding = 2;
+		Rounding = 1;
 		Compact = true;
 		Suffix = "%";
 	})
