@@ -81,7 +81,7 @@ function UI:Initialize()
 	})
 	SilentAimDepBox:AddToggle("SilentAimRadius",{
 		Text = "radius"
-	}):AddColorPicker("SilentAimColor", {
+	}):AddColorPicker("SilentAimRadiusColor", {
 		Default = Color3.fromRGB(255,255,255)
 	})
 	local SilentAimRadiusDepBox = SilentAimDepBox:AddDependencyBox()
