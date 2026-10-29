@@ -1,4 +1,4 @@
-
+print('yo')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -397,7 +397,7 @@ function Logic:Initialize(UIReference)
 					local targetPart = SilentAimTarget.Character:FindFirstChild("Head") or SilentAimTarget.Character.PrimaryPart or SilentAimTarget.Character:FindFirstChild("HumanoidRootPart")
 					
 					if targetPart then
-						local currentChance = Options.SilentAimHitRate.Value
+						local currentChance = tonumber(Options.SilentAimHitRate.Value)
 						local roll = math.random(1, 100)
 						
 						if roll > currentChance then
