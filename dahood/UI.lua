@@ -13,7 +13,7 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 end
 
 local UI = {}
-print('done')
+
 function UI:Initialize()
     local Window = Library:CreateWindow({
         Title = "SOLITAIRE";
@@ -78,6 +78,15 @@ function UI:Initialize()
 	})
 	SilentAimDepBox:AddToggle("SilentAimKnockedCheck",{
 		Text = "knocked check"
+	})
+	SilentAimRadiusDepBox:AddSlider("SilentAimHitRate",{
+		Text = "hit rate";
+		Default = 100;
+		Min = 1;
+		Max = 100;
+		Rounding = 2;
+		Compact = true;
+		Suffix = "%";
 	})
 	SilentAimDepBox:AddToggle("SilentAimRadius",{
 		Text = "radius"
