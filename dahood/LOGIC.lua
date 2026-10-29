@@ -1,3 +1,4 @@
+print('hellllooo')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -377,6 +378,33 @@ function Logic:Initialize(UIReference)
 		end))
 	end)
 
+	local SilentAimTarget = nil
+	local oldGetAim; oldGetAim = clonefunction(hookfunction(rawget(GunHandler, "getAim"), newcclosure(function(origin)
+		if Toggles.SilentAimToggle.Value then
+			if LocalCharacter and LocalCharacter:FindFirstChild("HumanoidRootPart") then
+			
+				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
+				
+				local SilentAimTarget = FindPlayerToMouse(radiusSize, {
+					FriendCheck = Toggles.SilentAimFriendCheck.Value,
+					CrewCheck = Toggles.SilentAimCrewCheck.Value,
+					WallCheck = Toggles.SilentAimWallCheck.Value,
+					KnockedCheck = Toggles.SilentAimKnockedCheck.Value
+				})
+				
+				if SilentAimTarget and SilentAimTarget.Character then
+					local targetPart = SilentAimTarget.Character:FindFirstChild("Head") or SilentAimTarget.Character.PrimaryPart or SilentAimTarget.Character:FindFirstChild("HumanoidRootPart")
+					
+					if targetPart then
+						local targetDirection = (targetPart.Position - origin).Unit
+						return targetDirection
+					end
+				end
+			end
+			return oldGetAim(origin)
+		end
+	end)))
+
 	-- MAIN EVENT CONNECTIONS
 	MainEvent.OnClientEvent:Connect(function(...)
 		if Toggles.NotifyDamageToggle.Value then
@@ -421,9 +449,9 @@ function Logic:Initialize(UIReference)
 	end)
 
 	runLoop(Toggles.SilentAimToggle, function()
-		Library:Notify("DISABLED UNTIL FURTHER NOTICE (Security Reasons)", NotificationTime)
-	end,function()
 		
+	end,function()
+		SilentAimTarget = nil
 	end)
 
 	local CameraTarget = nil
