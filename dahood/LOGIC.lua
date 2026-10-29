@@ -26,7 +26,7 @@ getgenv().IgnoredShop = {}
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 Mouse.TargetFilter = LocalCharacter
-print('dickkkkkheeaddd')
+
 local IsProcessing = false
 local PurchaseQueue = {}
 
@@ -397,9 +397,23 @@ function Logic:Initialize(UIReference)
 					local targetPart = SilentAimTarget.Character:FindFirstChild("Head") or SilentAimTarget.Character.PrimaryPart or SilentAimTarget.Character:FindFirstChild("HumanoidRootPart")
 					
 					if targetPart then
+						local currentChance = Options.SilentAimHitRate.Value
+						local roll = math.random(1, 100)
+						
+						if roll > currentChance then
+							local maxMissOffset = 2.5 
+							local randomOffset = Vector3.new(
+								math.random(-100, 100) / 100 * maxMissOffset,
+								math.random(-100, 100) / 100 * maxMissOffset,
+								math.random(-100, 100) / 100 * maxMissOffset
+							)
+							
+							local targetDirection = ((targetPart.Position + randomOffset) - origin).Unit
+							return targetDirection
+						end
+						
 						local targetDirection = (targetPart.Position - origin).Unit
 						return targetDirection
-					end
 				end
 			end
 			return oldGetAim(origin)
