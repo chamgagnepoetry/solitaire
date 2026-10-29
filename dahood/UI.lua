@@ -4,7 +4,7 @@ local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
-print('yosa')
+
 local IgnoredShopNames = {}
 for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShopNames,v.Name) then
@@ -13,7 +13,7 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 end
 
 local UI = {}
-
+print('done')
 function UI:Initialize()
     local Window = Library:CreateWindow({
         Title = "SOLITAIRE";
