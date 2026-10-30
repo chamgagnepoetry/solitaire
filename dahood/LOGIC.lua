@@ -1,4 +1,4 @@
-print('jlksdfjllskdf')
+
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -218,6 +218,10 @@ local function FindPlayerToMouse(radius, configurations)
 					continue
 				end
 
+				if configurations.LimitDistance and (targetRootPart.Position - LocalHumanoidRootPart.Position).Magnitude > tonumber(Options.TargetingLimitDistanceToggle.Value) then
+					continue
+				end
+
 				local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
 
 				if onScreen then
@@ -384,17 +388,18 @@ function Logic:Initialize(UIReference)
 		if Toggles.SilentAimToggle.Value and typeof(origin) == "Vector3" then
 			if LocalCharacter and LocalCharacter:FindFirstChild("HumanoidRootPart") then
 			
-				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
+				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius
 				
 				local SilentAimTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.SilentAimFriendCheck.Value,
-					CrewCheck = Toggles.SilentAimCrewCheck.Value,
-					WallCheck = Toggles.SilentAimWallCheck.Value,
-					KnockedCheck = Toggles.SilentAimKnockedCheck.Value
+					FriendCheck = Toggles.TargetingFriendCheck.Value,
+					CrewCheck = Toggles.TargetingCrewCheck.Value,
+					WallCheck = Toggles.TargetingWallCheck.Value,
+					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
+					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
 				})
 				
 				if SilentAimTarget and SilentAimTarget.Character then
-					local targetPart = SilentAimTarget.Character:FindFirstChild("Head") or SilentAimTarget.Character.PrimaryPart or SilentAimTarget.Character:FindFirstChild("HumanoidRootPart")
+					local targetPart = SilentAimTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
 					
 					if targetPart then
 						local currentChance = tonumber(Options.SilentAimHitRate.Value)
@@ -472,83 +477,41 @@ function Logic:Initialize(UIReference)
 
 	local CameraTarget = nil
 	runLoop("!CameraLockKey", function()
-		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius or nil
+		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(radiusSize, {
-				FriendCheck = Toggles.CameraFriendCheck.Value,
-				CrewCheck = Toggles.CameraCrewCheck.Value,
-				WallCheck = Toggles.CameraWallCheck.Value,
-				KnockedCheck = Toggles.CameraKnockedCheck.Value
+				FriendCheck = Toggles.TargetingFriendCheck.Value,
+				CrewCheck = Toggles.TargetingCrewCheck.Value,
+				WallCheck = Toggles.TargetingWallCheck.Value,
+				KnockedCheck = Toggles.TargetingKnockedCheck.Value,
+				LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
 			})
 		end
 
 		if CameraTarget and CameraTarget.Character then
 			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.CameraKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+			if Toggles.TargetingKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
 				CameraTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.CameraFriendCheck.Value,
-					CrewCheck = Toggles.CameraCrewCheck.Value,
-					WallCheck = Toggles.CameraWallCheck.Value,
-					KnockedCheck = Toggles.CameraKnockedCheck.Value
+					FriendCheck = Toggles.TargetingFriendCheck.Value,
+					CrewCheck = Toggles.TargetingCrewCheck.Value,
+					WallCheck = Toggles.TargetingWallCheck.Value,
+					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
+					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
 				})
 			end
 
 			if CameraTarget and CameraTarget.Character then
-				local TargetHeadPart = CameraTarget.Character:FindFirstChild("Head")
-				if TargetHeadPart then
+				local TargetPart = CameraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
+				if TargetPart then
 					Camera.CFrame = CFrame.new(
 						Camera.CFrame.Position,
-						TargetHeadPart.Position
+						TargetPart.Position
 					)
 				end
 			end
 		end
 	end, function()
 		CameraTarget = nil
-	end)
-
-	local MouseTarget = nil
-	runLoop("!MouseLockKey", function()
-		local radiusSize = Toggles.MouseRadius.Value and MouseRadius.Radius or nil
-		if not MouseTarget then
-			MouseTarget = FindPlayerToMouse(radiusSize, {
-				FriendCheck = Toggles.MouseFriendCheck.Value,
-				CrewCheck = Toggles.MouseCrewCheck.Value,
-				WallCheck = Toggles.MouseWallCheck.Value,
-				KnockedCheck = Toggles.MouseKnockedCheck.Value
-			})
-		end
-
-		if MouseTarget and MouseTarget.Character then
-			local TargetHumanoid = MouseTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.MouseKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				MouseTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.MouseFriendCheck.Value,
-					CrewCheck = Toggles.MouseCrewCheck.Value,
-					WallCheck = Toggles.MouseWallCheck.Value,
-					KnockedCheck = Toggles.MouseKnockedCheck.Value
-				})
-			end
-
-			if MouseTarget and MouseTarget.Character then
-				local TargetHeadPart = MouseTarget.Character:FindFirstChild("Head")
-				if TargetHeadPart then
-					local screenPos, onScreen = Camera:WorldToViewportPoint(TargetHeadPart.Position)
-					if not onScreen then
-						MouseTarget = FindPlayerToMouse(radiusSize, {
-							FriendCheck = Toggles.MouseFriendCheck.Value,
-							CrewCheck = Toggles.MouseCrewCheck.Value,
-							WallCheck = Toggles.MouseWallCheck.Value,
-							KnockedCheck = Toggles.MouseKnockedCheck.Value
-						})
-					elseif onScreen and isrbxactive() then
-						mousemoveabs(screenPos.X,screenPos.Y)
-					end
-				end
-			end
-		end
-	end, function()
-		MouseTarget = nil
 	end)
 
 	runLoop("GunTriggerBotKey", function()
