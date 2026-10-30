@@ -636,35 +636,6 @@ function Logic:Initialize(UIReference)
 		end
 	end)
 
-	runLoop(Toggles.MouseRadius, function()
-		local MouseLocation = UserInputService:GetMouseLocation()
-		local Color = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusColor.Value
-		local FillColor = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusFillColor.Value
-		local FillVisib = Toggles.MouseRadiusFill.Value and true or false
-
-		MouseRadius.Position = MouseLocation
-		MouseRadius.Radius = Options.MouseRadiusSize.Value
-		MouseRadius.Color = Color
-		MouseRadius.Thickness = Options.MouseRadiusThickness.Value
-
-		MouseRadiusFill.Position = MouseLocation
-		MouseRadiusFill.Radius = Options.MouseRadiusSize.Value
-		MouseRadiusFill.Color = FillColor
-		MouseRadiusFill.Transparency = Options.MouseRadiusTransparency.Value
-
-		MouseRadiusFill.Visible = FillVisib
-		MouseRadius.Visible = true
-	end, function()
-		MouseRadiusFill.Visible = false
-		MouseRadius.Visible = false
-	end)
-	Toggles.MouseRadius:OnChanged(function()
-		if not Toggles.MouseRadius.Value then
-			MouseRadiusFill.Visible = false
-			MouseRadius.Visible = false
-		end
-	end)
-
 	-- CHARACTER TAB
     runLoop("VelocityKey", function()
 		if LocalHumanoid and LocalHumanoidRootPart then
