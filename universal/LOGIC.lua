@@ -130,21 +130,23 @@ function Logic:Initialize(UIReference)
 		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius or nil
 		if not CameraTarget then
 			CameraTarget = FindPlayerToMouse(radiusSize, {
-				FriendCheck = Toggles.CameraFriendCheck.Value,
-				TeamCheck = Toggles.CameraTeamCheck.Value,
-				WallCheck = Toggles.CameraWallCheck.Value,
-				DeadCheck = Toggles.CameraDeadCheck.Value
+				FriendCheck = Toggles.TargetingFriendCheck.Value,
+				TeamCheck = Toggles.TargetingTeamCheck.Value,
+				WallCheck = Toggles.TargetingWallCheck.Value,
+				DeadCheck = Toggles.TargetingDeadCheck.Value,
+				LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
 			})
 		end
 
 		if CameraTarget and CameraTarget.Character then
 			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.CameraDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+			if Toggles.TargetingDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
 				CameraTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.CameraFriendCheck.Value,
-					TeamCheck = Toggles.CameraTeamCheck.Value,
-					WallCheck = Toggles.CameraWallCheck.Value,
-					DeadCheck = Toggles.CameraDeadCheck.Value
+					FriendCheck = Toggles.TargetingFriendCheck.Value,
+					TeamCheck = Toggles.TargetingTeamCheck.Value,
+					WallCheck = Toggles.TargetingWallCheck.Value,
+					DeadCheck = Toggles.TargetingDeadCheck.Value,
+					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
 				})
 			end
 
