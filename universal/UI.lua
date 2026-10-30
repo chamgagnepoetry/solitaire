@@ -26,7 +26,7 @@ function UI:Initialize()
     }
 
     -- \\MAIN TAB//
-	local AimTabBox = Tabs.Misc:AddLeftTabbox("aim")
+	local AimTabBox = Tabs.Main:AddLeftTabbox("aim")
 	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
@@ -104,83 +104,6 @@ function UI:Initialize()
 		Text = "toggle type";
 		Callback = function(Value)
 			Options.CameraLockKey.Mode = tostring(Value)
-		end,
-	})
-
-	-- Mouse Group Box
-
-	MouseGroupBox:AddToggle("MouseLock", {
-        Text = "mouse lock"
-    }):AddKeyPicker("MouseLockKey",{
-        Text = "mouse lock";
-        Default = "F";
-        Mode = "Toggle";
-        NoUI = false;
-    })
-	local MouseDepBox = MouseGroupBox:AddDependencyBox()
-	MouseDepBox:SetupDependencies({
-		{Toggles.MouseLock, true}
-	})
-	MouseDepBox:AddToggle("MouseFriendCheck",{
-		Text = "friend check"
-	})
-	MouseDepBox:AddToggle("MouseTeamCheck",{
-		Text = "team check"
-	})
-	MouseDepBox:AddToggle("MouseWallCheck",{
-		Text = "wall check"
-	})
-	MouseDepBox:AddToggle("MouseDeadCheck",{
-		Text = "dead check"
-	})
-	MouseDepBox:AddToggle("MouseRadius",{
-		Text = "radius"
-	}):AddColorPicker("MouseRadiusColor", {
-		Default = Color3.fromRGB(255,255,255)
-	})
-	local MouseRadiusDepBox = MouseDepBox:AddDependencyBox()
-	MouseRadiusDepBox:SetupDependencies({
-		{Toggles.MouseRadius, true}
-	})
-	MouseRadiusDepBox:AddToggle("MouseRadiusFill",{
-		Text = "fill"
-	}):AddColorPicker("MouseRadiusFillColor", {
-		Default = Color3.fromRGB(255,255,255)
-	})
-	MouseRadiusDepBox:AddToggle("MouseRadiusMatchAccent",{
-		Text = "match accent"
-	})
-	MouseRadiusDepBox:AddSlider("MouseRadiusSize",{
-		Text = "size";
-		Default = 200;
-		Min = 50;
-		Max = 800;
-		Rounding = 2;
-		Compact = true;
-	})
-	MouseRadiusDepBox:AddSlider("MouseRadiusThickness",{
-		Text = "thickness";
-		Default = 2;
-		Min = 1;
-		Max = 10;
-		Rounding = 2;
-		Compact = true;
-	})
-	MouseRadiusDepBox:AddSlider("MouseRadiusTransparency",{
-		Text = "transparency";
-		Default = 0.5;
-		Min = 0;
-		Max = 1;
-		Rounding = 1;
-		Compact = true;
-	})
-	MouseDepBox:AddDropdown("MouseLockToggleType",{
-		Values = {"Toggle","Hold"};
-		Default = 1;
-		Multi = false;
-		Text = "toggle type";
-		Callback = function(Value)
-			Options.MouseLockKey.Mode = tostring(Value)
 		end,
 	})
 
