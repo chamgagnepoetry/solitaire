@@ -27,7 +27,7 @@ function UI:Initialize()
 
     -- \\MAIN TAB//
 	local AimTabBox = Tabs.Main:AddLeftTabbox("aim")
-	local MouseGroupBox = Tabs.Main:AddLeftGroupbox("mouse")
+	local TargetingGroupBox = Tabs.Main:AddLeftGroupbox("targeting")
     local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
 	-- Camera Group Box
@@ -43,18 +43,6 @@ function UI:Initialize()
 	local CameraLockDepBox = AimbotAimTab:AddDependencyBox()
 	CameraLockDepBox:SetupDependencies({
 		{Toggles.CameraLock, true}
-	})
-	CameraLockDepBox:AddToggle("CameraFriendCheck",{
-		Text = "friend check"
-	})
-	CameraLockDepBox:AddToggle("CameraTeamCheck",{
-		Text = "team check"
-	})
-	CameraLockDepBox:AddToggle("CameraWallCheck",{
-		Text = "wall check"
-	})
-	CameraLockDepBox:AddToggle("CameraDeadCheck",{
-		Text = "dead check"
 	})
 	CameraLockDepBox:AddToggle("CameraRadius",{
 		Text = "radius"
@@ -105,6 +93,43 @@ function UI:Initialize()
 		Callback = function(Value)
 			Options.CameraLockKey.Mode = tostring(Value)
 		end,
+	})
+
+	-- Targeting group box
+
+	TargetingGroupBox:AddToggle("TargetingFriendCheck",{
+		Text = "friend check"
+	})
+	TargetingGroupBox:AddToggle("TargetingTeamCheck",{
+		Text = "team check"
+	})
+	TargetingGroupBox:AddToggle("TargetingWallCheck",{
+		Text = "wall check"
+	})
+	TargetingGroupBox:AddToggle("TargetingDeadCheck",{
+		Text = "dead check"
+	})
+	TargetingGroupBox:AddToggle("TargetingLimitDistanceToggle",{
+		Text = "limit distance"
+	})
+	local TargetingLimitDistanceDepBox = TargetingGroupBox:AddDependencyBox()
+	TargetingLimitDistanceDepBox:SetupDependencies({
+		{Toggles.TargetingLimitDistanceToggle, true}
+	})
+	TargetingLimitDistanceDepBox:AddSlider("TargetingLimitDistance",{
+		Text = "distance";
+		Default = 200;
+		Min = 1;
+		Max = 200;
+		Rounding = 0;
+		Compact = true;
+		Suffix = "s";
+	})
+	TargetingGroupBox:AddDropdown("TargetingTargetPart",{
+		Values = {"Head","HumanoidRootPart","UpperTorso","LowerTorso","LeftUpperArm","LeftLowerArm","RightUpperArm","RightLowerArm","LeftLowerLeg","LeftUpperLeg","RightLowerLeg","RightUpperLeg"};
+		Default = 1;
+		Multi = false;
+		Text = "target part";
 	})
 
 	-- Gun Group Box
