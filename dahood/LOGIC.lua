@@ -388,24 +388,22 @@ function Logic:Initialize(UIReference)
 		if Toggles.SilentAimToggle.Value and typeof(origin) == "Vector3" then
 			if LocalCharacter and LocalCharacter:FindFirstChild("HumanoidRootPart") then
 			
-				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius or nil
+				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius
 				
-				SilentAimTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.SilentAimFriendCheck.Value,
-					CrewCheck = Toggles.SilentAimCrewCheck.Value,
-					WallCheck = Toggles.SilentAimWallCheck.Value,
-					KnockedCheck = Toggles.SilentAimKnockedCheck.Value
+				local SilentAimTarget = FindPlayerToMouse(radiusSize, {
+					FriendCheck = Toggles.TargetingFriendCheck.Value,
+					CrewCheck = Toggles.TargetingCrewCheck.Value,
+					WallCheck = Toggles.TargetingWallCheck.Value,
+					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
+					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
 				})
 				
 				if SilentAimTarget and SilentAimTarget.Character then
-					local targetPart = SilentAimTarget.Character:FindFirstChild("Head") or SilentAimTarget.Character.PrimaryPart or SilentAimTarget.Character:FindFirstChild("HumanoidRootPart")
+					local targetPart = SilentAimTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
 					
 					if targetPart then
-						local currentChance = tonumber(Options.SilentAimHitRate.Value) or 100
+						local currentChance = tonumber(Options.SilentAimHitRate.Value)
 						local roll = math.random(1, 100)
-						
-						-- Safe baseline direction pointing seamlessly from origin to target center
-						local direction = (targetPart.Position - origin).Unit
 						
 						if roll > currentChance then
 							local maxMissOffset = 2.5 
@@ -414,23 +412,19 @@ function Logic:Initialize(UIReference)
 								math.random(-100, 100) / 100 * maxMissOffset,
 								math.random(-100, 100) / 100 * maxMissOffset
 							)
-							direction = ((targetPart.Position + randomOffset) - origin).Unit
+							
+							local targetDirection = ((targetPart.Position + randomOffset) - origin).Unit
+							return targetDirection
 						end
 						
-						-- CLEAN RE-ALIGNMENT FIX:
-						-- Instead of returning a raw vector that ignores distance scaling, we double-check 
-						-- that the Unit vector components are perfectly finite numbers to ensure GunHandler.shoot 
-						-- doesn't experience internal arithmetic underflows/overflows at max range limits.
-						if direction.X == direction.X and direction.Y == direction.Y and direction.Z == direction.Z then
-							return direction
-						end
+						local targetDirection = (targetPart.Position - origin).Unit
+						return targetDirection
 					end
 				end
 			end
 		end
-	
 		return oldGetAim(origin)
-	end)))	
+	end)))
 
 	-- MAIN EVENT CONNECTIONS
 	MainEvent.OnClientEvent:Connect(function(...)
