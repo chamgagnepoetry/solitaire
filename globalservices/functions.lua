@@ -17,11 +17,6 @@ getgenv().CameraRadius = Drawing.new("Circle")
 getgenv().CameraRadiusFill.Thickness = 0
 getgenv().CameraRadiusFill.Filled = true
 
-getgenv().MouseRadiusFill = Drawing.new("Circle")
-getgenv().MouseRadius = Drawing.new("Circle")
-getgenv().MouseRadiusFill.Thickness = 0
-getgenv().MouseRadiusFill.Filled = true
-
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
 	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
@@ -174,6 +169,10 @@ local function FindPlayerToMouse(radius, configurations)
 				end
 
 				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
+					continue
+				end
+
+				if configurations.LimitDistance and (targetRootPart.Position - LocalHumanoidRootPart.Position).Magnitude > tonumber(Options.TargetingLimitDistanceToggle.Value) then
 					continue
 				end
 
