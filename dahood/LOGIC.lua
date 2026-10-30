@@ -1,4 +1,4 @@
-
+print('count my guap')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -413,12 +413,13 @@ function Logic:Initialize(UIReference)
 								math.random(-100, 100) / 100 * maxMissOffset
 							)
 							
-							local targetDirection = ((targetPart.Position + randomOffset) - origin).Unit
-							return targetDirection
+							local targetPosition = targetPart.Position + randomOffset
+							local targetDirection = (targetPosition - origin).Unit
+							return targetDirection, (targetPosition - origin).Magnitude
 						end
 						
 						local targetDirection = (targetPart.Position - origin).Unit
-						return targetDirection
+						return targetDirection, (targetPart.Position - origin).Magnitude
 					end
 				end
 			end
