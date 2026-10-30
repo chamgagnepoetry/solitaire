@@ -1,704 +1,576 @@
+local TextChatService = game:GetService("TextChatService")
+local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
 
-local UserInputService = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
 
-local LocalPlayer = Players.LocalPlayer
-local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local LocalCharacter = nil
-local LocalHumanoid = nil
-local LocalHumanoidRootPart = nil
-
-local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
-local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
-local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
-
-local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
-local LocalHumanoidHealthChangedConnection = nil
-local damageTaken = 0
-
-local Framework
-local GunHandler = require(ReplicatedStorage.Modules.GunHandler)
-local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
-getgenv().IgnoredShop = {}
-
-local Mouse = LocalPlayer:GetMouse()
-local Camera = workspace.CurrentCamera
-Mouse.TargetFilter = LocalCharacter
-
-local IsProcessing = false
-local PurchaseQueue = {}
-
-local Library, Toggles, Options
-local Logic = {}
-
+local IgnoredShopNames = {}
 for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
-	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShop,v) then
-		table.insert(IgnoredShop,v)
+	if v:IsA("Model") and v:GetAttribute("itemlol") and not table.find(IgnoredShopNames,v.Name) then
+		table.insert(IgnoredShopNames,v.Name)
 	end
 end
 
-local function Setup(newCharacter)
-	LocalCharacter = newCharacter
-	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
-	LocalHumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+local UI = {}
 
-	Mouse.TargetFilter = newCharacter
+function UI:Initialize()
+    local Window = Library:CreateWindow({
+        Title = "SOLITAIRE";
+		SubTitle = "dahood";
+        Centre = true;
+        AutoShow = true;
+        TabPadding = 12;
+        MenuFadeTime = 0;
+    })
 
-	Framework = LocalPlayerGui:WaitForChild("Framework")
-
-	if LocalHumanoidHealthChangedConnection then
-		LocalHumanoidHealthChangedConnection:Disconnect()
-		LocalHumanoidHealthChangedConnection = nil
-	end
-
-	local lastHealth = LocalHumanoid.Health > 0 and LocalHumanoid.Health or LocalHumanoid.MaxHealth
-    
-	LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function(newHealth)
-		if newHealth < lastHealth then
-			local damage = lastHealth - newHealth
-			damageTaken = damage
-
-			task.defer(function()
-				if damageTaken == damage then
-					damageTaken = 0
-				end
-			end)
-		end
-		lastHealth = newHealth
-	end)
-end
-
-LocalPlayer.CharacterAdded:Connect(Setup)
-Setup(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
-
-local function getEquippedGun()
-	local Tool
-	for _, object in pairs(LocalCharacter:GetChildren()) do
-		if object:FindFirstChild("Ammo") and object:FindFirstChild("MaxAmmo") then 
-			Tool = object
-			return Tool
-		end
-	end
-	return false
-end
-getgenv().getEquippedGun = getEquippedGun
-
-local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
-    local replacements = {
-        ["{NAME}"] = shooterName,
-        ["{DMG}"] = tostring(math.floor(damage)),
-        ["{PART}"] = partName,
-        ["{WEAPON}"] = weaponName
+    local Tabs = {
+        Main = Window:AddTab("main");
+        Character = Window:AddTab("character");
+		Visuals = Window:AddTab("visuals");
+		Misc = Window:AddTab("misc");
+        Settings = Window:AddTab("settings");
     }
-    
-    local formattedMessage = templateString:gsub("{%a+}", replacements)
-    
-    return formattedMessage
-end
 
-local function TryPurchase(Item)
-	local Bracketed = Item.Name:match("%[.-%]")
-	local IsAmmoOrArmor = Item.Name:find("Ammo") or Item.Name:find("Armor")
+    -- \\MAIN TAB//
+	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
+	local AimTabBox = Tabs.Main:AddLeftTabbox("aim")
+	local TargetingGroupBox = Tabs.Main:AddLeftGroupbox("targeting")
+    local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
 
-	if Item:FindFirstChild("Amount") then
-		if not Bracketed then return false end
+	-- Gameplay group box
+	
+	GameplayGroupBox:AddToggle("AutoStompToggle", {
+        Text = "auto stomp"
+    })
+	local AutoStompDepBox = GameplayGroupBox:AddDependencyBox()
+	AutoStompDepBox:SetupDependencies({
+		{Toggles.AutoStompToggle, true}
+	})
+	AutoStompDepBox:AddToggle("AutoStompAnimation", {
+        Text = "stomp animation"
+    })
+	AutoStompDepBox:AddDivider()
 
-		local GunName = (Bracketed:gsub(" Ammo", ""))
-		if not searchForTool(GunName) then return false end
-	end
+	GameplayGroupBox:AddToggle("AutoMaskToggle", {
+        Text = "auto mask"
+    })
+	GameplayGroupBox:AddToggle("AutoArmorToggle", {
+        Text = "auto armor"
+    })
 
-	if not IsAmmoOrArmor and Bracketed then
-		if searchForTool(Bracketed) then return false end
-	end
+	local SilentAimTab = AimTabBox:AddTab("silent aim")
+	SilentAimTab:AddToggle("SilentAimToggle", {
+        Text = "silent aim"
+    })
+	local SilentAimDepBox = SilentAimTab:AddDependencyBox()
+	SilentAimDepBox:SetupDependencies({
+		{Toggles.SilentAimToggle, true}
+	})
+	SilentAimDepBox:AddToggle("SilentAimClosestPart", {
+        Text = "closest part"
+    })
+	SilentAimDepBox:AddSlider("SilentAimHitRate",{
+		Text = "hit rate";
+		Default = 100;
+		Min = 1;
+		Max = 100;
+		Rounding = 0;
+		Compact = true;
+		Suffix = "%";
+	})
+	SilentAimDepBox:AddToggle("SilentAimRadius",{
+		Text = "radius"
+	}):AddColorPicker("SilentAimRadiusColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local SilentAimRadiusDepBox = SilentAimDepBox:AddDependencyBox()
+	SilentAimRadiusDepBox:SetupDependencies({
+		{Toggles.SilentAimRadius, true}
+	})
+	SilentAimRadiusDepBox:AddToggle("SilentAimRadiusFill",{
+		Text = "fill"
+	}):AddColorPicker("SilentAimRadiusFillColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	SilentAimRadiusDepBox:AddToggle("SilentAimRadiusMatchAccent",{
+		Text = "match accent"
+	})
+	SilentAimRadiusDepBox:AddSlider("SilentAimRadiusSize",{
+		Text = "size";
+		Default = 200;
+		Min = 50;
+		Max = 800;
+		Rounding = 2;
+		Compact = true;
+	})
+	SilentAimRadiusDepBox:AddSlider("SilentAimRadiusThickness",{
+		Text = "thickness";
+		Default = 2;
+		Min = 1;
+		Max = 10;
+		Rounding = 2;
+		Compact = true;
+	})
+	SilentAimRadiusDepBox:AddSlider("SilentAimRadiusTransparency",{
+		Text = "transparency";
+		Default = 0.5;
+		Min = 0;
+		Max = 1;
+		Rounding = 1;
+		Compact = true;
+	})
 
-	while true do
-		if not Item or not Item.Parent or not Item:FindFirstChild("Head") or not Item:FindFirstChild("ClickDetector") or LocalCurrency.Value < Item.Price.Value then
-			return false
-		end
+	-- Camera Group Box
+	local AimbotAimTab = AimTabBox:AddTab("aimbot")
+    AimbotAimTab:AddToggle("CameraLock", {
+        Text = "cam lock"
+    }):AddKeyPicker("CameraLockKey",{
+        Text = "cam lock";
+        Default = "E";
+        Mode = "Toggle";
+        NoUI = false;
+    })
+	local CameraLockDepBox = AimbotAimTab:AddDependencyBox()
+	CameraLockDepBox:SetupDependencies({
+		{Toggles.CameraLock, true}
+	})
+	CameraLockDepBox:AddToggle("CameraRadius",{
+		Text = "radius"
+	}):AddColorPicker("CameraRadiusColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local CameraRadiusDepBox = CameraLockDepBox:AddDependencyBox()
+	CameraRadiusDepBox:SetupDependencies({
+		{Toggles.CameraRadius, true}
+	})
+	CameraRadiusDepBox:AddToggle("CameraRadiusFill",{
+		Text = "fill"
+	}):AddColorPicker("CameraRadiusFillColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	CameraRadiusDepBox:AddToggle("CameraRadiusMatchAccent",{
+		Text = "match accent"
+	})
+	CameraRadiusDepBox:AddSlider("CameraRadiusSize",{
+		Text = "size";
+		Default = 200;
+		Min = 50;
+		Max = 800;
+		Rounding = 2;
+		Compact = true;
+	})
+	CameraRadiusDepBox:AddSlider("CameraRadiusThickness",{
+		Text = "thickness";
+		Default = 2;
+		Min = 1;
+		Max = 10;
+		Rounding = 2;
+		Compact = true;
+	})
+	CameraRadiusDepBox:AddSlider("CameraRadiusTransparency",{
+		Text = "transparency";
+		Default = 0.5;
+		Min = 0;
+		Max = 1;
+		Rounding = 1;
+		Compact = true;
+	})
+	CameraLockDepBox:AddDropdown("CameraLockToggleType",{
+		Values = {"Toggle","Hold"};
+		Default = 1;
+		Multi = false;
+		Text = "toggle type";
+		Callback = function(Value)
+			Options.CameraLockKey.Mode = tostring(Value)
+		end,
+	})
 
-		local ValueBefore = LocalCurrency.Value
+	-- Targeting group box
 
-		LocalHumanoidRootPart.CFrame = Item.Head.CFrame
-		fireclickdetector(Item.ClickDetector,0)
-		task.wait()
-		if LocalCurrency.Value < ValueBefore then
-			return true
-		end
-	end
-end
+	TargetingGroupBox:AddToggle("TargetingFriendCheck",{
+		Text = "friend check"
+	})
+	TargetingGroupBox:AddToggle("TargetingCrewCheck",{
+		Text = "crew check"
+	})
+	TargetingGroupBox:AddToggle("TargetingWallCheck",{
+		Text = "wall check"
+	})
+	TargetingGroupBox:AddToggle("TargetingKnockedCheck",{
+		Text = "knocked check"
+	})
+	TargetingGroupBox:AddToggle("TargetingLimitDistanceToggle",{
+		Text = "limit distance"
+	})
+	local TargetingLimitDistanceDepBox = TargetingGroupBox:AddDependencyBox()
+	TargetingLimitDistanceDepBox:SetupDependencies({
+		{Toggles.TargetingLimitDistanceToggle, true}
+	})
+	TargetingLimitDistanceDepBox:AddSlider("TargetingLimitDistance",{
+		Text = "distance";
+		Default = 200;
+		Min = 1;
+		Max = 200;
+		Rounding = 0;
+		Compact = true;
+		Suffix = "s";
+	})
+	TargetingGroupBox:AddDropdown("TargetingTargetPart",{
+		Values = {"Head","HumanoidRootPart","UpperTorso","LowerTorso","LeftUpperArm","LeftLowerArm","RightUpperArm","RightLowerArm","LeftLowerLeg","LeftUpperLeg","RightLowerLeg","RightUpperLeg"};
+		Default = 1;
+		Multi = false;
+		Text = "target part";
+	})
 
-local function ProcessQueue()
-	if IsProcessing then return end
-	IsProcessing = true
+	-- Gun Group Box
 
-	local OriginalCFrame = LocalHumanoidRootPart.CFrame
+	GunGroupBox:AddToggle("GunNoRecoil",{
+		Text = "no recoil"
+	})
+	GunGroupBox:AddToggle("GunAutoReload",{
+		Text = "auto reload"
+	})
+	GunGroupBox:AddToggle("GunTriggerBot",{
+		Text = "trigger bot"
+	}):AddKeyPicker("GunTriggerBotKey",{
+        Text = "trigger bot";
+        Default = "T";
+        Mode = "Toggle";
+        NoUI = false;
+    })
+	local TriggerBotDepBox = GunGroupBox:AddDependencyBox()
+	TriggerBotDepBox:SetupDependencies({
+		{Toggles.GunTriggerBot, true}
+	})
+	TriggerBotDepBox:AddToggle("GunTriggerBotFriendCheck",{
+		Text = "friend check"
+	})
+	TriggerBotDepBox:AddToggle("GunTriggerBotCrewCheck",{
+		Text = "crew check"
+	})
+	TriggerBotDepBox:AddToggle("GunTriggerBotKnockedCheck",{
+		Text = "knocked check"
+	})
 
-	while #PurchaseQueue > 0 do
-		local Item = table.remove(PurchaseQueue, 1)
-		TryPurchase(Item)
-	end
+    -- \\CHARACTER TAB//
+    local MovementGroupBox = Tabs.Character:AddLeftGroupbox("movement")
+	local CharacterExploitsGroupBox = Tabs.Character:AddRightGroupbox("character exploits")
 
-	LocalHumanoidRootPart.CFrame = OriginalCFrame
-	IsProcessing = false
-end
+	-- Movement Group Box
+    MovementGroupBox:AddToggle("VelocityToggle",{
+		Text = "velocity"
+	}):AddKeyPicker("VelocityKey",{
+		Text = "velocity";
+		Default = "X";
+		Mode = "Toggle";
+		NoUI = false;
+	})
+	MovementGroupBox:AddToggle("WalkSpeedToggle",{
+		Text = "walk speed",
+	})
+	MovementGroupBox:AddToggle("JumpPowerToggle",{
+		Text = "jump power",
+	})
+	MovementGroupBox:AddSlider("VelocitySpeed",{
+		Text = "velocity speed";
+		Default = 99;
+		Min = 1;
+		Max = 1000;
+		Rounding = 0;
+		Compact = true;
+		Suffix = "s";
+	})
+	MovementGroupBox:AddSlider("WalkSpeed",{
+		Text = "walk speed";
+		Default = 16;
+		Min = 1;
+		Max = 1000;
+		Rounding = 0;
+		UltraCompact = true;
+		Suffix = "s";
+	})
+	MovementGroupBox:AddSlider("JumpPower",{
+		Text = "jump power";
+		Default = 50;
+		Min = 1;
+		Max = 1000;
+		Rounding = 0;
+		UltraCompact = true;
+		Suffix = "s";
+	})
 
-local function PurchaseItem(Name)
-	for _, Item in ipairs(IgnoredShop) do
-		if Item.Name == Name then
-			table.insert(PurchaseQueue, Item)
-			task.spawn(ProcessQueue)
-			break
-		end
-	end
-end
-getgenv().PurchaseItem = PurchaseItem
+	CharacterExploitsGroupBox:AddToggle("VelocityBreakerToggle",{
+		Text = "velocity breaker"
+	}):AddKeyPicker("VelocityBreakerKey",{
+		Text = "velocity breaker";
+		Default = "V";
+		Mode = "Toggle";
+		NoUI = false;
+	})
+	CharacterExploitsGroupBox:AddToggle("AntiStompToggle",{
+		Text = "anti stomp"
+	})
 
-local function checkLocalPlayerKnocked()
-	local bodyEffects = LocalCharacter and LocalCharacter:FindFirstChild("BodyEffects")
-	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
+	-- \\VISUALS TAB//
+	local ESPGroupBox = Tabs.Visuals:AddLeftGroupbox("esp")
+	
+	-- Esp Group Box
+	ESPGroupBox:AddToggle("ESPBox",{
+	Text = "box";
+	}):AddColorPicker("ESPBoxColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local ESPBoxDepBox = ESPGroupBox:AddDependencyBox()
+	ESPBoxDepBox:SetupDependencies({
+		{Toggles.ESPBox, true}
+	})
+	ESPBoxDepBox:AddToggle("ESPBoxOutline",{
+		Text = "outline"
+	})
+	ESPBoxDepBox:AddToggle("ESPBoxFill",{
+		Text = "fill"
+	}):AddColorPicker("ESPBoxFillColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	ESPBoxDepBox:AddDivider()
 
-	return KO ~= nil and KO.Value == true
-end
-getgenv().checkLocalPlayerKnocked = checkLocalPlayerKnocked
+	ESPGroupBox:AddToggle("ESPName",{
+		Text = "name";
+	}):AddColorPicker("ESPNameColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local ESPNameDepBox = ESPGroupBox:AddDependencyBox()
+	ESPNameDepBox:SetupDependencies({
+		{Toggles.ESPName, true}
+	})
+	ESPNameDepBox:AddToggle("ESPNameOutline",{
+		Text = "outline"
+	})
+	ESPNameDepBox:AddDivider()
 
-local function checkCrew(target)
-	local function getCrew(player)
-		local data = player:FindFirstChild("DataFolder")
-		local info = data and data:FindFirstChild("Information")
-		local crew = info and info:FindFirstChild("Crew")
-		return crew and crew.Value or ""
-	end
+	ESPGroupBox:AddToggle("ESPWeapon",{
+		Text = "weapon"
+	}):AddColorPicker("ESPWeaponColor",{
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local ESPWeaponDepBox = ESPGroupBox:AddDependencyBox()
+	ESPWeaponDepBox:SetupDependencies({
+		{Toggles.ESPWeapon, true}
+	})
+	ESPWeaponDepBox:AddToggle("ESPWeaponOutline",{
+		Text = "outline"
+	})
+	ESPWeaponDepBox:AddDivider()
 
-	local ourCrew = getCrew(LocalPlayer)
-	local theirCrew = getCrew(target)
+	ESPGroupBox:AddToggle("ESPDistance",{
+		Text = "distance"
+	}):AddColorPicker("ESPDistanceColor", {
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local ESPDistanceDepBox = ESPGroupBox:AddDependencyBox()
+	ESPDistanceDepBox:SetupDependencies({
+		{Toggles.ESPDistance, true}
+	})
+	ESPDistanceDepBox:AddToggle("ESPDistanceOutline",{
+		Text = "outline"
+	})
+	ESPDistanceDepBox:AddDivider()
 
-	return ourCrew ~= "" and ourCrew == theirCrew
-end
-getgenv().checkCrew = checkCrew
+	local ESPHealthTG = ESPGroupBox:AddToggle("ESPHealth",{
+		Text = "health bar"
+	})
+	ESPHealthTG:AddColorPicker("ESPHealthUpperColor",{
+		Default = Color3.fromRGB(60, 255, 100),
+		Title = "upper"
+	})
+	ESPHealthTG:AddColorPicker("ESPHealthMidColor",{
+		Default = Color3.fromRGB(255, 220, 60),
+		Title = "middle"
+	})
+	ESPHealthTG:AddColorPicker("ESPHealthLowerColor",{
+		Default = Color3.fromRGB(255, 60, 60),
+		Title = "lower"
+	})
 
-local function checkKnocked(target)
-	local character = target and target.Character
-	local bodyEffects = character and character:FindFirstChild("BodyEffects")
-	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
+	local ESPArmorTG = ESPGroupBox:AddToggle("ESPArmor",{
+		Text = "armor bar"
+	})
+	ESPArmorTG:AddColorPicker("ESPArmorUpperColor",{
+		Default = Color3.fromRGB(27, 27, 209),
+		Title = "upper"
+	})
+	ESPArmorTG:AddColorPicker("ESPArmorMidColor",{
+		Default = Color3.fromRGB(27, 27, 209),
+		Title = "middle"
+	})
+	ESPArmorTG:AddColorPicker("ESPArmorLowerColor",{
+		Default = Color3.fromRGB(27, 27, 209),
+		Title = "lower"
+	})
 
-	return KO ~= nil and KO.Value == true
-end
-getgenv().checkKnocked = checkKnocked
+	ESPGroupBox:AddDivider()
 
-local function FindPlayerToMouse(radius, configurations)
-	if not LocalHumanoidRootPart then
-		return false
-	end
+	ESPGroupBox:AddToggle("ESPCrewCheck",{
+		Text = "crew check"
+	})
 
-	local ClosestPlayer = nil
-	local ShortestDistance = math.huge
-	local MousePos = Vector2.new(Mouse.X, Mouse.Y)
+	ESPGroupBox:AddDropdown("ESPNametype",{
+		Text = "name type";
+		Values = {"username","displayname"};
+		Default = 1;
+		Mutli = false;
+	})
 
-	for _, target in ipairs(Players:GetPlayers()) do
-		if target ~= LocalPlayer and target.Character then
-			local targetRootPart = target.Character:FindFirstChild("HumanoidRootPart")
-			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
-
-			if targetRootPart and targetHumanoid then
-				if configurations.FriendCheck and checkFriend(target) then
-					continue
-				end
-
-				if configurations.CrewCheck and checkCrew(target) then
-					continue
-				end
-
-				if configurations.WallCheck and checkWall(target) then
-					continue
-				end
-
-				if configurations.KnockedCheck and (targetHumanoid.Health <= 0 or checkKnocked(target)) then
-					continue
-				end
-
-				if configurations.LimitDistance and (targetRootPart.Position - LocalHumanoidRootPart.Position).Magnitude > tonumber(Options.TargetingLimitDistanceToggle.Value) then
-					continue
-				end
-
-				local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
-
-				if onScreen then
-					local screenVector = Vector2.new(screenPos.X, screenPos.Y)
-					local distance = (screenVector - MousePos).Magnitude
-
-					if radius and distance > radius then
-						continue
-					end
-
-					if distance < ShortestDistance then
-						ShortestDistance = distance
-						ClosestPlayer = target
-					end
+	-- \\MISC TAB//
+	local ShopGroupBox = Tabs.Misc:AddLeftGroupbox("shop")
+	ShopGroupBox:AddDropdown("DahoodShop", {
+		Values = IgnoredShopNames,
+		Default = 0,
+		Multi = false,
+		Text = "item to buy";
+		Tooltip = "select item to buy";
+	})
+	ShopGroupBox:AddInput("DahoodShopSearch", {
+		Text = "shop search",
+		Placeholder = "search",
+		Tooltip = "press enter to confirm",
+		Numeric = false,
+		Finished = true,
+	
+		Callback = function(value)
+			local Match = FindBestMatch(value, Options.DahoodShop.Values)
+			if Match then
+				Options.DahoodShop:SetValue(Match)
+			end
+		end,
+	})
+	ShopGroupBox:AddButton({
+		Text = "buy item";
+		Func = function()
+			PurchaseItem(Options.DahoodShop.Value)
+		end,
+	}):AddButton({
+		Text = "buy held ammo";
+		Func = function()
+			local gun = getEquippedGun()
+			if not gun then return end
+	
+			local AmmoName = gun.Name:gsub("%]$", " Ammo]")
+	
+			for _, Item in ipairs(IgnoredShop) do
+				if Item:FindFirstChild("Amount") and Item.Name:find(AmmoName, 1, true) then
+					PurchaseItem(Item.Name)
+					break
 				end
 			end
+		end,
+	})
+
+	local NotificationTabBox = Tabs.Misc:AddRightTabbox("notification")
+
+	local NotifyHitTab = NotificationTabBox:AddTab("notify hit")
+	NotifyHitTab:AddToggle("NotifyHitToggle",{
+		Text = "enabled";
+	})
+	NotifyHitTab:AddSlider("NotifyHitDuration",{
+		Text = "duration";
+		Default = 2;
+		Min = 0.1;
+		Max = 2;
+		Rounding = 1;
+		Compact = true;
+		Suffix = "s";
+	})
+	NotifyHitTab:AddInput("NotifyHitText", {
+		Text = "text",
+		Default = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Placeholder = "E.G. HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Tooltip = "press enter to confirm",
+		Numeric = false,
+		Finished = true,
+	})
+	NotifyHitTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
+
+	local NotifyDamageTab = NotificationTabBox:AddTab("notify damage")
+	NotifyDamageTab:AddToggle("NotifyDamageToggle",{
+		Text = "enabled";
+	})
+	NotifyDamageTab:AddSlider("NotifyDamageDuration",{
+		Text = "duration";
+		Default = 2;
+		Min = 0.1;
+		Max = 2;
+		Rounding = 1;
+		Compact = true;
+		Suffix = "s";
+	})
+	NotifyDamageTab:AddInput("NotifyDamageText", {
+		Text = "text",
+		Default = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Placeholder = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Tooltip = "press enter to confirm",
+		Numeric = false,
+		Finished = true,
+
+	})
+	NotifyDamageTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
+
+	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
+	ChatGroupBox:AddToggle("ChatSpy",{
+		Text = "chat spy";
+		Callback = function(Value)
+			TextChatService.ChatWindowConfiguration.Enabled = Value
+		end,
+	})
+	ChatGroupBox:AddToggle("ChatShitTalk",{
+		Text = "shit talk"
+	})
+
+	-- \\SETTINGS TAB//
+
+	local UIGroupBox = Tabs.Settings:AddLeftGroupbox("ui settings")
+	UIGroupBox:AddRainbowAccentToggle("RainbowAccent",{
+		Text = "rainbow accent";
+		Default = false;
+	})
+	UIGroupBox:AddMouseIconChanger("MouseIcon", {
+		AlwaysOn = true;
+	})
+
+	UIGroupBox:AddDivider()
+
+	UIGroupBox:AddToggle("KeybindFrame",{
+		Text = "keybind frame";
+		Default = true;
+
+		Callback = function(Value)
+			Library.KeybindFrame.Visible = Value
 		end
-	end
+	})
 
-	return ClosestPlayer
-end
-getgenv().FindPlayerToMouse = FindPlayerToMouse
+	UIGroupBox:AddLabel("MenuToggle"):AddKeyPicker("MenuKeybind",{
+		Default = "RightControl",
+		NoUI = true,
+		Text = "menu keybind"
+	})
 
-local function getHumanoid(part)
-	local inst = part
-	for i = 1, 6 do
-		inst = inst.Parent
-		if not inst then return nil end
-		local hum = inst:FindFirstChildOfClass("Humanoid")
-		if hum then return hum end
-	end
-	return nil
-end
-getgenv().getHumanoid = getHumanoid
+	Library.KeybindFrame.Visible = Toggles.KeybindFrame.Value
+	Library.ToggleKeybind = Options.MenuKeybind
 
-local function canStompBelow()
-	local lower = LocalCharacter:FindFirstChild("LowerTorso")
-	local upper = LocalCharacter:FindFirstChild("UpperTorso")
-	if not (lower and upper) then return false end
+	SaveManager:SetLibrary(Library)
+	ThemeManager:SetLibrary(Library)
+	SaveManager:IgnoreThemeSettings()
+	SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+	SaveManager:BuildConfigSection(Tabs.Settings)
+	SaveManager:LoadAutoloadConfig()
+	ThemeManager:ApplyTheme("Solitaire Universal")
 
-	local part = workspace:FindPartOnRayWithIgnoreList(
-		Ray.new(lower.Position, Vector3.new(0, -upper.Size.Y * 4.5, 0)),
-		{ LocalCharacter, unpack(require(ReplicatedStorage.MainModule).Ignored) }
-	)
-	if not part then return false end
-
-	local hum = getHumanoid(part)
-	if not hum then return false end
-
-	local char = hum.Parent
-	local be = char:FindFirstChild("BodyEffects")
-	if not be then return false end
-
-	return be["K.O"].Value == true
-end
-getgenv().canStompBelow = canStompBelow
-
-local function runLoop(controlObj, loopFn, stopFn)
-	if type(controlObj) == "string" then
-		local keybind
-
-		if controlObj:sub(1, 1) == "!" then
-			keybind = Options[controlObj:sub(2)]
-
-			task.spawn(function()
-				--pcall(function()
-					while true do
-						local state = keybind:GetState()
-
-						if state then
-							loopFn()
-						else
-							if stopFn then
-								stopFn()
-							end
-						end
-
-						RunService.Heartbeat:Wait()
-					end
-				--end)
-			end)
-		else
-			keybind = Options[controlObj]
-
-			task.spawn(function()
-				--pcall(function()
-					while true do
-						local state = keybind:GetState()
-
-						if state then
-							loopFn()
-						else
-							if stopFn then
-								stopFn()
-							end
-						end
-
-						task.wait()
-					end
-				--end)
-			end)
-		end
-
-		return
-	end
-
-	if controlObj.Value ~= nil then
-		task.spawn(function()
-			local wasActive = false
-
-			while true do
-				local ok, err = pcall(function()
-					if controlObj.Value then
-						wasActive = true
-						loopFn()
-					elseif wasActive then
-						wasActive = false
-						if stopFn then
-							stopFn()
-						end
-					end
-				end)
-
-				if not ok then
-					warn("runLoop error:", err)
-				end
-
-				task.wait()
-			end
-		end)
-	end
+	return {
+		Library = Library,
+		Toggles = Toggles,
+		Options = Options,
+	}
 end
 
-function Logic:Initialize(UIReference)
-    _G.Toggles = UIReference.Toggles
-	_G.Options = UIReference.Options
-	Toggles = UIReference.Toggles
-	Options = UIReference.Options
-	Library = UIReference.Library
-
-	-- HOOK FUNCTIONS
-
-	pcall(function()
-		LPH_NO_VIRTUALIZE = function(...) return (...) end
-		local newindex; newindex = hookmetamethod(game, "__newindex", LPH_NO_VIRTUALIZE(function(self, key, value)
-			local callingscript = getcallingscript()
-			if key == "CFrame" and Framework and callingscript == Framework and self:IsA("Camera") and Toggles.GunNoRecoil.Value then
-				return
-			elseif key == 'WalkSpeed' then 
-				if Toggles.WalkSpeedToggle.Value then
-					value = Options.WalkSpeed.Value
-				end
-			elseif key == "JumpPower" then 
-				if Toggles.JumpPowerToggle.Value then
-					value = Options.JumpPower.Value
-				end
-			end
-			return newindex(self, key, value)
-		end))
-	end)
-
-	local SilentAimTarget = nil
-	local oldGetAim; oldGetAim = clonefunction(hookfunction(rawget(GunHandler, "getAim"), newcclosure(function(origin)
-		if Toggles.SilentAimToggle.Value and typeof(origin) == "Vector3" then
-			if LocalCharacter and LocalCharacter:FindFirstChild("HumanoidRootPart") then
-			
-				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius
-				
-				local SilentAimTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.TargetingFriendCheck.Value,
-					CrewCheck = Toggles.TargetingCrewCheck.Value,
-					WallCheck = Toggles.TargetingWallCheck.Value,
-					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
-				})
-				
-				if SilentAimTarget and SilentAimTarget.Character then
-					local targetPart = SilentAimTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
-					
-					if targetPart then
-						local currentChance = tonumber(Options.SilentAimHitRate.Value)
-						local roll = math.random(1, 100)
-						
-						if roll > currentChance then
-							local maxMissOffset = 2.5 
-							local randomOffset = Vector3.new(
-								math.random(-100, 100) / 100 * maxMissOffset,
-								math.random(-100, 100) / 100 * maxMissOffset,
-								math.random(-100, 100) / 100 * maxMissOffset
-							)
-							
-							local targetDirection = ((targetPart.Position + randomOffset) - origin).Unit
-							return targetDirection
-						end
-						
-						local targetDirection = (targetPart.Position - origin).Unit
-						return targetDirection
-					end
-				end
-			end
-		end
-		return oldGetAim(origin)
-	end)))
-
-	-- MAIN EVENT CONNECTIONS
-	MainEvent.OnClientEvent:Connect(function(...)
-		if Toggles.NotifyDamageToggle.Value then
-			local args = {...}
-
-			local eventType = args[1]
-			local shooter = args[2]
-			local weaponHandle = args[3]
-			local hitPart = args[6]
-	
-			if eventType ~= "ClientBullet" then return end
-	
-			if hitPart and hitPart:IsDescendantOf(LocalCharacter) then
-				local defaultText = Options.NotifyDamageText.Value or "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
-	
-				local shooterName = shooter and shooter.Name or "Unknown Shooter"
-				local weaponName = weaponHandle and weaponHandle.Parent.Name or "Unknown Weapon"
-				local partName = hitPart.Name
-	
-				local notificationText = formatCustomNotification(defaultText, shooterName, damageTaken, partName, weaponName)
-	
-				Library:Notify(notificationText,tonumber(Options.NotifyDamageDuration.Value))
-			end
-		end
-	end)
-
-	-- MAIN TAB
-	local stompAnimationCooldown
-	runLoop(Toggles.AutoStompToggle, function()
-		MainEvent:FireServer("Stomp")
-		if Toggles.AutoStompAnimation.Value and not stompAnimationCooldown and LocalHumanoid then
-			if not canStompBelow() then return end
-
-			stompAnimationCooldown = true
-			task.delay(1.3, function()
-				stompAnimationCooldown = false
-			end)
-	
-			local stompAnimation = LocalHumanoid.Animator:LoadAnimation(ClientAnimations.Stomp)
-			stompAnimation:Play(0.100000001, 1, 1.5)
-		end
-	end)
-
-	runLoop(Toggles.SilentAimToggle, function()
-		
-	end,function()
-		SilentAimTarget = nil
-	end)
-
-	local CameraTarget = nil
-	runLoop("!CameraLockKey", function()
-		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius
-		if not CameraTarget then
-			CameraTarget = FindPlayerToMouse(radiusSize, {
-				FriendCheck = Toggles.TargetingFriendCheck.Value,
-				CrewCheck = Toggles.TargetingCrewCheck.Value,
-				WallCheck = Toggles.TargetingWallCheck.Value,
-				KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-				LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
-			})
-		end
-
-		if CameraTarget and CameraTarget.Character then
-			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.TargetingKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				CameraTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.TargetingFriendCheck.Value,
-					CrewCheck = Toggles.TargetingCrewCheck.Value,
-					WallCheck = Toggles.TargetingWallCheck.Value,
-					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
-				})
-			end
-
-			if CameraTarget and CameraTarget.Character then
-				local TargetPart = CameraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
-				if TargetPart then
-					Camera.CFrame = CFrame.new(
-						Camera.CFrame.Position,
-						TargetPart.Position
-					)
-				end
-			end
-		end
-	end, function()
-		CameraTarget = nil
-	end)
-
-	runLoop("GunTriggerBotKey", function()
-		local Gun = getEquippedGun()
-		if not Gun then
-			return
-		end
-	
-		local TargetPart = Mouse.Target
-		if not TargetPart then
-			Gun:Deactivate()
-			return
-		end
-	
-		local TargetModel = TargetPart.Parent
-		if not TargetModel then
-			Gun:Deactivate()
-			return
-		end
-	
-		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
-		local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
-	
-		if not TargetHumanoid and TargetModel.Parent then
-			TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
-			if TargetHumanoid then
-				TargetModel = TargetModel.Parent
-			end
-		end
-	
-		if not TargetHumanoid then
-			Gun:Deactivate()
-			return
-		elseif Toggles.GunTriggerBotKnockedCheck.Value and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
-			Gun:Deactivate()
-			return
-		end
-	
-		local FriendCheck = false
-		local CrewCheck = false
-	
-		if Toggles.GunTriggerBotCrewCheck.Value then
-			CrewCheck = checkCrew(TargetPlayer)
-		end
-	
-		if Toggles.GunTriggerBotFriendCheck.Value then
-			FriendCheck = checkFriend(TargetPlayer)
-		end
-	
-		if not FriendCheck and not CrewCheck then
-			Gun:Activate()
-		else
-			Gun:Deactivate()
-		end
-	end)
-
-	runLoop(Toggles.GunAutoReload, function()
-		local gun = getEquippedGun()
-		if not gun then
-			return
-		end
-		if not checkLocalPlayerKnocked() and gun.Ammo.Value < 1 then
-			MainEvent:FireServer("Reload",gun)
-		end
-	end)
-
-	runLoop(Toggles.SilentAimRadius, function()
-		local MouseLocation = UserInputService:GetMouseLocation()
-		local Color = Toggles.SilentAimRadiusMatchAccent.Value and Library.AccentColor or Options.SilentAimRadiusColor.Value
-		local FillColor = Toggles.SilentAimRadiusMatchAccent.Value and Library.AccentColor or Options.SilentAimRadiusFillColor.Value
-		local FillVisib = Toggles.SilentAimRadiusFill.Value and true or false
-
-		SilentAimRadius.Position = MouseLocation
-		SilentAimRadius.Radius = Options.SilentAimRadiusSize.Value
-		SilentAimRadius.Color = Color
-		SilentAimRadius.Thickness = Options.SilentAimRadiusThickness.Value
-
-		SilentAimRadiusFill.Position = MouseLocation
-		SilentAimRadiusFill.Radius = Options.SilentAimRadiusSize.Value
-		SilentAimRadiusFill.Color = FillColor
-		SilentAimRadiusFill.Transparency = Options.SilentAimRadiusTransparency.Value
-
-		SilentAimRadiusFill.Visible = FillVisib
-		SilentAimRadius.Visible = true
-	end, function()
-		SilentAimRadiusFill.Visible = false
-		SilentAimRadius.Visible = false
-	end)
-	Toggles.SilentAimRadius:OnChanged(function()
-		if not Toggles.SilentAimRadius.Value then
-			SilentAimRadiusFill.Visible = false
-			SilentAimRadius.Visible = false
-		end
-	end)
-
-	runLoop(Toggles.CameraRadius, function()
-		local MouseLocation = UserInputService:GetMouseLocation()
-		local Color = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusColor.Value
-		local FillColor = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusFillColor.Value
-		local FillVisib = Toggles.CameraRadiusFill.Value and true or false
-
-		CameraRadius.Position = MouseLocation
-		CameraRadius.Radius = Options.CameraRadiusSize.Value
-		CameraRadius.Color = Color
-		CameraRadius.Thickness = Options.CameraRadiusThickness.Value
-
-		CameraRadiusFill.Position = MouseLocation
-		CameraRadiusFill.Radius = Options.CameraRadiusSize.Value
-		CameraRadiusFill.Color = FillColor
-		CameraRadiusFill.Transparency = Options.CameraRadiusTransparency.Value
-
-		CameraRadiusFill.Visible = FillVisib
-		CameraRadius.Visible = true
-	end, function()
-		CameraRadiusFill.Visible = false
-		CameraRadius.Visible = false
-	end)
-	Toggles.CameraRadius:OnChanged(function()
-		if not Toggles.CameraRadius.Value then
-			CameraRadiusFill.Visible = false
-			CameraRadius.Visible = false
-		end
-	end)
-
-	runLoop(Toggles.MouseRadius, function()
-		local MouseLocation = UserInputService:GetMouseLocation()
-		local Color = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusColor.Value
-		local FillColor = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusFillColor.Value
-		local FillVisib = Toggles.MouseRadiusFill.Value and true or false
-
-		MouseRadius.Position = MouseLocation
-		MouseRadius.Radius = Options.MouseRadiusSize.Value
-		MouseRadius.Color = Color
-		MouseRadius.Thickness = Options.MouseRadiusThickness.Value
-
-		MouseRadiusFill.Position = MouseLocation
-		MouseRadiusFill.Radius = Options.MouseRadiusSize.Value
-		MouseRadiusFill.Color = FillColor
-		MouseRadiusFill.Transparency = Options.MouseRadiusTransparency.Value
-
-		MouseRadiusFill.Visible = FillVisib
-		MouseRadius.Visible = true
-	end, function()
-		MouseRadiusFill.Visible = false
-		MouseRadius.Visible = false
-	end)
-	Toggles.MouseRadius:OnChanged(function()
-		if not Toggles.MouseRadius.Value then
-			MouseRadiusFill.Visible = false
-			MouseRadius.Visible = false
-		end
-	end)
-
-	-- CHARACTER TAB
-    runLoop("VelocityKey", function()
-		if LocalHumanoid and LocalHumanoidRootPart then
-			local direction = LocalHumanoid.MoveDirection
-			local velocity = LocalHumanoidRootPart.AssemblyLinearVelocity
-			local vertical = velocity.Y
-			local horizontal = direction * Options.VelocitySpeed.Value
-			LocalHumanoidRootPart.AssemblyLinearVelocity = Vector3.new(horizontal.X,vertical, horizontal.Z)
-		end
-	end)
-
-	local RVelocity
-	local Velocity = Vector3.new(200,0,200)
-	runLoop("VelocityBreakerKey", function()
-		if LocalHumanoid and LocalHumanoidRootPart then
-			RVelocity = LocalHumanoidRootPart.Velocity
-			LocalHumanoidRootPart.Velocity = type(Velocity) == "vector" and Velocity or Velocity(RVelocity)
-			RunService.RenderStepped:Wait()
-			LocalHumanoidRootPart.Velocity = RVelocity
-		end
-	end)
-
-	runLoop(Toggles.AntiStompToggle, function()
-		if checkLocalPlayerKnocked() then
-			if LocalCharacter then
-				local LocalHead = LocalCharacter:FindFirstChild("Head")
-				if LocalHead then
-					LocalHead:Destroy()
-				end
-			end
-		end
-	end)
-
-	-- MISC TAB
-end
-
-return Logic
+return UI
