@@ -162,50 +162,6 @@ function Logic:Initialize(UIReference)
 		CameraTarget = nil
 	end)
 
-	local MouseTarget = nil
-	runLoop("!MouseLockKey", function()
-		local radiusSize = Toggles.MouseRadius.Value and MouseRadius.Radius or nil
-		if not MouseTarget then
-			MouseTarget = FindPlayerToMouse(radiusSize, {
-				FriendCheck = Toggles.MouseFriendCheck.Value,
-				TeamCheck = Toggles.MouseTeamCheck.Value,
-				WallCheck = Toggles.MouseWallCheck.Value,
-				DeadCheck = Toggles.MouseDeadCheck.Value
-			})
-		end
-
-		if MouseTarget and MouseTarget.Character then
-			local TargetHumanoid = MouseTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.MouseDeadCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				MouseTarget = FindPlayerToMouse(radiusSize, {
-					FriendCheck = Toggles.MouseFriendCheck.Value,
-					TeamCheck = Toggles.MouseTeamCheck.Value,
-					WallCheck = Toggles.MouseWallCheck.Value,
-					DeadCheck = Toggles.MouseDeadCheck.Value
-				})
-			end
-
-			if MouseTarget and MouseTarget.Character then
-				local TargetHeadPart = MouseTarget.Character:FindFirstChild("Head")
-				if TargetHeadPart then
-					local screenPos, onScreen = Camera:WorldToViewportPoint(TargetHeadPart.Position)
-					if not onScreen then
-						MouseTarget = FindPlayerToMouse(radiusSize, {
-							FriendCheck = Toggles.MouseFriendCheck.Value,
-							TeamCheck = Toggles.MouseTeamCheck.Value,
-							WallCheck = Toggles.MouseWallCheck.Value,
-							DeadCheck = Toggles.MouseDeadCheck.Value
-						})
-					elseif onScreen and isrbxactive() then
-						mousemoveabs(screenPos.X,screenPos.Y)
-					end
-				end
-			end
-		end
-	end, function()
-		MouseTarget = nil
-	end)
-
 	runLoop("GunTriggerBotKey", function()
 		local Tool = getEquippedTool()
 		if not Tool then
@@ -280,35 +236,6 @@ function Logic:Initialize(UIReference)
 		if Toggles.CameraRadius.Value == false then
 			CameraRadiusFill.Visible = false
 			CameraRadius.Visible = false
-		end
-	end)
-
-	runLoop(Toggles.MouseRadius, function()
-		local MouseLocation = UserInputService:GetMouseLocation()
-		local Color = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusColor.Value
-		local FillColor = Toggles.MouseRadiusMatchAccent.Value and Library.AccentColor or Options.MouseRadiusFillColor.Value
-		local FillVisib = Toggles.MouseRadiusFill.Value and true or false
-
-		MouseRadius.Position = MouseLocation
-		MouseRadius.Radius = Options.MouseRadiusSize.Value
-		MouseRadius.Color = Color
-		MouseRadius.Thickness = Options.MouseRadiusThickness.Value
-
-		MouseRadiusFill.Position = MouseLocation
-		MouseRadiusFill.Radius = Options.MouseRadiusSize.Value
-		MouseRadiusFill.Color = FillColor
-		MouseRadiusFill.Transparency = Options.MouseRadiusTransparency.Value
-
-		MouseRadiusFill.Visible = FillVisib
-		MouseRadius.Visible = true
-	end, function()
-		MouseRadiusFill.Visible = false
-		MouseRadius.Visible = false
-	end)
-	Toggles.MouseRadius:OnChanged(function()
-		if Toggles.MouseRadius.Value == false then
-			MouseRadiusFill.Visible = false
-			MouseRadius.Visible = false
 		end
 	end)
 
