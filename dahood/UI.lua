@@ -1,6 +1,6 @@
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
-print("yellow")
+print('og')
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
@@ -347,6 +347,12 @@ function UI:Initialize()
 	ESPNameDepBox:AddToggle("ESPNameOutline",{
 		Text = "outline"
 	})
+	ESPNameDepBox:AddDropdown("ESPNametype",{
+		Text = "name type";
+		Values = {"username","displayname"};
+		Default = 1;
+		Mutli = false;
+	})
 	ESPNameDepBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPWeapon",{
@@ -433,13 +439,6 @@ function UI:Initialize()
 
 	ESPGroupBox:AddToggle("ESPCrewCheck",{
 		Text = "crew check"
-	})
-
-	ESPGroupBox:AddDropdown("ESPNametype",{
-		Text = "name type";
-		Values = {"username","displayname"};
-		Default = 1;
-		Mutli = false;
 	})
 
 	-- \\MISC TAB//
