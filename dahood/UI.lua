@@ -1,6 +1,6 @@
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
-
+print("yellow")
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
@@ -362,6 +362,26 @@ function UI:Initialize()
 		Text = "outline"
 	})
 	ESPWeaponDepBox:AddDivider()
+
+	ESPGroupBox:AddToggle("ESPInformation",{
+		Text = "information"
+	}):AddColorPicker("ESPInformationColor",{
+		Default = Color3.fromRGB(255,255,255)
+	})
+	local ESPInformationDepBox = ESPGroupBox:AddDependencyBox()
+	ESPInformationDepBox:SetupDependencies({
+		{Toggles.ESPInformation, true}
+	})
+	ESPInformationDepBox:AddToggle("ESPInformationOutline",{
+		Text = "outline"
+	})
+	ESPInformationDepBox:AddDropdown("ESPInformationtype",{
+		Text = "info type";
+		Values = {"aim accuracy now","aim accuracy all time"};
+		Default = 1;
+		Mutli = false;
+	})
+	ESPInformationDepBox:AddDivider()
 
 	ESPGroupBox:AddToggle("ESPDistance",{
 		Text = "distance"
