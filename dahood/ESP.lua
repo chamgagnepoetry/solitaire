@@ -49,6 +49,14 @@ local Style = {
 		Transparency = 1
 	},
 
+	Information = {
+		Size = 13,
+		Center = true,
+		Font = 2,
+		OutlineColor = Color3.fromRGB(0, 0, 0),
+		Transparency = 1
+	},
+
 	Health = {
 		BackgroundColor = Color3.fromRGB(0, 0, 0),
 		BackgroundTransparency = 0.15,
@@ -140,6 +148,40 @@ local function GetEquippedToolName(Character)
 	return Tool and Tool.Name or nil
 end
 
+local function GetAccuracyText(Landed, Total)
+	if typeof(Landed) ~= "number" or typeof(Total) ~= "number" then
+		return nil
+	end
+
+	if Total <= 0 then
+		return "0%"
+	end
+
+	local Accuracy = math.clamp(Landed / Total, 0, 1) * 100
+	return string.format("%.1f%%", Accuracy)
+end
+
+local function GetInformationText(Player)
+	local InformationType = Options.ESPInformationtype.Value
+
+	if InformationType == "aim accuracy now" then
+		local ShotTotal = Player:GetAttribute("ShotTotal")
+		local ShotLand = Player:GetAttribute("ShotLand")
+		if ShotTotal and ShotLand then
+			return "accuracy: " .. GetAccuracyText(ShotLand, ShotTotal)
+		end
+
+	elseif InformationType == "aim accuracy all time" then
+		local AimShotsAllTime = Player:GetAttribute("AimShotsAllTime")
+		local AimLandAllTime = Player:GetAttribute("AimLandAllTime")
+		if AimShotsAllTime and AimLandAllTime then
+			return "accuracy: " .. GetAccuracyText(AimLandAllTime, AimShotsAllTime)
+		end
+	end
+
+	return "no data"
+end
+
 local function HideESP(EspData)
 	for _, Object in pairs(EspData) do
 		if Object then
@@ -161,6 +203,7 @@ local function CreateESP(Player)
 		Name = Drawing.new("Text"),
 		Distance = Drawing.new("Text"),
 		Weapon = Drawing.new("Text"),
+		Information = Drawing.new("Text"),
 
 		HealthBackground = Drawing.new("Square"),
 		Health = Drawing.new("Square"),
@@ -180,6 +223,7 @@ local function CreateESP(Player)
 	ApplyStyle(EspData.Name, Style.Name)
 	ApplyStyle(EspData.Distance, Style.Distance)
 	ApplyStyle(EspData.Weapon, Style.Weapon)
+	ApplyStyle(EspData.Information, Style.Information)
 
 	EspData.HealthBackground.Filled = true
 	EspData.HealthBackground.Transparency = Style.Health.BackgroundTransparency
@@ -241,7 +285,6 @@ local function UpdateESP(Player, EspData)
 	local RootPart = Character:FindFirstChild("HumanoidRootPart")
 	local Head = Character:FindFirstChild("Head")
 
-	-- optional: may not be loaded yet after a respawn, so it must not stop the rest of the ESP
 	local BodyEffects = Character:FindFirstChild("BodyEffects")
 
 	if not Humanoid or not RootPart or not Head then
@@ -273,7 +316,6 @@ local function UpdateESP(Player, EspData)
 	local BoxSize = Vector2.new(CharacterWidth, CharacterHeight)
 	local BoxPosition = Vector2.new(CenterX - CharacterWidth / 2, TopY)
 
-	-- BOX
 	if Toggles.ESPBox.Value then
 		EspData.BoxFill.Size = BoxSize
 		EspData.BoxFill.Position = BoxPosition
@@ -300,11 +342,10 @@ local function UpdateESP(Player, EspData)
 		EspData.BoxOutline.Visible = false
 	end
 
-	-- NAME
 	if Toggles.ESPName.Value then
 		local NameType = Options.ESPNametype.Value
 		EspData.Name.Text = (NameType == "displayname") and Player.DisplayName or Player.Name
-		EspData.Name.Position = Vector2.new(CenterX, TopY - 6)
+		EspData.Name.Position = Vector2.new(CenterX, TopY - 4)
 		EspData.Name.Color = Options.ESPNameColor.Value
 		EspData.Name.Outline = Toggles.ESPNameOutline.Value
 		EspData.Name.Visible = true
@@ -312,7 +353,6 @@ local function UpdateESP(Player, EspData)
 		EspData.Name.Visible = false
 	end
 
-	-- DISTANCE
 	local LocalCharacter = LocalPlayer.Character
 	local LocalRoot = LocalCharacter and LocalCharacter:FindFirstChild("HumanoidRootPart")
 
@@ -322,13 +362,9 @@ local function UpdateESP(Player, EspData)
 		EspData.Distance.Text = string.format("%d studs", math.floor(Distance + 0.5))
 		EspData.Distance.Color = Options.ESPDistanceColor.Value
 		EspData.Distance.Outline = Toggles.ESPDistanceOutline.Value
-
 		DistanceShown = true
-	else
-		EspData.Distance.Visible = false
 	end
 
-	-- WEAPON
 	local WeaponShown = false
 	if Toggles.ESPWeapon.Value then
 		local WeaponName = GetEquippedToolName(Character)
@@ -336,36 +372,43 @@ local function UpdateESP(Player, EspData)
 			EspData.Weapon.Text = "[" .. WeaponName .. "]"
 			EspData.Weapon.Color = Options.ESPWeaponColor.Value
 			EspData.Weapon.Outline = Toggles.ESPWeaponOutline.Value
-
 			WeaponShown = true
-		else
-			EspData.Weapon.Visible = false
 		end
-	else
-		EspData.Weapon.Visible = false
 	end
+
+	local InformationShown = false
+	if Toggles.ESPInformation.Value then
+		local InformationText = GetInformationText(Player)
+		if InformationText and InformationText ~= "" then
+			EspData.Information.Text = InformationText
+			EspData.Information.Color = Options.ESPInformationColor.Value
+			EspData.Information.Outline = Toggles.ESPInformationOutline.Value
+			InformationShown = true
+		end
+	end
+
+	local Lines = {
+		{ Object = EspData.Weapon, Shown = WeaponShown },
+		{ Object = EspData.Distance, Shown = DistanceShown },
+		{ Object = EspData.Information, Shown = InformationShown },
+	}
 
 	local TextGap = 3
 	local TextSpacing = 2
-	if WeaponShown and DistanceShown then
-		EspData.Weapon.Position = Vector2.new(CenterX, BottomY + TextGap)
-		EspData.Weapon.Visible = true
+	local CursorY = BottomY + TextGap
 
-		EspData.Distance.Position = Vector2.new(CenterX, BottomY + TextGap + EspData.Weapon.Size + TextSpacing)
-		EspData.Distance.Visible = true
-	elseif WeaponShown then
-		EspData.Weapon.Position = Vector2.new(CenterX, BottomY + TextGap)
-		EspData.Weapon.Visible = true
-	elseif DistanceShown then
-		EspData.Distance.Position = Vector2.new(CenterX, BottomY + TextGap)
-		EspData.Distance.Visible = true
+	for _, Line in ipairs(Lines) do
+		if Line.Shown then
+			Line.Object.Position = Vector2.new(CenterX, CursorY)
+			Line.Object.Visible = true
+			CursorY = CursorY + Line.Object.Size + TextSpacing
+		else
+			Line.Object.Visible = false
+		end
 	end
 
-	-- BARS: stack outward from the box. Health first, then armor to its left.
-	-- If health is off, armor takes health's spot.
 	local NextBarRight = CenterX - CharacterWidth / 2 - BarGap
 
-	-- HEALTH
 	if Toggles.ESPHealth.Value then
 		local Health = Humanoid.Health
 		local MaxHealth = Humanoid.MaxHealth
