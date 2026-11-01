@@ -1,3 +1,4 @@
+print("i dont like niggerrrrs")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -53,21 +54,26 @@ local function formatCustomNotification(templateString, shooterName, damage, par
     return formattedMessage
 end
 
+local DEFAULT_DAMAGE_TEXT = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+local DEFAULT_HIT_TEXT = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
+
+-- Damage WE take (hit comes from the MainEvent "ClientBullet" remote)
 local function notifyDamage(hit, damage)
 	local text = Options.NotifyDamageText.Value
 	if text == nil or text == "" then
-		text = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = DEFAULT_DAMAGE_TEXT
 	end
 	local notificationText = formatCustomNotification(text, hit.shooterName, damage, hit.partName, hit.weaponName)
 	Library:Notify(notificationText, tonumber(Options.NotifyDamageDuration.Value))
 end
 
+-- Damage WE deal (hit comes from the FireServer "ShootGun" hook)
 local function notifyHit(hit, damage)
 	if not Toggles.NotifyHitToggle.Value then return end
 
 	local text = Options.NotifyHitText.Value
 	if text == nil or text == "" then
-		text = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = DEFAULT_HIT_TEXT
 	end
 	local notificationText = formatCustomNotification(text, hit.playerName, damage, hit.bodyPartName, hit.gunName)
 	Library:Notify(notificationText, tonumber(Options.NotifyHitDuration.Value))
@@ -343,10 +349,11 @@ end
 getgenv().canStompBelow = canStompBelow
 
 -- HIT TRACKING (damage WE deal to other players)
-local HIT_WINDOW = 1.5
-local humanoidHealth = setmetatable({}, { __mode = "k" })
-local lastHit = setmetatable({}, { __mode = "k" })
+local HIT_WINDOW = 1.5 -- max seconds between our shot and the health drop arriving
+local humanoidHealth = setmetatable({}, { __mode = "k" }) -- humanoid -> last known health
+local lastHit = setmetatable({}, { __mode = "k" })        -- humanoid -> latest hit info
 
+-- Climbs up the parents of an instance until it finds a player's character model
 local function getTargetCharacter(part)
 	local current = part
 	while current and current ~= workspace and current ~= game do
@@ -356,6 +363,31 @@ local function getTargetCharacter(part)
 		current = current.Parent
 	end
 	return nil
+end
+
+-- Called from inside the FireServer hook. Only records the shot (no yielding, no UI).
+local function recordShot(handle, hitPart)
+	if typeof(hitPart) ~= "Instance" then return end
+
+	local targetCharacter = getTargetCharacter(hitPart)
+	local targetPlayer = targetCharacter and Players:GetPlayerFromCharacter(targetCharacter)
+	local humanoid = targetCharacter and targetCharacter:FindFirstChildOfClass("Humanoid")
+
+	if not (targetPlayer and targetPlayer ~= LocalPlayer and humanoid and humanoid.Health > 0) then
+		return
+	end
+
+	local gunName = "Unknown"
+	if typeof(handle) == "Instance" and handle.Parent then
+		gunName = handle.Parent.Name
+	end
+
+	lastHit[humanoid] = {
+		time = os.clock(),
+		playerName = targetPlayer.Name,
+		gunName = gunName,
+		bodyPartName = hitPart.Name,
+	}
 end
 
 local function watchHumanoid(humanoid)
@@ -384,6 +416,8 @@ local function watchHumanoid(humanoid)
 	end)
 end
 
+-- These run in OUR thread (not the game's hook thread), so the connections
+-- keep our capabilities and Library:Notify works.
 local function watchCharacter(character)
 	local humanoid = character:WaitForChild("Humanoid", 10)
 	if humanoid then
@@ -555,33 +589,19 @@ function Logic:Initialize(UIReference)
 		return oldGetAim(origin)
 	end)))
 
-	-- Keep this hook minimal: it only records the hit.
-	-- The HealthChanged listeners are created from our own thread (see watchPlayer).
-	local oldShoot
-	oldShoot = clonefunction(hookfunction(rawget(GunHandler, "shoot"), newcclosure(function(args)
-		local v11, v12, v13 = oldShoot(args)
+	local oldNamecall
+	oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
+		local method = getnamecallmethod()
 
-		local IsMeShooting = typeof(args) == "table" and args.Shooter == LocalCharacter
-		local HitPart = v12
-		local GunName = args.Handle and args.Handle.Parent and args.Handle.Parent.Name or "Unknown"
-
-		if IsMeShooting and HitPart then
-			local targetCharacter = getTargetCharacter(HitPart)
-			local targetPlayer = targetCharacter and Players:GetPlayerFromCharacter(targetCharacter)
-			local humanoid = targetCharacter and targetCharacter:FindFirstChildOfClass("Humanoid")
-
-			if targetPlayer and humanoid and humanoid.Health > 0 then
-				lastHit[humanoid] = {
-					time = os.clock(),
-					playerName = targetPlayer.Name,
-					gunName = GunName,
-					bodyPartName = HitPart.Name,
-				}
+		if self == MainEvent and method == "FireServer" then
+			local eventType, handle, _, _, hitPart = ...
+			if eventType == "ShootGun" then
+				recordShot(handle, hitPart)
 			end
 		end
 
-		return v11, v12, v13
-	end)))
+		return oldNamecall(self, ...)
+	end))
 
 	-- MAIN EVENT CONNECTIONS
 	MainEvent.OnClientEvent:Connect(function(...)
