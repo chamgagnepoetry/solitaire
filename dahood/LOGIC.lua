@@ -16,7 +16,10 @@ local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 
 local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
 local LocalHumanoidHealthChangedConnection = nil
-local damageTaken = 0
+
+local PENDING_WINDOW = 1
+local pendingHits = {}
+local unclaimedDamage = {}
 
 local Framework
 local GunHandler = require(ReplicatedStorage.Modules.GunHandler)
@@ -39,6 +42,41 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	end
 end
 
+local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
+    local replacements = {
+        ["{NAME}"] = shooterName,
+        ["{DMG}"] = tostring(math.floor(damage)),
+        ["{PART}"] = partName,
+        ["{WEAPON}"] = weaponName
+    }
+    
+    local formattedMessage = templateString:gsub("{%a+}", replacements)
+    return formattedMessage
+end
+
+local function notifyDamage(hit, damage)
+	local defaultText = Options.NotifyDamageText.Value or "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+	local text = formatCustomNotification(defaultText, hit.shooterName, damage, hit.partName, hit.weaponName)
+	Library:Notify(text, tonumber(Options.NotifyDamageDuration.Value))
+end
+
+local function notifyHit(hit, damage)
+	local defaultText = Options.NotifyHitText.Value or "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
+	local text = formatCustomNotification(defaultText, hit.shooterName, damage, hit.partName, hit.weaponName)
+	Library:Notify(text, tonumber(Options.NotifyHitDuration.Value))
+end
+
+local function popFresh(list)
+	local now = os.clock()
+	while #list > 0 do
+		local entry = table.remove(list, 1)
+		if now - entry.time <= PENDING_WINDOW then
+			return entry
+		end
+	end
+	return nil
+end
+
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
 	LocalHumanoid = newCharacter:WaitForChild("Humanoid")
@@ -53,21 +91,23 @@ local function Setup(newCharacter)
 		LocalHumanoidHealthChangedConnection = nil
 	end
 
+	table.clear(pendingHits)
+	table.clear(unclaimedDamage)
+
 	local lastHealth = LocalHumanoid.Health > 0 and LocalHumanoid.Health or LocalHumanoid.MaxHealth
-	local hitId = 0
-	
+
 	LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function(newHealth)
 		if newHealth < lastHealth then
-			damageTaken += lastHealth - newHealth
-	
-			hitId += 1
-			local thisHit = hitId
-	
-			task.delay(0.25, function()
-				if hitId == thisHit then
-					damageTaken = 0
+			local amount = lastHealth - newHealth
+
+			local hit = popFresh(pendingHits)
+			if hit then
+				if Toggles.NotifyDamageToggle.Value then
+					notifyDamage(hit, amount)
 				end
-			end)
+			else
+				table.insert(unclaimedDamage, { amount = amount, time = os.clock() })
+			end
 		end
 		lastHealth = newHealth
 	end)
@@ -87,19 +127,6 @@ local function getEquippedGun()
 	return false
 end
 getgenv().getEquippedGun = getEquippedGun
-
-local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
-    local replacements = {
-        ["{NAME}"] = shooterName,
-        ["{DMG}"] = tostring(math.floor(damage)),
-        ["{PART}"] = partName,
-        ["{WEAPON}"] = weaponName
-    }
-    
-    local formattedMessage = templateString:gsub("{%a+}", replacements)
-    
-    return formattedMessage
-end
 
 local function TryPurchase(Item)
 	local Bracketed = Item.Name:match("%[.-%]")
@@ -308,6 +335,31 @@ local function canStompBelow()
 end
 getgenv().canStompBelow = canStompBelow
 
+local HIT_WINDOW = 1.5
+local lastHealth = setmetatable({}, { __mode = "k" })
+local lastHit = setmetatable({}, { __mode = "k" })
+local function watchHumanoid(humanoid)
+	if lastHealth[humanoid] ~= nil then
+		return
+	end
+
+	lastHealth[humanoid] = humanoid.Health
+
+	humanoid.HealthChanged:Connect(function(newHealth)
+		local oldHealth = lastHealth[humanoid] or newHealth
+		lastHealth[humanoid] = newHealth
+
+		local damageDealt = oldHealth - newHealth
+		local hit = lastHit[humanoid]
+
+		if damageDealt > 0 and hit and (os.clock() - hit.time) <= HIT_WINDOW then
+			lastHit[humanoid] = nil
+			notifyHit(hit, damageDealt)
+		end
+	end)
+end
+
+
 local function runLoop(controlObj, loopFn, stopFn)
 	if type(controlObj) == "string" then
 		local keybind
@@ -458,29 +510,56 @@ function Logic:Initialize(UIReference)
 		return oldGetAim(origin)
 	end)))
 
+	local oldShoot
+	oldShoot = clonefunction(hookfunction(rawget(GunHandler, "shoot"), newcclosure(function(args)
+		local v11, v12, v13 = oldShoot(args)
+
+		local IsMeShooting = typeof(args) == "table" and args.Shooter == LocalCharacter
+		local HitPart = v12
+		local GunName = args.Handle and args.Handle.Parent and args.Handle.Parent.Name or "Unknown"
+
+		if IsMeShooting and HitPart then
+			local targetCharacter = getTargetCharacter(HitPart)
+			local targetPlayer = targetCharacter and Players:GetPlayerFromCharacter(targetCharacter)
+			local humanoid = targetCharacter and targetCharacter:FindFirstChildOfClass("Humanoid")
+
+			if targetPlayer and humanoid and humanoid.Health > 0 then
+				watchHumanoid(humanoid)
+
+				lastHit[humanoid] = {
+					time = os.clock(),
+					playerName = targetPlayer.Name,
+					gunName = GunName,
+					bodyPartName = HitPart.Name,
+				}
+			end
+		end
+
+		return v11, v12, v13
+	end)))
+
 	-- MAIN EVENT CONNECTIONS
 	MainEvent.OnClientEvent:Connect(function(...)
-		if Toggles.NotifyDamageToggle.Value then
-			local args = {...}
-
-			local eventType = args[1]
-			local shooter = args[2]
-			local weaponHandle = args[3]
-			local hitPart = args[6]
+		if not Toggles.NotifyDamageToggle.Value then return end
 	
-			if eventType ~= "ClientBullet" then return end
+		local args = {...}
+		local eventType, shooter, weaponHandle, hitPart = args[1], args[2], args[3], args[6]
 	
-			if hitPart and hitPart:IsDescendantOf(LocalCharacter) then
-				local defaultText = Options.NotifyDamageText.Value or "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+		if eventType ~= "ClientBullet" then return end
+		if not (hitPart and LocalCharacter and hitPart:IsDescendantOf(LocalCharacter)) then return end
 	
-				local shooterName = shooter and shooter.Name or "Unknown Shooter"
-				local weaponName = weaponHandle and weaponHandle.Parent.Name or "Unknown Weapon"
-				local partName = hitPart.Name
+		local hit = {
+			time = os.clock(),
+			shooterName = shooter and shooter.Name or "Unknown Shooter",
+			weaponName = weaponHandle and weaponHandle.Parent and weaponHandle.Parent.Name or "Unknown Weapon",
+			partName = hitPart.Name,
+		}
 	
-				local notificationText = formatCustomNotification(defaultText, shooterName, damageTaken, partName, weaponName)
-	
-				Library:Notify(notificationText,tonumber(Options.NotifyDamageDuration.Value))
-			end
+		local damage = popFresh(unclaimedDamage)
+		if damage then
+			notifyDamage(hit, damage.amount)
+		else
+			table.insert(pendingHits, hit)
 		end
 	end)
 
