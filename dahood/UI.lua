@@ -253,8 +253,8 @@ function UI:Initialize()
 	})
 	TargetingGroupBox:AddInput("TargetingFilter", {
 		Text = "player/crew blacklist",
-		Placeholder = "(usernames or crew ids, comma-separated)",
-		Tooltip = "press enter to confirm",
+		Placeholder = "press enter to confirm",
+		Tooltip = "(usernames or crew ids, comma-separated)",
 		Numeric = false,
 		Finished = true,
 		Callback = function(value)
@@ -534,8 +534,8 @@ function UI:Initialize()
 	})
 	ShopGroupBox:AddInput("DahoodShopSearch", {
 		Text = "shop search",
-		Placeholder = "search",
-		Tooltip = "press enter to confirm",
+		Placeholder = "press enter to confirm",
+		Tooltip = "search",
 		Numeric = false,
 		Finished = true,
 	
@@ -586,8 +586,8 @@ function UI:Initialize()
 	NotifyHitTab:AddInput("NotifyHitText", {
 		Text = "text",
 		Default = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
-		Placeholder = "E.G. HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
-		Tooltip = "press enter to confirm",
+		Placeholder = "press enter to confirm",
+		Tooltip = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
 		Numeric = false,
 		Finished = true,
 	})
@@ -609,8 +609,8 @@ function UI:Initialize()
 	NotifyDamageTab:AddInput("NotifyDamageText", {
 		Text = "text",
 		Default = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
-		Placeholder = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
-		Tooltip = "press enter to confirm",
+		Placeholder = "press enter to confirm",
+		Tooltip = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
 		Numeric = false,
 		Finished = true,
 
