@@ -1,4 +1,4 @@
-print('i like men')
+print('i like niggers')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -246,7 +246,7 @@ local function FindPlayerTo(radius, configurations)
 				end
 
 				local worldDistance = (targetRootPart.Position - MyPosition).Magnitude
-				if configurations.LimitDistance and worldDistance > tonumber(Options.TargetingLimitDistanceToggle.Value) then
+				if configurations.LimitDistance and worldDistance > tonumber(Options.TargetingLimitDistance.Value) then
 					continue
 				end
 
