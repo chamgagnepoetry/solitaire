@@ -1,4 +1,3 @@
-print('i like niggers')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -55,15 +54,23 @@ local function formatCustomNotification(templateString, shooterName, damage, par
 end
 
 local function notifyDamage(hit, damage)
-	local defaultText = Options.NotifyDamageText.Value or "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
-	local text = formatCustomNotification(defaultText, hit.shooterName, damage, hit.partName, hit.weaponName)
-	Library:Notify(text, tonumber(Options.NotifyDamageDuration.Value))
+	local text = Options.NotifyDamageText.Value
+	if text == nil or text == "" then
+		text = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+	end
+	local notificationText = formatCustomNotification(text, hit.shooterName, damage, hit.partName, hit.weaponName)
+	Library:Notify(notificationText, tonumber(Options.NotifyDamageDuration.Value))
 end
 
 local function notifyHit(hit, damage)
-	local defaultText = Options.NotifyHitText.Value or "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
-	local text = formatCustomNotification(defaultText, hit.shooterName, damage, hit.partName, hit.weaponName)
-	Library:Notify(text, tonumber(Options.NotifyHitDuration.Value))
+	if not Toggles.NotifyHitToggle.Value then return end
+
+	local text = Options.NotifyHitText.Value
+	if text == nil or text == "" then
+		text = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
+	end
+	local notificationText = formatCustomNotification(text, hit.playerName, damage, hit.bodyPartName, hit.gunName)
+	Library:Notify(notificationText, tonumber(Options.NotifyHitDuration.Value))
 end
 
 local function popFresh(list)
@@ -335,19 +342,32 @@ local function canStompBelow()
 end
 getgenv().canStompBelow = canStompBelow
 
+-- HIT TRACKING (damage WE deal to other players)
 local HIT_WINDOW = 1.5
-local lastHealth = setmetatable({}, { __mode = "k" })
+local humanoidHealth = setmetatable({}, { __mode = "k" })
 local lastHit = setmetatable({}, { __mode = "k" })
+
+local function getTargetCharacter(part)
+	local current = part
+	while current and current ~= workspace and current ~= game do
+		if current:IsA("Model") and Players:GetPlayerFromCharacter(current) then
+			return current
+		end
+		current = current.Parent
+	end
+	return nil
+end
+
 local function watchHumanoid(humanoid)
-	if lastHealth[humanoid] ~= nil then
+	if humanoidHealth[humanoid] ~= nil then
 		return
 	end
 
-	lastHealth[humanoid] = humanoid.Health
+	humanoidHealth[humanoid] = humanoid.Health
 
 	humanoid.HealthChanged:Connect(function(newHealth)
-		local oldHealth = lastHealth[humanoid] or newHealth
-		lastHealth[humanoid] = newHealth
+		local oldHealth = humanoidHealth[humanoid] or newHealth
+		humanoidHealth[humanoid] = newHealth
 
 		local damageDealt = oldHealth - newHealth
 		local hit = lastHit[humanoid]
@@ -357,8 +377,33 @@ local function watchHumanoid(humanoid)
 			notifyHit(hit, damageDealt)
 		end
 	end)
+
+	humanoid.Destroying:Once(function()
+		humanoidHealth[humanoid] = nil
+		lastHit[humanoid] = nil
+	end)
 end
 
+local function watchCharacter(character)
+	local humanoid = character:WaitForChild("Humanoid", 10)
+	if humanoid then
+		watchHumanoid(humanoid)
+	end
+end
+
+local function watchPlayer(player)
+	if player == LocalPlayer then return end
+
+	if player.Character then
+		task.spawn(watchCharacter, player.Character)
+	end
+	player.CharacterAdded:Connect(watchCharacter)
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+	watchPlayer(player)
+end
+Players.PlayerAdded:Connect(watchPlayer)
 
 local function runLoop(controlObj, loopFn, stopFn)
 	if type(controlObj) == "string" then
@@ -510,6 +555,8 @@ function Logic:Initialize(UIReference)
 		return oldGetAim(origin)
 	end)))
 
+	-- Keep this hook minimal: it only records the hit.
+	-- The HealthChanged listeners are created from our own thread (see watchPlayer).
 	local oldShoot
 	oldShoot = clonefunction(hookfunction(rawget(GunHandler, "shoot"), newcclosure(function(args)
 		local v11, v12, v13 = oldShoot(args)
@@ -524,8 +571,6 @@ function Logic:Initialize(UIReference)
 			local humanoid = targetCharacter and targetCharacter:FindFirstChildOfClass("Humanoid")
 
 			if targetPlayer and humanoid and humanoid.Health > 0 then
-				watchHumanoid(humanoid)
-
 				lastHit[humanoid] = {
 					time = os.clock(),
 					playerName = targetPlayer.Name,
