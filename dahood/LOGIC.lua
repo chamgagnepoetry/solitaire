@@ -1,4 +1,4 @@
-print("i dont like niggerrrrs")
+print("im, gay")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -57,7 +57,6 @@ end
 local DEFAULT_DAMAGE_TEXT = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
 local DEFAULT_HIT_TEXT = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
 
--- Damage WE take (hit comes from the MainEvent "ClientBullet" remote)
 local function notifyDamage(hit, damage)
 	local text = Options.NotifyDamageText.Value
 	if text == nil or text == "" then
@@ -67,7 +66,6 @@ local function notifyDamage(hit, damage)
 	Library:Notify(notificationText, tonumber(Options.NotifyDamageDuration.Value))
 end
 
--- Damage WE deal (hit comes from the FireServer "ShootGun" hook)
 local function notifyHit(hit, damage)
 	if not Toggles.NotifyHitToggle.Value then return end
 
@@ -348,12 +346,10 @@ local function canStompBelow()
 end
 getgenv().canStompBelow = canStompBelow
 
--- HIT TRACKING (damage WE deal to other players)
-local HIT_WINDOW = 1.5 -- max seconds between our shot and the health drop arriving
-local humanoidHealth = setmetatable({}, { __mode = "k" }) -- humanoid -> last known health
-local lastHit = setmetatable({}, { __mode = "k" })        -- humanoid -> latest hit info
+local HIT_WINDOW = 1.5
+local humanoidHealth = setmetatable({}, { __mode = "k" })
+local lastHit = setmetatable({}, { __mode = "k" })
 
--- Climbs up the parents of an instance until it finds a player's character model
 local function getTargetCharacter(part)
 	local current = part
 	while current and current ~= workspace and current ~= game do
@@ -365,8 +361,7 @@ local function getTargetCharacter(part)
 	return nil
 end
 
--- Called from inside the FireServer hook. Only records the shot (no yielding, no UI).
-local function recordShot(handle, hitPart)
+local function recordShot(handle, hitPart, shotTime)
 	if typeof(hitPart) ~= "Instance" then return end
 
 	local targetCharacter = getTargetCharacter(hitPart)
@@ -383,12 +378,22 @@ local function recordShot(handle, hitPart)
 	end
 
 	lastHit[humanoid] = {
-		time = os.clock(),
+		time = shotTime,
 		playerName = targetPlayer.Name,
 		gunName = gunName,
 		bodyPartName = hitPart.Name,
 	}
 end
+RunService.Heartbeat:Connect(function()
+	if #shotQueue == 0 then return end
+
+	local batch = shotQueue
+	shotQueue = {}
+
+	for _, shot in ipairs(batch) do
+		recordShot(shot.handle, shot.hitPart, shot.time)
+	end
+end)
 
 local function watchHumanoid(humanoid)
 	if humanoidHealth[humanoid] ~= nil then
@@ -416,8 +421,7 @@ local function watchHumanoid(humanoid)
 	end)
 end
 
--- These run in OUR thread (not the game's hook thread), so the connections
--- keep our capabilities and Library:Notify works.
+
 local function watchCharacter(character)
 	local humanoid = character:WaitForChild("Humanoid", 10)
 	if humanoid then
@@ -592,14 +596,14 @@ function Logic:Initialize(UIReference)
 	local oldNamecall
 	oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
 		local method = getnamecallmethod()
-
+	
 		if self == MainEvent and method == "FireServer" then
 			local eventType, handle, _, _, hitPart = ...
 			if eventType == "ShootGun" then
-				recordShot(handle, hitPart)
+				shotQueue[#shotQueue + 1] = { time = os.clock(), handle = handle, hitPart = hitPart }
 			end
 		end
-
+	
 		return oldNamecall(self, ...)
 	end))
 
