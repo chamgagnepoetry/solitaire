@@ -254,7 +254,7 @@ function UI:Initialize()
 	TargetingGroupBox:AddInput("TargetingFilter", {
 		Text = "player/crew blacklist",
 		Placeholder = "press enter to confirm",
-		Tooltip = "(usernames or crew ids, comma-separated)",
+		Tooltip = "(usernames or crew ids comma separated)",
 		Numeric = false,
 		Finished = true,
 		Callback = function(value)
@@ -581,7 +581,7 @@ function UI:Initialize()
 		Max = 2;
 		Rounding = 1;
 		Compact = true;
-		Suffix = "s";
+		Suffix = "s";	
 	})
 	NotifyHitTab:AddInput("NotifyHitText", {
 		Text = "text",
