@@ -1,4 +1,4 @@
-print('count my guap')
+print('im gay')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -163,7 +163,7 @@ local function checkLocalPlayerKnocked()
 end
 getgenv().checkLocalPlayerKnocked = checkLocalPlayerKnocked
 
-local function checkCrew(target)
+local function checkCrew(target, crewid)
 	local function getCrew(player)
 		local data = player:FindFirstChild("DataFolder")
 		local info = data and data:FindFirstChild("Information")
@@ -171,9 +171,16 @@ local function checkCrew(target)
 		return crew and crew.Value or ""
 	end
 
-	local ourCrew = getCrew(LocalPlayer)
 	local theirCrew = getCrew(target)
 
+	if theirCrew == "" then
+		return false
+	end
+	if crewid ~= nil then
+		return tostring(theirCrew) == tostring(crewid)
+	end
+
+	local ourCrew = getCrew(LocalPlayer)
 	return ourCrew ~= "" and ourCrew == theirCrew
 end
 getgenv().checkCrew = checkCrew
@@ -187,17 +194,34 @@ local function checkKnocked(target)
 end
 getgenv().checkKnocked = checkKnocked
 
-local function FindPlayerToMouse(radius, configurations)
+local function FindPlayerTo(radius, configurations)
 	if not LocalHumanoidRootPart then
 		return false
 	end
 
+	local useCharacter = configurations.Character and not configurations.Mouse
+
+	local whitelistSet = {}
+	if configurations.Whitelist then
+		for key, value in pairs(configurations.Whitelist) do
+			if type(value) == "string" then
+				whitelistSet[value:lower()] = true
+			elseif value == true and type(key) == "string" then
+				whitelistSet[key:lower()] = true
+			end
+		end
+	end
+
 	local ClosestPlayer = nil
 	local ShortestDistance = math.huge
+	local MyPosition = LocalHumanoidRootPart.Position
 	local MousePos = Vector2.new(Mouse.X, Mouse.Y)
 
 	for _, target in ipairs(Players:GetPlayers()) do
 		if target ~= LocalPlayer and target.Character then
+			if whitelistSet[target.Name:lower()] then
+				continue
+			end
 			local targetRootPart = target.Character:FindFirstChild("HumanoidRootPart")
 			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
 
@@ -218,32 +242,34 @@ local function FindPlayerToMouse(radius, configurations)
 					continue
 				end
 
-				if configurations.LimitDistance and (targetRootPart.Position - LocalHumanoidRootPart.Position).Magnitude > tonumber(Options.TargetingLimitDistanceToggle.Value) then
+				local worldDistance = (targetRootPart.Position - MyPosition).Magnitude
+				if configurations.LimitDistance and worldDistance > tonumber(Options.TargetingLimitDistanceToggle.Value) then
 					continue
 				end
 
-				local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
-
-				if onScreen then
-					local screenVector = Vector2.new(screenPos.X, screenPos.Y)
-					local distance = (screenVector - MousePos).Magnitude
-
-					if radius and distance > radius then
+				local distance
+				if useCharacter then
+					distance = worldDistance
+				else
+					local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
+					if not onScreen then
 						continue
 					end
-
-					if distance < ShortestDistance then
-						ShortestDistance = distance
-						ClosestPlayer = target
-					end
+					distance = (Vector2.new(screenPos.X, screenPos.Y) - MousePos).Magnitude
+				end
+				if radius and distance > radius then
+					continue
+				end
+				if distance < ShortestDistance then
+					ShortestDistance = distance
+					ClosestPlayer = target
 				end
 			end
 		end
 	end
-
 	return ClosestPlayer
 end
-getgenv().FindPlayerToMouse = FindPlayerToMouse
+getgenv().FindPlayerTo = FindPlayerTo
 
 local function getHumanoid(part)
 	local inst = part
@@ -390,12 +416,14 @@ function Logic:Initialize(UIReference)
 			
 				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius
 				
-				local SilentAimTarget = FindPlayerToMouse(radiusSize, {
+				SilentAimTarget = FindPlayerTo(radiusSize, {
+					Mouse = true,
 					FriendCheck = Toggles.TargetingFriendCheck.Value,
 					CrewCheck = Toggles.TargetingCrewCheck.Value,
 					WallCheck = Toggles.TargetingWallCheck.Value,
 					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
+					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
+					Whitelist = Options.TargetingWhitelist.Value
 				})
 				
 				if SilentAimTarget and SilentAimTarget.Character then
@@ -480,24 +508,28 @@ function Logic:Initialize(UIReference)
 	runLoop("!CameraLockKey", function()
 		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius
 		if not CameraTarget then
-			CameraTarget = FindPlayerToMouse(radiusSize, {
+			CameraTarget = FindPlayerTo(radiusSize, {
+				Mouse = true,
 				FriendCheck = Toggles.TargetingFriendCheck.Value,
 				CrewCheck = Toggles.TargetingCrewCheck.Value,
 				WallCheck = Toggles.TargetingWallCheck.Value,
 				KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-				LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
+				LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
+				Whitelist = Options.TargetingWhitelist.Value
 			})
 		end
 
 		if CameraTarget and CameraTarget.Character then
 			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
 			if Toggles.TargetingKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				CameraTarget = FindPlayerToMouse(radiusSize, {
+				CameraTarget = FindPlayerTo(radiusSize, {
+					Mouse = true,
 					FriendCheck = Toggles.TargetingFriendCheck.Value,
 					CrewCheck = Toggles.TargetingCrewCheck.Value,
 					WallCheck = Toggles.TargetingWallCheck.Value,
 					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value
+					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
+					Whitelist = Options.TargetingWhitelist.Value
 				})
 			end
 
@@ -567,6 +599,38 @@ function Logic:Initialize(UIReference)
 		else
 			Gun:Deactivate()
 		end
+	end)
+
+	local KillAuraTarget = nil
+	runLoop("!KillAuraKey", function()
+		KillAuraTarget = FindPlayerTo(math.huge, {
+			Character = true,
+			FriendCheck = Toggles.TargetingFriendCheck.Value,
+			CrewCheck = Toggles.TargetingCrewCheck.Value,
+			WallCheck = Toggles.TargetingWallCheck.Value,
+			KnockedCheck = Toggles.TargetingKnockedCheck.Value,
+			LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
+			Whitelist = Options.TargetingWhitelist.Value
+		})
+		if KillAuraTarget and KillAuraTarget.Character then
+			local targetPart = KillAuraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
+			if targetPart then
+				local gun = getEquippedGun()
+				if gun then
+					local args = {
+						[1] = "ShootGun",
+						[2] = gun:WaitForChild("Handle"),
+						[3] = LocalHumanoidRootPart.Position,
+						[4] = targetPart.Position,
+						[5] = targetPart,
+						[6] = Vector3.zAxis
+					}
+					MainEvent:FireServer(unpack(args))
+				end
+			end
+		end
+	end, function()
+		KillAuraTarget = nil
 	end)
 
 	runLoop(Toggles.GunAutoReload, function()
