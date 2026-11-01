@@ -1,6 +1,7 @@
+local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
-print('og')
+
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/chamgagnepoetry/VantaLib/refs/heads/main/addons/SaveManager.lua"))()
@@ -36,7 +37,8 @@ function UI:Initialize()
 	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
 	local AimTabBox = Tabs.Main:AddLeftTabbox("aim")
 	local TargetingGroupBox = Tabs.Main:AddLeftGroupbox("targeting")
-    local GunGroupBox = Tabs.Main:AddRightGroupbox("gun")
+    local GunTabBox = Tabs.Main:AddRightTabbox("gun")
+	local ExploitsGroupBox = Tabs.Main:AddRightGroupbox("exploits")
 
 	-- Gameplay group box
 	
@@ -122,8 +124,8 @@ function UI:Initialize()
 	})
 
 	-- Camera Group Box
-	local AimbotAimTab = AimTabBox:AddTab("aimbot")
-    AimbotAimTab:AddToggle("CameraLock", {
+	local CamLockAimTab = AimTabBox:AddTab("camlock")
+    CamLockAimTab:AddToggle("CameraLock", {
         Text = "cam lock"
     }):AddKeyPicker("CameraLockKey",{
         Text = "cam lock";
@@ -131,7 +133,7 @@ function UI:Initialize()
         Mode = "Toggle";
         NoUI = false;
     })
-	local CameraLockDepBox = AimbotAimTab:AddDependencyBox()
+	local CameraLockDepBox = CamLockAimTab:AddDependencyBox()
 	CameraLockDepBox:SetupDependencies({
 		{Toggles.CameraLock, true}
 	})
@@ -188,6 +190,50 @@ function UI:Initialize()
 
 	-- Targeting group box
 
+	local function ApplyTargetingFilter(value)
+		local usernames = {}
+		local crewIds = {}
+		local hasFilter = false
+	
+		for entry in string.gmatch(value or "", "[^,]+") do
+			entry = entry:match("^%s*(.-)%s*$")
+	
+			if entry ~= "" then
+				hasFilter = true
+				usernames[entry:lower()] = true
+	
+				local num = tonumber(entry)
+				if num then
+					table.insert(crewIds, num)
+				end
+			end
+		end
+	
+		local whitelist = {}
+	
+		if hasFilter then
+			for _, player in ipairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer then
+					local isTarget = usernames[player.Name:lower()] == true
+	
+					if not isTarget then
+						for _, id in ipairs(crewIds) do
+							if checkCrew(player, id) then
+								isTarget = true
+								break
+							end
+						end
+					end
+					if not isTarget then
+						whitelist[player.Name] = true
+					end
+				end
+			end
+		end
+	
+		Options.TargetingWhitelist:SetValue(whitelist)
+	end
+
 	TargetingGroupBox:AddToggle("TargetingFriendCheck",{
 		Text = "friend check"
 	})
@@ -200,6 +246,25 @@ function UI:Initialize()
 	TargetingGroupBox:AddToggle("TargetingKnockedCheck",{
 		Text = "knocked check"
 	})
+	TargetingGroupBox:AddDropdown("TargetingWhitelist", {
+		SpecialType = "Player";
+		Multi = true;
+		Text = "player whitelist";
+	})
+	TargetingGroupBox:AddInput("TargetingFilter", {
+		Text = "player/crew blacklist (usernames or crew ids, comma-separated)",
+		Placeholder = "search",
+		Tooltip = "press enter to confirm",
+		Numeric = false,
+		Finished = true,
+		Callback = function(value)
+			ApplyTargetingFilter(value)
+		end,
+	})
+	Players.PlayerAdded:Connect(function()
+		task.wait(1)
+		ApplyTargetingFilter(Options.TargetingFilter.Value)
+	end)
 	TargetingGroupBox:AddToggle("TargetingLimitDistanceToggle",{
 		Text = "limit distance"
 	})
@@ -225,13 +290,14 @@ function UI:Initialize()
 
 	-- Gun Group Box
 
-	GunGroupBox:AddToggle("GunNoRecoil",{
+	local GunTab = GunTabBox:AddTab("gun")
+	GunTab:AddToggle("GunNoRecoil",{
 		Text = "no recoil"
 	})
-	GunGroupBox:AddToggle("GunAutoReload",{
+	GunTab:AddToggle("GunAutoReload",{
 		Text = "auto reload"
 	})
-	GunGroupBox:AddToggle("GunTriggerBot",{
+	GunTab:AddToggle("GunTriggerBot",{
 		Text = "trigger bot"
 	}):AddKeyPicker("GunTriggerBotKey",{
         Text = "trigger bot";
@@ -239,7 +305,7 @@ function UI:Initialize()
         Mode = "Toggle";
         NoUI = false;
     })
-	local TriggerBotDepBox = GunGroupBox:AddDependencyBox()
+	local TriggerBotDepBox = GunTab:AddDependencyBox()
 	TriggerBotDepBox:SetupDependencies({
 		{Toggles.GunTriggerBot, true}
 	})
@@ -251,6 +317,22 @@ function UI:Initialize()
 	})
 	TriggerBotDepBox:AddToggle("GunTriggerBotKnockedCheck",{
 		Text = "knocked check"
+	})
+
+	local KillAuraTab = GunTabBox:AddTab("kill aura")
+	KillAuraTab:AddToggle("KillAura",{
+		Text = "kill aura"
+	}):AddKeyPicker("KillAuraKey",{
+        Text = "kill aura";
+        Default = "H";
+        Mode = "Toggle";
+        NoUI = false;
+    })
+	KillAuraTab:AddToggle("KillAuraClosestToMouse",{
+		Text = "closest to mouse"
+	})
+	KillAuraTab:AddToggle("KillAuraFocusOnlyTarget",{
+		Text = "focus only target"
 	})
 
     -- \\CHARACTER TAB//
