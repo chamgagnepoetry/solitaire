@@ -252,8 +252,8 @@ function UI:Initialize()
 		Text = "player whitelist";
 	})
 	TargetingGroupBox:AddInput("TargetingFilter", {
-		Text = "player/crew blacklist (usernames or crew ids, comma-separated)",
-		Placeholder = "search",
+		Text = "player/crew blacklist",
+		Placeholder = "(usernames or crew ids, comma-separated)",
 		Tooltip = "press enter to confirm",
 		Numeric = false,
 		Finished = true,
