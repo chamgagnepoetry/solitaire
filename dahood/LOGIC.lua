@@ -1,4 +1,4 @@
-print('im gay')
+print('i like men')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -54,14 +54,17 @@ local function Setup(newCharacter)
 	end
 
 	local lastHealth = LocalHumanoid.Health > 0 and LocalHumanoid.Health or LocalHumanoid.MaxHealth
-    
+	local hitId = 0
+	
 	LocalHumanoidHealthChangedConnection = LocalHumanoid.HealthChanged:Connect(function(newHealth)
 		if newHealth < lastHealth then
-			local damage = lastHealth - newHealth
-			damageTaken = damage
-
-			task.defer(function()
-				if damageTaken == damage then
+			damageTaken += lastHealth - newHealth
+	
+			hitId += 1
+			local thisHit = hitId
+	
+			task.delay(0.25, function()
+				if hitId == thisHit then
 					damageTaken = 0
 				end
 			end)
@@ -603,8 +606,10 @@ function Logic:Initialize(UIReference)
 
 	local KillAuraTarget = nil
 	runLoop("!KillAuraKey", function()
+		local closestToMouse = Toggles.KillAuraClosestToMouse.Value
 		KillAuraTarget = FindPlayerTo(math.huge, {
-			Character = true,
+			Mouse = closestToMouse,
+			Character = not closestToMouse,
 			FriendCheck = Toggles.TargetingFriendCheck.Value,
 			CrewCheck = Toggles.TargetingCrewCheck.Value,
 			WallCheck = Toggles.TargetingWallCheck.Value,
