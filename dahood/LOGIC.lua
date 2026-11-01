@@ -1,4 +1,4 @@
-print("im, gay")
+print("i gayyyyyy")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -361,6 +361,7 @@ local function getTargetCharacter(part)
 	return nil
 end
 
+local shotQueue = {}
 local function recordShot(handle, hitPart, shotTime)
 	if typeof(hitPart) ~= "Instance" then return end
 
