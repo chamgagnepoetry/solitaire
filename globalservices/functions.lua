@@ -198,3 +198,15 @@ local function FindPlayerToMouse(radius, configurations)
 	return ClosestPlayer
 end
 getgenv().FindPlayerToMouse = FindPlayerToMouse
+
+local function getTargetCharacter(part)
+	local current = part
+	while current and current ~= workspace and current ~= game do
+		if current:IsA("Model") and Players:GetPlayerFromCharacter(current) then
+			return current
+		end
+		current = current.Parent
+	end
+	return nil
+end
+getgenv().getTargetCharacter = getTargetCharacter
