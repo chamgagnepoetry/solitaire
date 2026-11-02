@@ -188,34 +188,55 @@ function UI:Initialize()
 		end,
 	})
 
-	-- Targeting group box
-
 	local function ApplyTargetingFilter(value)
-		local usernames = {}
+		local targets = {}
 		local crewIds = {}
 		local hasFilter = false
-	
 		for entry in string.gmatch(value or "", "[^,]+") do
 			entry = entry:match("^%s*(.-)%s*$")
-	
 			if entry ~= "" then
 				hasFilter = true
-				usernames[entry:lower()] = true
-	
+				local query = entry:lower()
 				local num = tonumber(entry)
 				if num then
 					table.insert(crewIds, num)
 				end
+				local bestPlayer, bestScore = nil, 0
+	 				for _, player in ipairs(Players:GetPlayers()) do
+					if player ~= LocalPlayer then
+						local score = 0
+						for _, name in ipairs({ player.Name:lower(), player.DisplayName:lower() }) do
+							local s = 0
+							if name == query then
+								s = 3
+							elseif not num then
+								if name:sub(1, #query) == query then
+									s = 2
+								elseif name:find(query, 1, true) then
+									s = 1
+								end
+							end
+							if s > score then
+								score = s
+							end
+						end
+						if score > bestScore then
+							bestScore = score
+							bestPlayer = player
+						end
+					end
+				end
+				if bestPlayer then
+					targets[bestPlayer.Name] = true
+				end
 			end
 		end
-	
+	 
 		local whitelist = {}
-	
 		if hasFilter then
 			for _, player in ipairs(Players:GetPlayers()) do
 				if player ~= LocalPlayer then
-					local isTarget = usernames[player.Name:lower()] == true
-	
+					local isTarget = targets[player.Name] == true
 					if not isTarget then
 						for _, id in ipairs(crewIds) do
 							if checkCrew(player, id) then
@@ -230,7 +251,6 @@ function UI:Initialize()
 				end
 			end
 		end
-	
 		Options.TargetingWhitelist:SetValue(whitelist)
 	end
 
