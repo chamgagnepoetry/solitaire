@@ -28,6 +28,7 @@ function UI:Initialize()
     local Tabs = {
         Main = Window:AddTab("main");
         Character = Window:AddTab("character");
+		ESP = Window:AddTab("esp");
 		Visuals = Window:AddTab("visuals");
 		Misc = Window:AddTab("misc");
         Settings = Window:AddTab("settings");
@@ -69,9 +70,6 @@ function UI:Initialize()
 	SilentAimDepBox:SetupDependencies({
 		{Toggles.SilentAimToggle, true}
 	})
-	SilentAimDepBox:AddToggle("SilentAimClosestPart", {
-        Text = "closest part"
-    })
 	SilentAimDepBox:AddSlider("SilentAimHitRate",{
 		Text = "hit rate";
 		Default = 100;
@@ -81,6 +79,9 @@ function UI:Initialize()
 		Compact = true;
 		Suffix = "%";
 	})
+	SilentAimDepBox:AddToggle("SilentAimClosestPart", {
+        Text = "closest part"
+    })
 	SilentAimDepBox:AddToggle("SilentAimRadius",{
 		Text = "radius"
 	}):AddColorPicker("SilentAimRadiusColor", {
@@ -281,6 +282,13 @@ function UI:Initialize()
 			ApplyTargetingFilter(value)
 		end,
 	})
+	TargetingGroupBox:AddButton({
+		Text = "clear whitelist";
+		Func = function()
+			Options.TargetingFilter:SetValue("")
+			Options.TargetingWhitelist:SetValue({})
+		end,
+	})
 	Players.PlayerAdded:Connect(function()
 		task.wait(1)
 		ApplyTargetingFilter(Options.TargetingFilter.Value)
@@ -349,7 +357,10 @@ function UI:Initialize()
         NoUI = false;
     })
 	KillAuraTab:AddToggle("KillAuraClosestToMouse",{
-		Text = "closest to mouse"
+		Text = "kill closest to mouse"
+	})
+	KillAuraTab:AddToggle("KillAuraRandomHitPart",{
+		Text = "random hit part"
 	})
 	KillAuraTab:AddToggle("KillAuraFocusOnlyTarget",{
 		Text = "focus only target"
@@ -414,8 +425,8 @@ function UI:Initialize()
 		Text = "anti stomp"
 	})
 
-	-- \\VISUALS TAB//
-	local ESPGroupBox = Tabs.Visuals:AddLeftGroupbox("esp")
+	-- \\ESP TAB//
+	local ESPGroupBox = Tabs.ESP:AddLeftGroupbox("esp")
 	
 	-- Esp Group Box
 	ESPGroupBox:AddToggle("ESPBox",{
@@ -541,6 +552,33 @@ function UI:Initialize()
 
 	ESPGroupBox:AddToggle("ESPCrewCheck",{
 		Text = "crew check"
+	})
+
+	-- \\VISUALS TAB//
+	local TracerGroupBox = Tabs.Visuals:AddLeftGroupbox("tarcer")
+	local HitFXTabBox = Tabs.Main:AddRightTabbox("HitEffects")
+
+	TracerGroupBox:AddToggle("TracerDisable",{
+		Text = "disable tracers"
+	})
+	TracerGroupBox:AddToggle("TracerSelect",{
+		Text = "selected tracer"
+	})
+	TracerGroupBox:AddDropdown("TracerTypeDropdown",{
+		Text = "tracer";
+		Values = {"Electric","Blood"};
+		Default = 1;
+		Mutli = false;
+	})
+
+	local HitEffectsTab = HitFXTabBox:AddTab("hit effects")
+	HitEffectsTab:AddToggle("HitEffectsEnabled",{
+		Text = "enabled"
+	})
+
+	local HitSoundsTab = HitFXTabBox:AddTab("hit sounds")
+	HitSoundsTab:AddToggle("HitSoundsEnabled",{
+		Text = "enabled"
 	})
 
 	-- \\MISC TAB//
