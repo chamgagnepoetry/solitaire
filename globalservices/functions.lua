@@ -210,3 +210,16 @@ local function getTargetCharacter(part)
 	return nil
 end
 getgenv().getTargetCharacter = getTargetCharacter
+
+local function getRandomHitPart(targetCharacter)
+	local Parts = {}
+
+	for _, part in ipairs(targetCharacter:GetDescendants()) do
+		if part:IsA("BasePart") then
+			table.insert(Parts, part)
+		end
+	end
+
+	return Parts[math.random(1, #Parts)]
+end
+getgenv().getRandomHitPart = getRandomHitPart
