@@ -1,9 +1,9 @@
-
+print("i gayyyyyy")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-print("i gayyyyyy")
+
 local LocalPlayer = Players.LocalPlayer
 local LocalPlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local LocalCharacter = nil
@@ -767,7 +767,12 @@ function Logic:Initialize(UIReference)
 			Whitelist = Options.TargetingWhitelist.Value
 		})
 		if KillAuraTarget and KillAuraTarget.Character then
-			local targetPart = KillAuraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
+			local targetPart
+			if not Toggles.KillAuraRandomHitPart.Value then
+				targetPart = KillAuraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
+			else
+				targetPart = getRandomHitPart(KillAuraTarget.Character)
+			end
 			if targetPart then
 				local gun = getEquippedGun()
 				if gun then
