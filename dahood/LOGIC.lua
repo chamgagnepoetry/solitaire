@@ -696,10 +696,10 @@ function Logic:Initialize(UIReference)
 					else
 						targetPart = getClosestPartToMouse(CameraTarget)
 					end
-				if TargetPart then
+				if targetPart then
 					Camera.CFrame = CFrame.new(
 						Camera.CFrame.Position,
-						TargetPart.Position
+						targetPart.Position
 					)
 				end
 			end
