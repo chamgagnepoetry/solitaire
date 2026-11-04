@@ -566,8 +566,12 @@ function Logic:Initialize(UIReference)
 				})
 				
 				if SilentAimTarget and SilentAimTarget.Character then
-					local targetPart = SilentAimTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
-					
+					local targetPart
+					if not Toggles.SilentAimClosestPart.Value then
+						targetPart = SilentAimTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
+					else
+						targetPart = getClosestPartToMouse(SilentAimTarget)
+					end
 					if targetPart then
 						local currentChance = tonumber(Options.SilentAimHitRate.Value)
 						local roll = math.random(1, 100)
@@ -686,7 +690,12 @@ function Logic:Initialize(UIReference)
 			end
 
 			if CameraTarget and CameraTarget.Character then
-				local TargetPart = CameraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
+				local targetPart
+					if not Toggles.CameraLockClosestPart.Value then
+						targetPart = CameraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
+					else
+						targetPart = getClosestPartToMouse(CameraTarget)
+					end
 				if TargetPart then
 					Camera.CFrame = CFrame.new(
 						Camera.CFrame.Position,
