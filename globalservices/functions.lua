@@ -3,7 +3,8 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local LocalCharacter = nil
 local LocalHumanoid = nil
-local LocalHumanoidRootPart = nil
+
+local Mouse = LocalPlayer:GetMouse()
 
 getgenv().NotificationTime = 3
 
@@ -221,5 +222,30 @@ local function getRandomHitPart(targetCharacter)
 	end
 
 	return Parts[math.random(1, #Parts)]
+end
+getgenv().getRandomHitPart = getRandomHitPart
+
+local function getClosestPartToMouse(player)
+    local character = player and player.Character
+    if not character then
+        return nil
+    end
+    local mousePos = Vector2.new(Mouse.X, Mouse.Y)
+    local closestPart = nil
+    local shortestDistance = math.huge
+
+    for _, part in ipairs(character:GetChildren()) do
+        if part:IsA("BasePart") then
+            local screenPos, onScreen = camera:WorldToScreenPoint(part.Position)
+            if onScreen then
+                local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestPart = part
+                end
+            end
+        end
+    end
+    return closestPart, shortestDistance
 end
 getgenv().getRandomHitPart = getRandomHitPart
