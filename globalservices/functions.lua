@@ -1,6 +1,6 @@
-print("YO")
-local Players = game:GetService("Players")
 
+local Players = game:GetService("Players")
+print("YO")
 local LocalPlayer = Players.LocalPlayer
 local LocalCharacter = nil
 local LocalHumanoid = nil
