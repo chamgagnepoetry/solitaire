@@ -1,3 +1,4 @@
+print("YO")
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
@@ -5,6 +6,7 @@ local LocalCharacter = nil
 local LocalHumanoid = nil
 
 local Mouse = LocalPlayer:GetMouse()
+local Camera = workspace.CurrentCamera
 
 getgenv().NotificationTime = 3
 
@@ -236,7 +238,7 @@ local function getClosestPartToMouse(player)
 
     for _, part in ipairs(character:GetChildren()) do
         if part:IsA("BasePart") then
-            local screenPos, onScreen = camera:WorldToScreenPoint(part.Position)
+            local screenPos, onScreen = Camera:WorldToScreenPoint(part.Position)
             if onScreen then
                 local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
                 if distance < shortestDistance then
