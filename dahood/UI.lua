@@ -138,6 +138,9 @@ function UI:Initialize()
 	CameraLockDepBox:SetupDependencies({
 		{Toggles.CameraLock, true}
 	})
+	CameraLockDepBox:AddToggle("CameraLockClosestPart", {
+        Text = "closest part"
+    })
 	CameraLockDepBox:AddToggle("CameraRadius",{
 		Text = "radius"
 	}):AddColorPicker("CameraRadiusColor", {
