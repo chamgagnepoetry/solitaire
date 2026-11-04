@@ -246,6 +246,6 @@ local function getClosestPartToMouse(player)
             end
         end
     end
-    return closestPart, shortestDistance
+    return closestPart
 end
-getgenv().getRandomHitPart = getRandomHitPart
+getgenv().getClosestPartToMouse = getClosestPartToMouse
