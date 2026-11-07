@@ -1,4 +1,3 @@
-print('ur banned lol')
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
@@ -286,10 +285,6 @@ function UI:Initialize()
 		SpecialType = "Player";
 		Multi = true;
 		Text = "player whitelist";
-
-		Callback = function(Value)
-			print("dropdown changed", debug.traceback())
-		end
 	})
 	TargetingGroupBox:AddInput("TargetingFilter", {
 		Text = "player/crew blacklist",
