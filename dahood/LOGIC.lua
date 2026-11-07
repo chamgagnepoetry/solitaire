@@ -1,3 +1,4 @@
+print("hello")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -10,9 +11,9 @@ local LocalHumanoid = nil
 local LocalHumanoidRootPart = nil
 
 do
-	if LocalPlayer:GetAttribute("Loaded") ~= true then
+	if not LocalPlayer:FindFirstChild("DataFolder") then
 		local loadingText = Drawing.new("Text")
-		loadingText.Text = "waiting for local player: " .. "Loaded"
+		loadingText.Text = "waiting for localplayer." .. "DataFolder"
 		loadingText.Size = 24
 		loadingText.Center = true
 		loadingText.Outline = true
@@ -26,9 +27,7 @@ do
 			end
 		end)
 
-		while LocalPlayer:GetAttribute("Loaded") ~= true do
-			LocalPlayer:GetAttributeChangedSignal("Loaded"):Wait()
-		end
+		LocalPlayer:WaitForChild("DataFolder")
 
 		renderConnection:Disconnect()
 		loadingText:Remove()
