@@ -1,4 +1,3 @@
-print("sexy boy")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -10,6 +9,32 @@ local LocalCharacter = nil
 local LocalHumanoid = nil
 local LocalHumanoidRootPart = nil
 
+do
+	if LocalPlayer:GetAttribute("Loaded") ~= true then
+		local loadingText = Drawing.new("Text")
+		loadingText.Text = "waiting for local player: " .. "Loaded"
+		loadingText.Size = 24
+		loadingText.Center = true
+		loadingText.Outline = true
+		loadingText.Color = Color3.fromRGB(255, 255, 255)
+		loadingText.Visible = true
+
+		local renderConnection = RunService.RenderStepped:Connect(function()
+			local currentCamera = workspace.CurrentCamera
+			if currentCamera then
+				loadingText.Position = currentCamera.ViewportSize / 2
+			end
+		end)
+
+		while LocalPlayer:GetAttribute("Loaded") ~= true do
+			LocalPlayer:GetAttributeChangedSignal("Loaded"):Wait()
+		end
+
+		renderConnection:Disconnect()
+		loadingText:Remove()
+	end
+end
+
 local LocalDataFolder = LocalPlayer:WaitForChild("DataFolder")
 local LocalInventoryFolder = LocalDataFolder:WaitForChild("Inventory")
 local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
@@ -17,7 +42,6 @@ local ClientAnimations = ReplicatedStorage:WaitForChild("ClientAnimations")
 local LocalCurrency = LocalDataFolder:WaitForChild("Currency")
 local LocalHumanoidHealthChangedConnection = nil
 
-local PENDING_WINDOW = 1
 local pendingHits = {}
 local unclaimedDamage = {}
 
@@ -81,7 +105,7 @@ local function popFresh(list)
 	local now = os.clock()
 	while #list > 0 do
 		local entry = table.remove(list, 1)
-		if now - entry.time <= PENDING_WINDOW then
+		if now - entry.time <= 1 then
 			return entry
 		end
 	end
