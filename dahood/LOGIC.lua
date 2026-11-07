@@ -1,4 +1,4 @@
-print("i gayyyyyy")
+print("sexy boy")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -708,6 +708,28 @@ function Logic:Initialize(UIReference)
 		CameraTarget = nil
 	end)
 
+	local function isWhitelisted(player)
+		local whitelist = Options.TargetingWhitelist.Value
+		if not player or type(whitelist) ~= "table" then
+			return false
+		end
+
+		local name = player.Name:lower()
+		for key, value in pairs(whitelist) do
+			if type(value) == "string" then
+				if value:lower() == name then
+					return true
+				end
+			elseif value == true and type(key) == "string" then
+				if key:lower() == name then
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
 	runLoop("GunTriggerBotKey", function()
 		local Gun = getEquippedGun()
 		if not Gun then
@@ -740,6 +762,11 @@ function Logic:Initialize(UIReference)
 			Gun:Deactivate()
 			return
 		elseif Toggles.GunTriggerBotKnockedCheck.Value and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
+			Gun:Deactivate()
+			return
+		end
+	
+		if isWhitelisted(TargetPlayer) then
 			Gun:Deactivate()
 			return
 		end
