@@ -274,6 +274,10 @@ function UI:Initialize()
 		SpecialType = "Player";
 		Multi = true;
 		Text = "player whitelist";
+
+		Callback = function(Value)
+			print("dropdown changed", debug.traceback())
+		end
 	})
 	TargetingGroupBox:AddInput("TargetingFilter", {
 		Text = "player/crew blacklist",
