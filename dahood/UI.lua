@@ -1,3 +1,4 @@
+print('ur banned lol')
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
@@ -192,7 +193,7 @@ function UI:Initialize()
 		end,
 	})
 
-	local function ApplyTargetingFilter(value)
+	local function ApplyTargetingFilter(value, keepExisting)
 		local targets = {}
 		local crewIds = {}
 		local hasFilter = false
@@ -206,7 +207,7 @@ function UI:Initialize()
 					table.insert(crewIds, num)
 				end
 				local bestPlayer, bestScore = nil, 0
-	 				for _, player in ipairs(Players:GetPlayers()) do
+				for _, player in ipairs(Players:GetPlayers()) do
 					if player ~= LocalPlayer then
 						local score = 0
 						for _, name in ipairs({ player.Name:lower(), player.DisplayName:lower() }) do
@@ -235,8 +236,18 @@ function UI:Initialize()
 				end
 			end
 		end
-	 
+	
 		local whitelist = {}
+		if keepExisting then
+			local current = Options.TargetingWhitelist.Value
+			if type(current) == "table" then
+				for name, selected in pairs(current) do
+					if selected and Players:FindFirstChild(name) then
+						whitelist[name] = true
+					end
+				end
+			end
+		end
 		if hasFilter then
 			for _, player in ipairs(Players:GetPlayers()) do
 				if player ~= LocalPlayer then
@@ -255,6 +266,7 @@ function UI:Initialize()
 				end
 			end
 		end
+	
 		Options.TargetingWhitelist:SetValue(whitelist)
 	end
 
@@ -296,10 +308,15 @@ function UI:Initialize()
 			Options.TargetingWhitelist:SetValue({})
 		end,
 	})
+
 	Players.PlayerAdded:Connect(function()
 		task.wait(1)
-		ApplyTargetingFilter(Options.TargetingFilter.Value)
+		local filter = Options.TargetingFilter.Value
+		if filter and filter:match("%S") then
+			ApplyTargetingFilter(filter)
+		end
 	end)
+
 	TargetingGroupBox:AddToggle("TargetingLimitDistanceToggle",{
 		Text = "limit distance"
 	})
