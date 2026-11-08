@@ -13,18 +13,6 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	end
 end
 
-local MaskShopNames = {}
-local ArmorShopNames = {}
-for _, name in ipairs(IgnoredShopNames) do
-	local lowered = string.lower(name)
-	if string.find(lowered, "mask", 1, true) then
-		table.insert(MaskShopNames, name)
-	end
-	if string.find(lowered, "armor", 1, true) then
-		table.insert(ArmorShopNames, name)
-	end
-end
-
 local UI = {}
 
 function UI:Initialize()
@@ -718,7 +706,7 @@ function UI:Initialize()
 		{Toggles.AutoMaskToggle, true}
 	})
 	AutoMaskDepBox:AddDropdown("AutoMaskItem", {
-		Values = MaskShopNames,
+		Values = {"[Paintball Mask] - $68","[Surgeon Mask] - $28","[Riot Mask] - $68"},
 		Default = 1,
 		Multi = false,
 		Text = "mask";
@@ -736,7 +724,7 @@ function UI:Initialize()
         Text = "buy on damage"
     })
 	AutoArmorDepBox:AddDropdown("AutoArmorItem", {
-		Values = ArmorShopNames,
+		Values = {"[High-Medium Armor] - $2589","[Medium Armor] - $1126"},
 		Default = 1,
 		Multi = false,
 		Text = "armor";
