@@ -1,4 +1,4 @@
-print("6456456456")
+print("sk")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -77,13 +77,10 @@ local function formatCustomNotification(templateString, shooterName, damage, par
     return formattedMessage
 end
 
-local DEFAULT_DAMAGE_TEXT = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
-local DEFAULT_HIT_TEXT = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
-
 local function notifyDamage(hit, damage)
 	local text = Options.NotifyDamageText.Value
 	if text == nil or text == "" then
-		text = DEFAULT_DAMAGE_TEXT
+		text = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.shooterName, damage, hit.partName, hit.weaponName)
 	Library:Notify(notificationText, tonumber(Options.NotifyDamageDuration.Value))
@@ -94,7 +91,7 @@ local function notifyHit(hit, damage)
 
 	local text = Options.NotifyHitText.Value
 	if text == nil or text == "" then
-		text = DEFAULT_HIT_TEXT
+		text = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.playerName, damage, hit.bodyPartName, hit.gunName)
 	Library:Notify(notificationText, tonumber(Options.NotifyHitDuration.Value))
@@ -1013,40 +1010,32 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
-	local function useMask(tool)
-		print(tool)
-		LocalHumanoid:EquipTool(tool)
-		task.wait(0.1)
-		tool:Activate()
-		task.wait(0.1)
-		LocalHumanoid:UnequipTools()
-	end
-
-	local function autoMask()
-		if not Toggles.AutoMaskToggle.Value then return end
+	runLoop(Toggles.AutoMaskToggle, function()
+		if LocalHumanoid.DisplayDistanceType ~= Enum.HumanoidDisplayDistanceType.Viewer then return end
 
 		local itemName = Options.AutoMaskItem.Value
-		local tool = findToolByName(itemName)
-		if tool then
-			useMask(tool)
-			return
-		end
+		if not itemName or itemName == "" then return end
 
-		PurchaseItem(itemName, function(success, tool)
-			if tool then
-				useMask(tool)
-			else
+		local maskTool = findToolByName(itemName)
+		if not maskTool then
+			local finished = false
+			PurchaseItem(itemName, function(success, tool)
+				maskTool = tool
+				finished = true
+			end)
+			while not finished do
 				task.wait()
-				autoMask()
 			end
-		end)
-	end
+		end
+		if not maskTool then return end
 
-	LocalPlayer.CharacterAdded:Connect(function()
-		autoMask()
+		LocalHumanoid:EquipTool(maskTool)
+		while LocalHumanoid.DisplayDistanceType == Enum.HumanoidDisplayDistanceType.Viewer and LocalHumanoid.Health > 0 do
+			task.wait()
+			maskTool:Activate()
+		end
+		LocalHumanoid:UnequipTools()
 	end)
-
-	Toggles.AutoMaskToggle:OnChanged(autoMask)
 
 	local armorPending = false
 	runLoop(Toggles.AutoArmorToggle, function()
