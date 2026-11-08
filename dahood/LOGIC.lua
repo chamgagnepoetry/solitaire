@@ -1,4 +1,3 @@
-print('hello')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -974,42 +973,68 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
---[[	LocalPlayer.CharacterAdded:Connect(function(char)
-		task.spawn(doAutoMask, char)
+	local function autoMask()
+		local itemName = Options.AutoMaskItem.Value
+		if not itemName or itemName == "" then return end
+
+		local char = LocalCharacter
+
+		local maskTool = findToolByItemName(itemName)
+		if not maskTool then
+			PurchaseItem(itemName)
+			while not maskTool and LocalCharacter == char and Toggles.AutoMaskToggle.Value do
+				task.wait()
+				maskTool = findToolByItemName(itemName)
+			end
+		end
+		if not maskTool or LocalCharacter ~= char then return end
+
+		LocalHumanoid:EquipTool(maskTool)
+		task.wait()
+		maskTool:Activate()
+		task.wait()
+		LocalHumanoid:UnequipTools()
+	end
+
+	LocalPlayer.CharacterAdded:Connect(function(char)
+		while LocalCharacter ~= char do
+			task.wait()
+		end
+		autoMask()
 	end)
+
 	Toggles.AutoMaskToggle:OnChanged(function()
-		if Toggles.AutoMaskToggle.Value and LocalCharacter then
-			task.spawn(doAutoMask, LocalCharacter)
+		if Toggles.AutoMaskToggle.Value then
+			task.spawn(autoMask)
 		end
 	end)
-	if LocalCharacter then
-		task.spawn(doAutoMask, LocalCharacter)
-	end
---]]
+
+	local armorPurchasePending = false
 	runLoop(Toggles.AutoArmorToggle, function()
 		local selectedItemName = Options.AutoArmorItem.Value
 		if not selectedItemName or selectedItemName == "" then return end
 
 		local selectedMaxArmorValue = getMaxArmor(selectedItemName)
 		if not selectedMaxArmorValue then return end
-		print(selectedMaxArmorValue)
 
 		local localArmorValue = getLocalArmor()
 		if not localArmorValue then return end
 
-		if Toggles.ArmorBuyOnDamageToggle then
-			if localArmorValue < selectedMaxArmorValue then
-				print("buying")
-				print(localArmorValue)
-				PurchaseItem(selectedItemName)
-			end
+		local needsArmor
+		if Toggles.ArmorBuyOnDamageToggle.Value then
+			needsArmor = localArmorValue < selectedMaxArmorValue
 		else
-			if localArmorValue == 0 then
-				print("buying")
-				print(localArmorValue)
-				PurchaseItem(selectedItemName)
-			end
+			needsArmor = localArmorValue <= 0
 		end
+
+		if not needsArmor then
+			armorPurchasePending = false
+			return
+		end
+
+		if armorPurchasePending then return end
+		armorPurchasePending = true
+		PurchaseItem(selectedItemName)
 	end)
 end
 
