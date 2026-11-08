@@ -1,4 +1,3 @@
-print("hello")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -369,7 +368,29 @@ local function canStompBelow()
 end
 getgenv().canStompBelow = canStompBelow
 
-local HIT_WINDOW = 1.5
+local function getLocalArmor()
+	local bodyEffects = LocalCharacter and LocalCharacter:FindFirstChild("BodyEffects")
+	local armor = bodyEffects and bodyEffects:FindFirstChild("Armor")
+	if armor then 
+		return armor.Value
+	else
+		return false
+	end
+	return false
+end
+getgenv().getLocalArmor = getLocalArmor
+
+local function getMaxArmor(itemName)
+	local name = itemName:lower()
+	if name:find("high-medium armor", 1, true) then
+		return 130
+	elseif name:find("medium armor", 1, true) then
+		return 100
+	end
+	return false
+end
+getgenv().getMaxArmor = getMaxArmor
+
 local humanoidHealth = setmetatable({}, { __mode = "k" })
 local lastHit = setmetatable({}, { __mode = "k" })
 
@@ -433,7 +454,7 @@ local function watchHumanoid(humanoid)
 		local damageDealt = oldHealth - newHealth
 		local hit = lastHit[humanoid]
 
-		if damageDealt > 0 and hit and (os.clock() - hit.time) <= HIT_WINDOW then
+		if damageDealt > 0 and hit and (os.clock() - hit.time) <= 1.5 then
 			lastHit[humanoid] = nil
 			notifyHit(hit, damageDealt)
 		end
@@ -445,9 +466,8 @@ local function watchHumanoid(humanoid)
 	end)
 end
 
-
 local function watchCharacter(character)
-	local humanoid = character:WaitForChild("Humanoid", 10)
+	local humanoid = character:WaitForChild("Humanoid")
 	if humanoid then
 		watchHumanoid(humanoid)
 	end
@@ -953,6 +973,38 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
+--[[	LocalPlayer.CharacterAdded:Connect(function(char)
+		task.spawn(doAutoMask, char)
+	end)
+	Toggles.AutoMaskToggle:OnChanged(function()
+		if Toggles.AutoMaskToggle.Value and LocalCharacter then
+			task.spawn(doAutoMask, LocalCharacter)
+		end
+	end)
+	if LocalCharacter then
+		task.spawn(doAutoMask, LocalCharacter)
+	end
+--]]
+	runLoop(Toggles.AutoArmorToggle, function()
+		local selectedItemName = Options.AutoArmorItem.Value
+		if not selectedItemName or selectedItemName == "" then return end
+
+		local selectedMaxArmorValue = getMaxArmor(selectedItemName)
+		if not selectedMaxArmorValue then return end
+
+		local localArmorValue = getLocalArmor()
+		if not localArmorValue then return end
+
+		if Toggles.ArmorBuyOnDamageToggle then
+			if localArmorValue < selectedMaxArmorValue then
+				PurchaseItem(selectedItemName)
+			end
+		else
+			if localArmorValue == 0 then
+				PurchaseItem(selectedItemName)
+			end
+		end
+	end)
 end
 
 return Logic
