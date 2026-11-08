@@ -1,3 +1,4 @@
+print('hello')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -998,10 +999,14 @@ function Logic:Initialize(UIReference)
 
 		if Toggles.ArmorBuyOnDamageToggle then
 			if localArmorValue < selectedMaxArmorValue then
+				print("buying")
+				print(localArmorValue)
 				PurchaseItem(selectedItemName)
 			end
 		else
 			if localArmorValue == 0 then
+				print("buying")
+				print(localArmorValue)
 				PurchaseItem(selectedItemName)
 			end
 		end
