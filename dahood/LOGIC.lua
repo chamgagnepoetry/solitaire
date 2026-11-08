@@ -1,4 +1,4 @@
-print("123123")
+print("435345345")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1048,7 +1048,10 @@ function Logic:Initialize(UIReference)
 
 	Toggles.AutoMaskToggle:OnChanged(autoMask)
 
+	local armorPending = false
 	runLoop(Toggles.AutoArmorToggle, function()
+		if armorPending then return end
+
 		local itemName = Options.AutoArmorItem.Value
 		if not itemName or itemName == "" then return end
 
@@ -1056,13 +1059,25 @@ function Logic:Initialize(UIReference)
 		local armor = getLocalArmor()
 		if not maxArmor or not armor then return end
 
+		local needsArmor
 		if Toggles.ArmorBuyOnDamageToggle.Value then
-			if armor < maxArmor then
-				PurchaseItem(itemName)
-			end
-		elseif armor <= 0 then
-			PurchaseItem(itemName)
+			needsArmor = armor < maxArmor
+		else
+			needsArmor = armor <= 0
 		end
+		if not needsArmor then return end
+
+		armorPending = true
+		PurchaseItem(itemName, function(success)
+			if success then
+				while LocalHumanoid.Health > 0 do
+					local current = getLocalArmor()
+					if not current or current > armor then break end
+					task.wait()
+				end
+			end
+			armorPending = false
+		end)
 	end)
 end
 
