@@ -1,3 +1,4 @@
+print("GO")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1013,6 +1014,7 @@ function Logic:Initialize(UIReference)
 
 	-- MISC TAB
 	local function useMask(tool)
+		print(tool)
 		LocalHumanoid:EquipTool(tool)
 		task.wait(0.1)
 		tool:Activate()
