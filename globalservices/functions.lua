@@ -94,24 +94,6 @@ local function getEquippedTool()
 end
 getgenv().getEquippedTool = getEquippedTool
 
-local function searchForTool(ToolName)
-	local Tool
-	for _, object in pairs(LocalCharacter:GetChildren()) do
-		if object:IsA("Tool") and object.Name == ToolName then
-			Tool = object
-			return Tool
-		end
-	end
-	for _, object in pairs(LocalPlayer.Backpack:GetChildren()) do
-		if object:IsA("Tool") and object.Name == ToolName then
-			Tool = object
-			return Tool
-		end
-	end
-	return false
-end
-getgenv().searchForTool = searchForTool
-
 local function checkWall(target)
 	if not LocalHumanoidRootPart then
 		return false
@@ -251,13 +233,13 @@ local function getClosestPartToMouse(player)
 end
 getgenv().getClosestPartToMouse = getClosestPartToMouse
 
-local function findToolByItemName(itemName)
-	local bracketed = (itemName:match("%[.-%]") or itemName):lower()
+local function findToolByName(name)
+	local needle = (name:match("%[.-%]") or name):lower()
 	local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
 	for _, container in ipairs({ LocalCharacter, backpack }) do
 		if container then
 			for _, tool in ipairs(container:GetChildren()) do
-				if tool:IsA("Tool") and tool.Name:lower():find(bracketed, 1, true) then
+				if tool:IsA("Tool") and tool.Name:lower():find(needle, 1, true) then
 					return tool
 				end
 			end
@@ -265,4 +247,11 @@ local function findToolByItemName(itemName)
 	end
 	return nil
 end
-getgenv().findToolByItemName = findToolByItemName
+getgenv().findToolByName = findToolByName
+
+local function searchForTool(name)
+	return findToolByName(name) ~= nil
+end
+getgenv().searchForTool = searchForTool
+
+print("YO")
