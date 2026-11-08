@@ -1,3 +1,4 @@
+print('hello')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -974,20 +975,19 @@ function Logic:Initialize(UIReference)
 
 	-- MISC TAB
 	local function autoMask()
+		if not Toggles.AutoMaskToggle.Value then return end
 		local itemName = Options.AutoMaskItem.Value
 		if not itemName or itemName == "" then return end
-
-		local char = LocalCharacter
 
 		local maskTool = findToolByItemName(itemName)
 		if not maskTool then
 			PurchaseItem(itemName)
-			while not maskTool and LocalCharacter == char and Toggles.AutoMaskToggle.Value do
+			while not maskTool and Toggles.AutoMaskToggle.Value do
 				task.wait()
 				maskTool = findToolByItemName(itemName)
 			end
 		end
-		if not maskTool or LocalCharacter ~= char then return end
+		if not maskTool then return end
 
 		LocalHumanoid:EquipTool(maskTool)
 		task.wait()
@@ -996,16 +996,15 @@ function Logic:Initialize(UIReference)
 		LocalHumanoid:UnequipTools()
 	end
 
-	LocalPlayer.CharacterAdded:Connect(function(char)
-		while LocalCharacter ~= char do
-			task.wait()
-		end
-		autoMask()
-	end)
-
 	Toggles.AutoMaskToggle:OnChanged(function()
+		local connection
 		if Toggles.AutoMaskToggle.Value then
-			task.spawn(autoMask)
+			autoMask()
+			connection = LocalPlayer.CharacterAdded:Connect(function(char)
+				autoMask()
+			end)
+		else
+			connection:Disconnect()
 		end
 	end)
 
