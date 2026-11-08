@@ -1,4 +1,3 @@
-print('hello')
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -178,6 +177,10 @@ local function TryPurchase(Item)
 	end
 
 	while true do
+		if not LocalHumanoid or LocalHumanoid.Health <= 0 then
+			return false
+		end
+
 		if not Item or not Item.Parent or not Item:FindFirstChild("Head") or not Item:FindFirstChild("ClickDetector") or LocalCurrency.Value < Item.Price.Value then
 			return false
 		end
@@ -193,28 +196,64 @@ local function TryPurchase(Item)
 	end
 end
 
+local function waitForBoughtTool(Item)
+	local Bracketed = Item.Name:match("%[.-%]")
+	if not Bracketed or Item.Name:find("Ammo") or Item.Name:find("Armor") then
+		return nil
+	end
+
+	local char = LocalCharacter
+	local tool = findToolByName(Bracketed)
+	while not tool and LocalCharacter == char do
+		task.wait()
+		tool = findToolByName(Bracketed)
+	end
+	return tool
+end
+
 local function ProcessQueue()
 	if IsProcessing then return end
 	IsProcessing = true
 
-	local OriginalCFrame = LocalHumanoidRootPart.CFrame
+	local HRP = LocalHumanoidRootPart
+	local OriginalCFrame = HRP.CFrame
 
 	while #PurchaseQueue > 0 do
-		local Item = table.remove(PurchaseQueue, 1)
-		TryPurchase(Item)
+		local Entry = table.remove(PurchaseQueue, 1)
+
+		local ok, result = pcall(TryPurchase, Entry.Item)
+		if not ok then
+			warn("purchase error:", result)
+		end
+		local success = ok and result == true
+
+		if Entry.Callback then
+			task.spawn(function()
+				local tool = nil
+				if success then
+					tool = waitForBoughtTool(Entry.Item)
+				end
+				Entry.Callback(success, tool)
+			end)
+		end
 	end
 
-	LocalHumanoidRootPart.CFrame = OriginalCFrame
+	if HRP.Parent then
+		HRP.CFrame = OriginalCFrame
+	end
 	IsProcessing = false
 end
 
-local function PurchaseItem(Name)
+local function PurchaseItem(Name, Callback)
 	for _, Item in ipairs(IgnoredShop) do
 		if Item.Name == Name then
-			table.insert(PurchaseQueue, Item)
+			table.insert(PurchaseQueue, { Item = Item, Callback = Callback })
 			task.spawn(ProcessQueue)
-			break
+			return
 		end
+	end
+	if Callback then
+		task.spawn(Callback, false, nil)
 	end
 end
 getgenv().PurchaseItem = PurchaseItem
@@ -974,66 +1013,124 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
-	local function autoMask()
-		if not Toggles.AutoMaskToggle.Value then return end
-		local itemName = Options.AutoMaskItem.Value
-		if not itemName or itemName == "" then return end
-
-		local maskTool = findToolByItemName(itemName)
-		if not maskTool then
-			PurchaseItem(itemName)
-			while not maskTool and Toggles.AutoMaskToggle.Value do
-				task.wait()
-				maskTool = findToolByItemName(itemName)
-			end
-		end
-		if not maskTool then return end
-
-		LocalHumanoid:EquipTool(maskTool)
-		task.wait()
-		maskTool:Activate()
-		task.wait()
-		LocalHumanoid:UnequipTools()
+	local function charReady(char)
+		return LocalCharacter == char and char.Parent ~= nil
+			and LocalHumanoid ~= nil and LocalHumanoid.Parent == char
+			and LocalHumanoidRootPart ~= nil and LocalHumanoidRootPart.Parent == char
+			and LocalHumanoid.Health > 0
 	end
 
-	Toggles.AutoMaskToggle:OnChanged(function()
-		local connection
-		if Toggles.AutoMaskToggle.Value then
-			autoMask()
-			connection = LocalPlayer.CharacterAdded:Connect(function(char)
-				autoMask()
+	-- AUTO MASK
+	local maskDoneFor = nil
+	local maskActiveFor = nil
+
+	local function useMask(char, tool)
+		while charReady(char) and tool.Parent ~= char do
+			LocalHumanoid:EquipTool(tool)
+			task.wait()
+		end
+		if not charReady(char) then return end
+
+		task.wait(0.1)
+		tool:Activate()
+		task.wait(0.1)
+		LocalHumanoid:UnequipTools()
+
+		maskDoneFor = char
+	end
+
+	local function autoMask(char)
+		char = char or LocalCharacter
+		if not char or maskDoneFor == char or maskActiveFor == char then return end
+		maskActiveFor = char
+
+		local function finish()
+			if maskActiveFor == char then
+				maskActiveFor = nil
+			end
+		end
+		while char.Parent and not charReady(char) do
+			task.wait()
+		end
+
+		local function buyMask()
+			if not Toggles.AutoMaskToggle.Value or not charReady(char) then return finish() end
+
+			local itemName = Options.AutoMaskItem.Value
+			if not itemName or itemName == "" then return finish() end
+
+			local owned = findToolByName(itemName)
+			if owned then
+				useMask(char, owned)
+				return finish()
+			end
+
+			PurchaseItem(itemName, function(success, tool)
+				if success and tool then
+					if charReady(char) then
+						useMask(char, tool)
+					end
+					return finish()
+				end
+				task.wait()
+				buyMask()
 			end)
-		else
-			connection:Disconnect()
+		end
+
+		buyMask()
+	end
+
+	LocalPlayer.CharacterAdded:Connect(function(char)
+		if Toggles.AutoMaskToggle.Value then
+			task.spawn(autoMask, char)
 		end
 	end)
 
-	local armorPurchasePending = false
+	Toggles.AutoMaskToggle:OnChanged(function()
+		if Toggles.AutoMaskToggle.Value then
+			task.spawn(autoMask)
+		end
+	end)
+
+	if Toggles.AutoMaskToggle.Value then
+		task.spawn(autoMask)
+	end
+
+	local armorPending = false
 	runLoop(Toggles.AutoArmorToggle, function()
-		local selectedItemName = Options.AutoArmorItem.Value
-		if not selectedItemName or selectedItemName == "" then return end
+		if armorPending then return end
 
-		local selectedMaxArmorValue = getMaxArmor(selectedItemName)
-		if not selectedMaxArmorValue then return end
+		local itemName = Options.AutoArmorItem.Value
+		if not itemName or itemName == "" then return end
 
-		local localArmorValue = getLocalArmor()
-		if not localArmorValue then return end
+		local maxArmor = getMaxArmor(itemName)
+		if not maxArmor then return end
+
+		local armor = getLocalArmor()
+		if not armor then return end
+
+		if not LocalHumanoid or LocalHumanoid.Health <= 0 or checkLocalPlayerKnocked() then return end
 
 		local needsArmor
 		if Toggles.ArmorBuyOnDamageToggle.Value then
-			needsArmor = localArmorValue < selectedMaxArmorValue
+			needsArmor = armor < maxArmor
 		else
-			needsArmor = localArmorValue <= 0
+			needsArmor = armor <= 0
 		end
+		if not needsArmor then return end
 
-		if not needsArmor then
-			armorPurchasePending = false
-			return
-		end
-
-		if armorPurchasePending then return end
-		armorPurchasePending = true
-		PurchaseItem(selectedItemName)
+		armorPending = true
+		local char = LocalCharacter
+		PurchaseItem(itemName, function(success)
+			if success then
+				while LocalCharacter == char and LocalHumanoid.Health > 0 do
+					local current = getLocalArmor()
+					if not current or current > armor then break end
+					task.wait()
+				end
+			end
+			armorPending = false
+		end)
 	end)
 end
 
