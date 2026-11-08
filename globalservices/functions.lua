@@ -1,6 +1,5 @@
-
 local Players = game:GetService("Players")
-print("YO")
+
 local LocalPlayer = Players.LocalPlayer
 local LocalCharacter = nil
 local LocalHumanoid = nil
@@ -251,3 +250,19 @@ local function getClosestPartToMouse(player)
     return closestPart
 end
 getgenv().getClosestPartToMouse = getClosestPartToMouse
+
+local function findToolByItemName(itemName)
+	local bracketed = (itemName:match("%[.-%]") or itemName):lower()
+	local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
+	for _, container in ipairs({ LocalCharacter, backpack }) do
+		if container then
+			for _, tool in ipairs(container:GetChildren()) do
+				if tool:IsA("Tool") and tool.Name:lower():find(bracketed, 1, true) then
+					return tool
+				end
+			end
+		end
+	end
+	return nil
+end
+getgenv().findToolByItemName = findToolByItemName
