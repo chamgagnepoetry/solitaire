@@ -1,3 +1,4 @@
+print("SCRIPT")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1032,6 +1033,7 @@ function Logic:Initialize(UIReference)
 		if not charReady(char) then return end
 
 		task.wait(0.1)
+		print("activate")
 		tool:Activate()
 		task.wait(0.1)
 		LocalHumanoid:UnequipTools()
