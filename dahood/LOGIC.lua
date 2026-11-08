@@ -991,6 +991,7 @@ function Logic:Initialize(UIReference)
 
 		local selectedMaxArmorValue = getMaxArmor(selectedItemName)
 		if not selectedMaxArmorValue then return end
+		print(selectedMaxArmorValue)
 
 		local localArmorValue = getLocalArmor()
 		if not localArmorValue then return end
