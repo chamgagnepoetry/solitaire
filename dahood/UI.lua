@@ -13,6 +13,18 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	end
 end
 
+local MaskShopNames = {}
+local ArmorShopNames = {}
+for _, name in ipairs(IgnoredShopNames) do
+	local lowered = string.lower(name)
+	if string.find(lowered, "mask", 1, true) then
+		table.insert(MaskShopNames, name)
+	end
+	if string.find(lowered, "armor", 1, true) then
+		table.insert(ArmorShopNames, name)
+	end
+end
+
 local UI = {}
 
 function UI:Initialize()
@@ -35,32 +47,11 @@ function UI:Initialize()
     }
 
     -- \\MAIN TAB//
-	local GameplayGroupBox = Tabs.Main:AddRightGroupbox("gameplay")
 	local AimTabBox = Tabs.Main:AddLeftTabbox("aim")
 	local TargetingGroupBox = Tabs.Main:AddLeftGroupbox("targeting")
     local GunTabBox = Tabs.Main:AddRightTabbox("gun")
 	local ExploitsGroupBox = Tabs.Main:AddRightGroupbox("exploits")
 
-	-- Gameplay group box
-	
-	GameplayGroupBox:AddToggle("AutoStompToggle", {
-        Text = "auto stomp"
-    })
-	local AutoStompDepBox = GameplayGroupBox:AddDependencyBox()
-	AutoStompDepBox:SetupDependencies({
-		{Toggles.AutoStompToggle, true}
-	})
-	AutoStompDepBox:AddToggle("AutoStompAnimation", {
-        Text = "stomp animation"
-    })
-	AutoStompDepBox:AddDivider()
-
-	GameplayGroupBox:AddToggle("AutoMaskToggle", {
-        Text = "auto mask"
-    })
-	GameplayGroupBox:AddToggle("AutoArmorToggle", {
-        Text = "auto armor"
-    })
 
 	local SilentAimTab = AimTabBox:AddTab("silent aim")
 	SilentAimTab:AddToggle("SilentAimToggle", {
@@ -602,6 +593,9 @@ function UI:Initialize()
 
 	-- \\MISC TAB//
 	local ShopGroupBox = Tabs.Misc:AddLeftGroupbox("shop")
+	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
+	local AutomationGroupBox = Tabs.Misc:AddRightGroupbox("automation")
+
 	ShopGroupBox:AddDropdown("DahoodShop", {
 		Values = IgnoredShopNames,
 		Default = 0,
@@ -694,7 +688,6 @@ function UI:Initialize()
 	})
 	NotifyDamageTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
 
-	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
 	ChatGroupBox:AddToggle("ChatSpy",{
 		Text = "chat spy";
 		Callback = function(Value)
@@ -704,6 +697,51 @@ function UI:Initialize()
 	ChatGroupBox:AddToggle("ChatShitTalk",{
 		Text = "shit talk"
 	})
+
+	AutomationGroupBox:AddToggle("AutoStompToggle", {
+        Text = "auto stomp"
+    })
+	local AutoStompDepBox = AutomationGroupBox:AddDependencyBox()
+	AutoStompDepBox:SetupDependencies({
+		{Toggles.AutoStompToggle, true}
+	})
+	AutoStompDepBox:AddToggle("AutoStompAnimation", {
+        Text = "stomp animation"
+    })
+	AutoStompDepBox:AddDivider()
+
+	AutomationGroupBox:AddToggle("AutoMaskToggle", {
+        Text = "auto mask"
+    })
+	local AutoMaskDepBox = AutomationGroupBox:AddDependencyBox()
+	AutoMaskDepBox:SetupDependencies({
+		{Toggles.AutoMaskToggle, true}
+	})
+	AutoMaskDepBox:AddDropdown("AutoMaskItem", {
+		Values = MaskShopNames,
+		Default = 0,
+		Multi = false,
+		Text = "mask";
+	})
+	AutoMaskDepBox:AddDivider()
+
+	AutomationGroupBox:AddToggle("AutoArmorToggle", {
+        Text = "auto armor"
+    })
+	local AutoArmorDepBox = AutomationGroupBox:AddDependencyBox()
+	AutoArmorDepBox:SetupDependencies({
+		{Toggles.AutoArmorToggle, true}
+	})
+	AutoArmorDepBox:AddToggle("ArmorBuyOnDamageToggle", {
+        Text = "buy on damage"
+    })
+	AutoArmorDepBox:AddDropdown("AutoArmorItem", {
+		Values = ArmorShopNames,
+		Default = 0,
+		Multi = false,
+		Text = "armor";
+	})
+	AutoArmorDepBox:AddDivider()
 
 	-- \\SETTINGS TAB//
 
