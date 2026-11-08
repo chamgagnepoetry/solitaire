@@ -1,4 +1,4 @@
-print("sk")
+print("sdfgsdfg")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1027,11 +1027,14 @@ function Logic:Initialize(UIReference)
 				task.wait()
 			end
 		end
+		print('no mask tool')
 		if not maskTool then return end
+		print("yo")
 
 		LocalHumanoid:EquipTool(maskTool)
 		while LocalHumanoid.DisplayDistanceType == Enum.HumanoidDisplayDistanceType.Viewer and LocalHumanoid.Health > 0 do
 			task.wait()
+			print("activating")
 			maskTool:Activate()
 		end
 		LocalHumanoid:UnequipTools()
