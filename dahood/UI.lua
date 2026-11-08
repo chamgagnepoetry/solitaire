@@ -719,7 +719,7 @@ function UI:Initialize()
 	})
 	AutoMaskDepBox:AddDropdown("AutoMaskItem", {
 		Values = MaskShopNames,
-		Default = 0,
+		Default = 1,
 		Multi = false,
 		Text = "mask";
 	})
@@ -737,7 +737,7 @@ function UI:Initialize()
     })
 	AutoArmorDepBox:AddDropdown("AutoArmorItem", {
 		Values = ArmorShopNames,
-		Default = 0,
+		Default = 1,
 		Multi = false,
 		Text = "armor";
 	})
