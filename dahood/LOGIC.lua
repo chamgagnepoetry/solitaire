@@ -1,4 +1,4 @@
-print("435345345")
+print("6456456456")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -203,10 +203,10 @@ local function waitForBoughtTool(Item)
 		return nil
 	end
 
-	local tool = findToolByItemName(Bracketed)
+	local tool = findToolByName(Bracketed)
 	while not tool and LocalHumanoid.Health > 0 do
 		task.wait()
-		tool = findToolByItemName(Bracketed)
+		tool = findToolByName(Bracketed)
 	end
 	return tool
 end
