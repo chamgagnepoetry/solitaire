@@ -1,4 +1,4 @@
-print("GO")
+print("123123")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1026,7 +1026,7 @@ function Logic:Initialize(UIReference)
 		if not Toggles.AutoMaskToggle.Value then return end
 
 		local itemName = Options.AutoMaskItem.Value
-		local tool = findToolByItemName(itemName)
+		local tool = findToolByName(itemName)
 		if tool then
 			useMask(tool)
 			return
