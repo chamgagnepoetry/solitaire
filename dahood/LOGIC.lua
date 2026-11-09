@@ -1,4 +1,4 @@
-print("meowmeowmeowmeowmeowmeowmemeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow")
+print("fgh098809sk")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -242,14 +242,12 @@ local function ProcessQueue()
 		end
 		local success = ok and result == true
 
+		local tool = nil
+		if success then
+			tool = waitForBoughtTool(Entry.Item)
+		end
 		if Entry.Callback then
-			task.spawn(function()
-				local tool = nil
-				if success then
-					tool = waitForBoughtTool(Entry.Item)
-				end
-				Entry.Callback(success, tool)
-			end)
+			task.spawn(Entry.Callback, success, tool)
 		end
 	end
 
