@@ -1,4 +1,4 @@
-print("meow meow?")
+print("yo ur gay and ur gay")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1114,10 +1114,14 @@ function Logic:Initialize(UIReference)
 		print("yo")
 
 		LocalHumanoid:EquipTool(maskTool)
-		while LocalHumanoid.DisplayDistanceType == Enum.HumanoidDisplayDistanceType.Viewer and LocalHumanoid.Health > 0 do
+		while LocalHumanoid.DisplayDistanceType == Enum.HumanoidDisplayDistanceType.Viewer and LocalHumanoid.Health > 0 and maskTool.Parent and Toggles.AutoMaskToggle.Value do
 			task.wait()
-			print("activating")
-			maskTool:Activate()
+			if maskTool.Parent == LocalCharacter then
+				print("activating")
+				maskTool:Activate()
+			else
+				LocalHumanoid:EquipTool(maskTool)
+			end
 		end
 		LocalHumanoid:UnequipTools()
 	end)
