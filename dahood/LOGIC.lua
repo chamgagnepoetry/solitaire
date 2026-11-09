@@ -1,4 +1,4 @@
-print("fgh098809sk")
+print("yo ur gay and ur banned")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -242,12 +242,14 @@ local function ProcessQueue()
 		end
 		local success = ok and result == true
 
-		local tool = nil
-		if success then
-			tool = waitForBoughtTool(Entry.Item)
-		end
 		if Entry.Callback then
-			task.spawn(Entry.Callback, success, tool)
+			task.spawn(function()
+				local tool = nil
+				if success then
+					tool = waitForBoughtTool(Entry.Item)
+				end
+				Entry.Callback(success, tool)
+			end)
 		end
 	end
 
@@ -1026,7 +1028,9 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
+	local maskPending = false
 	runLoop(Toggles.AutoMaskToggle, function()
+		if maskPending then return end
 		if LocalHumanoid.DisplayDistanceType ~= Enum.HumanoidDisplayDistanceType.Viewer then return end
 
 		local itemName = Options.AutoMaskItem.Value
@@ -1034,12 +1038,12 @@ function Logic:Initialize(UIReference)
 
 		local maskTool = findToolByName(itemName)
 		if not maskTool then
+			maskPending = true
 			PurchaseItem(itemName, function(success, tool)
-				maskTool = tool
+				maskPending = false
 			end)
+			return
 		end
-		print('no mask tool')
-		if not maskTool then return end
 		print("yo")
 
 		LocalHumanoid:EquipTool(maskTool)
