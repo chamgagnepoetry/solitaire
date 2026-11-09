@@ -1,4 +1,4 @@
-print("meowmeowmeowmeowmeowmeowmeowmeow")
+print("meow meow?")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -161,10 +161,14 @@ getgenv().getEquippedGun = getEquippedGun
 
 local PurchaseAttemptTimeout = 5
 local ToolWaitTimeout = 3
+local PurchaseMoved = false
 
 local function getToolName(Item)
 	if Item.Name:find("Ammo") or Item.Name:find("Armor") then
 		return nil
+	end
+	if Item.Name:find("Mask") then
+		return "[Mask]"
 	end
 	return Item.Name:match("%[.-%]")
 end
@@ -183,6 +187,7 @@ local function attemptPurchase(Item)
 
 		local ValueBefore = LocalCurrency.Value
 
+		PurchaseMoved = true
 		LocalHumanoidRootPart.CFrame = Item.Head.CFrame
 		fireclickdetector(Item.ClickDetector, 0)
 		task.wait()
@@ -196,20 +201,46 @@ local function attemptPurchase(Item)
 end
 
 local function waitForTool(ToolName)
-	local StartTime = os.clock()
 	local Tool = findToolByName(ToolName)
-
-	while not Tool and LocalHumanoid.Health > 0 and os.clock() - StartTime < ToolWaitTimeout do
-		task.wait()
-		Tool = findToolByName(ToolName)
+	if Tool or LocalHumanoid.Health <= 0 then
+		return Tool
 	end
 
-	return Tool
+	local Thread = coroutine.running()
+	local Finished = false
+	local Connections = {}
+
+	local function Finish()
+		if Finished then return end
+		Finished = true
+		for _, Connection in ipairs(Connections) do
+			Connection:Disconnect()
+		end
+		task.spawn(Thread)
+	end
+
+	local function Watch(Container)
+		if Container then
+			table.insert(Connections, Container.ChildAdded:Connect(function()
+				if findToolByName(ToolName) then
+					Finish()
+				end
+			end))
+		end
+	end
+
+	Watch(LocalPlayer:FindFirstChildOfClass("Backpack"))
+	Watch(LocalCharacter)
+	table.insert(Connections, LocalHumanoid.Died:Connect(Finish))
+	task.delay(ToolWaitTimeout, Finish)
+
+	coroutine.yield()
+
+	return findToolByName(ToolName)
 end
 
-local function processEntry(Item)
+local function processEntry(Item, ReturnHome)
 	local ToolName = getToolName(Item)
-	print(ToolName, Item)
 
 	if ToolName then
 		local Owned = findToolByName(ToolName)
@@ -227,6 +258,10 @@ local function processEntry(Item)
 
 	if not attemptPurchase(Item) then
 		return false, nil
+	end
+
+	if #PurchaseQueue == 0 then
+		ReturnHome()
 	end
 
 	if not ToolName then
@@ -247,10 +282,17 @@ local function ProcessQueue()
 	local HRP = LocalHumanoidRootPart
 	local OriginalCFrame = HRP.CFrame
 
+	local function ReturnHome()
+		if PurchaseMoved and HRP.Parent then
+			HRP.CFrame = OriginalCFrame
+		end
+		PurchaseMoved = false
+	end
+
 	while #PurchaseQueue > 0 do
 		local Entry = table.remove(PurchaseQueue, 1)
 
-		local ok, success, tool = pcall(processEntry, Entry.Item)
+		local ok, success, tool = pcall(processEntry, Entry.Item, ReturnHome)
 		if not ok then
 			warn("purchase error:", success)
 			success, tool = false, nil
@@ -259,11 +301,13 @@ local function ProcessQueue()
 		Entry.Success = success == true
 		Entry.Tool = tool
 		Entry.Done = true
+
+		if Entry.Thread then
+			task.spawn(Entry.Thread)
+		end
 	end
 
-	if HRP.Parent then
-		HRP.CFrame = OriginalCFrame
-	end
+	ReturnHome()
 	IsProcessing = false
 end
 
@@ -289,8 +333,9 @@ local function PurchaseItem(Name, Callback)
 
 	if not Callback then return end
 
-	while not Entry.Done do
-		task.wait()
+	if not Entry.Done then
+		Entry.Thread = coroutine.running()
+		coroutine.yield()
 	end
 
 	Callback(Entry.Success, Entry.Tool)
@@ -1058,9 +1103,9 @@ function Logic:Initialize(UIReference)
 		local itemName = Options.AutoMaskItem.Value
 		if not itemName or itemName == "" then return end
 
-		local maskTool = findToolByName(itemName)
+		local maskTool = findToolByName("[Mask]")
 		if not maskTool then
-			print('no mask tool, purchasing')
+			print('no mask tool gang')
 			PurchaseItem(itemName, function(success, tool)
 				maskTool = tool
 			end)
