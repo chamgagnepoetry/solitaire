@@ -1,4 +1,4 @@
-print("yo ur gay and ur gay")
+print("yo ur gay sdfsdfsdf ur gay")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -65,22 +65,45 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	end
 end
 
-local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
-    local replacements = {
-        ["{NAME}"] = shooterName,
-        ["{DMG}"] = tostring(math.floor(damage)),
-        ["{PART}"] = partName,
-        ["{WEAPON}"] = weaponName
-    }
-    
-    local formattedMessage = templateString:gsub("{%a+}", replacements)
-    return formattedMessage
+local function formatTemplate(templateString, replacements)
+	return (templateString:gsub("{%a+}", function(token)
+		local value = replacements[token]
+		if value == nil then
+			return nil
+		end
+		return tostring(value)
+	end))
+end
+
+local function getDisplayName(username)
+	local player = username and Players:FindFirstChild(username)
+	if player and player:IsA("Player") then
+		return player.DisplayName
+	end
+	return username
+end
+
+local function formatCustomNotification(templateString, username, damage, partName, weaponName)
+	return formatTemplate(templateString, {
+		["{USERNAME}"] = username,
+		["{DISPLAYNAME}"] = getDisplayName(username),
+		["{DMG}"] = damage and math.floor(damage) or nil,
+		["{PART}"] = partName,
+		["{WEAPON}"] = weaponName
+	})
+end
+
+local function formatReportNotification(templateString, username)
+	return formatTemplate(templateString, {
+		["{USERNAME}"] = username,
+		["{DISPLAYNAME}"] = getDisplayName(username)
+	})
 end
 
 local function notifyDamage(hit, damage)
 	local text = Options.NotifyDamageText.Value
 	if text == nil or text == "" then
-		text = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = "{USERNAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.shooterName, damage, hit.partName, hit.weaponName)
 	Library:Notify(notificationText, tonumber(Options.NotifyDamageDuration.Value))
@@ -91,7 +114,7 @@ local function notifyHit(hit, damage)
 
 	local text = Options.NotifyHitText.Value
 	if text == nil or text == "" then
-		text = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = "HIT {USERNAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.playerName, damage, hit.bodyPartName, hit.gunName)
 	Library:Notify(notificationText, tonumber(Options.NotifyHitDuration.Value))
@@ -1160,7 +1183,12 @@ function Logic:Initialize(UIReference)
 		if not reportConnection then
 			reportConnection = LocalDataFolder:WaitForChild("Reporters").ChildAdded:Connect(function(child)
 				if child and child.Value ~= "" then
-					Library:Notify(child.Value.." reported you", tonumber(Options.NotifyReportDuration.Value))
+					local text = Options.NotifyReportText and Options.NotifyReportText.Value
+					if text == nil or text == "" then
+						text = "{USERNAME} reported you"
+					end
+					local notificationText = formatReportNotification(text, child.Value)
+					Library:Notify(notificationText, tonumber(Options.NotifyReportDuration.Value))
 				end
 			end)
 		end
