@@ -1,4 +1,3 @@
-print('esgwan')
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
@@ -584,6 +583,8 @@ function UI:Initialize()
 	local ShopGroupBox = Tabs.Misc:AddLeftGroupbox("shop")
 	local ChatGroupBox = Tabs.Misc:AddLeftGroupbox("chat")
 	local AutomationGroupBox = Tabs.Misc:AddRightGroupbox("automation")
+	local NotificationMarkerTabBox = Tabs.Misc:AddRightTabbox("notification hit")
+	local ReportNotificationGroupBox = Tabs.Misc:AddLeftGroupbox("report notification")
 
 	ShopGroupBox:AddDropdown("DahoodShop", {
 		Values = IgnoredShopNames,
@@ -628,9 +629,7 @@ function UI:Initialize()
 		end,
 	})
 
-	local NotificationTabBox = Tabs.Misc:AddRightTabbox("notification")
-
-	local NotifyHitTab = NotificationTabBox:AddTab("notify hit")
+	local NotifyHitTab = NotificationMarkerTabBox:AddTab("notify hit")
 	NotifyHitTab:AddToggle("NotifyHitToggle",{
 		Text = "enabled";
 	})
@@ -645,15 +644,15 @@ function UI:Initialize()
 	})
 	NotifyHitTab:AddInput("NotifyHitText", {
 		Text = "text",
-		Default = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Default = "HIT {USERNAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
 		Placeholder = "press enter to confirm",
-		Tooltip = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Tooltip = "HIT {USERNAME} FOR {DMG} IN THE {PART} USING {WEAPON}",
 		Numeric = false,
 		Finished = true,
 	})
-	NotifyHitTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
+	NotifyHitTab:AddLabel("ALL FORMATTING:\n\n {USERNAME},{DISPLAYNAME},{DMG},{PART},{WEAPON}",true)
 
-	local NotifyDamageTab = NotificationTabBox:AddTab("notify damage")
+	local NotifyDamageTab = NotificationMarkerTabBox:AddTab("notify damage")
 	NotifyDamageTab:AddToggle("NotifyDamageToggle",{
 		Text = "enabled";
 	})
@@ -668,20 +667,18 @@ function UI:Initialize()
 	})
 	NotifyDamageTab:AddInput("NotifyDamageText", {
 		Text = "text",
-		Default = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Default = "{USERNAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
 		Placeholder = "press enter to confirm",
-		Tooltip = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
+		Tooltip = "{USERNAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}",
 		Numeric = false,
 		Finished = true,
-
 	})
-	NotifyDamageTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
+	NotifyDamageTab:AddLabel("ALL FORMATTING:\n\n {USERNAME},{DISPLAYNAME},{DMG},{PART},{WEAPON}",true)
 
-	local NotifyReportTab = NotificationTabBox:AddTab("notify report")
-	NotifyReportTab:AddToggle("NotifyReportToggle",{
+	ReportNotificationGroupBox:AddToggle("NotifyReportToggle",{
 		Text = "enabled";
 	})
-	NotifyReportTab:AddSlider("NotifyReportDuration",{
+	ReportNotificationGroupBox:AddSlider("NotifyReportDuration",{
 		Text = "duration";
 		Default = 2;
 		Min = 0.1;
@@ -690,6 +687,15 @@ function UI:Initialize()
 		Compact = true;
 		Suffix = "s";
 	})
+	ReportNotificationGroupBox:AddInput("NotifyReportText", {
+		Text = "text",
+		Default = "{USERNAME} REPORTED YOU",
+		Placeholder = "press enter to confirm",
+		Tooltip = "{USERNAME} REPORTED YOU",
+		Numeric = false,
+		Finished = true,
+	})
+	ReportNotificationGroupBox:AddLabel("ALL FORMATTING:\n\n {USERNAME},{DISPLAYNAME}",true)
 
 	ChatGroupBox:AddToggle("ChatSpy",{
 		Text = "chat spy";
