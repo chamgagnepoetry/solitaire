@@ -253,5 +253,3 @@ local function searchForTool(name)
 	return findToolByName(name) ~= nil
 end
 getgenv().searchForTool = searchForTool
-
-print("YO")
