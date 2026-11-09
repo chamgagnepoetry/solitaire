@@ -1,4 +1,4 @@
-print("sk")
+print("skadlayyyyy")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1018,14 +1018,9 @@ function Logic:Initialize(UIReference)
 
 		local maskTool = findToolByName(itemName)
 		if not maskTool then
-			local finished = false
 			PurchaseItem(itemName, function(success, tool)
 				maskTool = tool
-				finished = true
 			end)
-			while not finished do
-				task.wait()
-			end
 		end
 		print('no mask tool')
 		if not maskTool then return end
