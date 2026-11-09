@@ -1,3 +1,4 @@
+print('esgwan')
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local generalChannel = TextChatService:FindFirstChild("RBXGeneral", true)
@@ -676,7 +677,7 @@ function UI:Initialize()
 	})
 	NotifyDamageTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
 
-	local NotifyHitTab = NotificationTabBox:AddTab("notify report")
+	local NotifyReportTab = NotificationTabBox:AddTab("notify report")
 	NotifyReportTab:AddToggle("NotifyReportToggle",{
 		Text = "enabled";
 	})
