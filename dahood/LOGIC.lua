@@ -1,4 +1,4 @@
-print("skadlayyyyy")
+print("meowmeowmeowmeowmeowmeowmemeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -159,6 +159,21 @@ local function getEquippedGun()
 end
 getgenv().getEquippedGun = getEquippedGun
 
+local function purgeOwnedFromQueue()
+	for i = #PurchaseQueue, 1, -1 do
+		local Entry = PurchaseQueue[i]
+		local Bracketed = Entry.Item.Name:match("%[.-%]")
+		local IsAmmoOrArmor = Entry.Item.Name:find("Ammo") or Entry.Item.Name:find("Armor")
+		local Owned = not IsAmmoOrArmor and Bracketed and findToolByName(Bracketed)
+		if Owned then
+			table.remove(PurchaseQueue, i)
+			if Entry.Callback then
+				task.spawn(Entry.Callback, false, Owned)
+			end
+		end
+	end
+end
+
 local function TryPurchase(Item)
 	local Bracketed = Item.Name:match("%[.-%]")
 	local IsAmmoOrArmor = Item.Name:find("Ammo") or Item.Name:find("Armor")
@@ -216,6 +231,9 @@ local function ProcessQueue()
 	local OriginalCFrame = HRP.CFrame
 
 	while #PurchaseQueue > 0 do
+		purgeOwnedFromQueue()
+		if #PurchaseQueue == 0 then break end
+
 		local Entry = table.remove(PurchaseQueue, 1)
 
 		local ok, result = pcall(TryPurchase, Entry.Item)
