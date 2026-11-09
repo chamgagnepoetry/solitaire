@@ -1,4 +1,4 @@
-print("yo ur gay and ur banned")
+print("yo ur gay and ur gay")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1038,6 +1038,7 @@ function Logic:Initialize(UIReference)
 
 		local maskTool = findToolByName(itemName)
 		if not maskTool then
+			print('no mask tool gang')
 			maskPending = true
 			PurchaseItem(itemName, function(success, tool)
 				maskPending = false
