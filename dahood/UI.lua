@@ -676,6 +676,20 @@ function UI:Initialize()
 	})
 	NotifyDamageTab:AddLabel("ALL FORMATTING:\n\n {NAME}, {DMG}, {PART}, {WEAPON}, ",true)
 
+	local NotifyHitTab = NotificationTabBox:AddTab("notify report")
+	NotifyReportTab:AddToggle("NotifyReportToggle",{
+		Text = "enabled";
+	})
+	NotifyReportTab:AddSlider("NotifyReportDuration",{
+		Text = "duration";
+		Default = 2;
+		Min = 0.1;
+		Max = 2;
+		Rounding = 1;
+		Compact = true;
+		Suffix = "s";
+	})
+
 	ChatGroupBox:AddToggle("ChatSpy",{
 		Text = "chat spy";
 		Callback = function(Value)
