@@ -1,4 +1,4 @@
-print("yo ur gay and ur gay")
+print("yo ur gay and ur sdfsdf")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -1105,19 +1105,16 @@ function Logic:Initialize(UIReference)
 
 		local maskTool = findToolByName("[Mask]")
 		if not maskTool then
-			print('no mask tool gang')
 			PurchaseItem(itemName, function(success, tool)
 				maskTool = tool
 			end)
 		end
 		if not maskTool then return end
-		print("yo")
 
 		LocalHumanoid:EquipTool(maskTool)
 		while LocalHumanoid.DisplayDistanceType == Enum.HumanoidDisplayDistanceType.Viewer and LocalHumanoid.Health > 0 and maskTool.Parent and Toggles.AutoMaskToggle.Value do
 			task.wait()
 			if maskTool.Parent == LocalCharacter then
-				print("activating")
 				maskTool:Activate()
 			else
 				LocalHumanoid:EquipTool(maskTool)
@@ -1156,6 +1153,19 @@ function Logic:Initialize(UIReference)
 			end
 			armorPending = false
 		end)
+	end)
+
+	local reportConnection
+	runLoop(Toggles.NotifyReportToggle, function()
+		reportConnection = LocalDataFolder:WaitForChild("Reporters").ChildAdded:Connect(function(child)
+			if child and child.Value ~= "" then
+				Library:Notify(child.Value.." reported you", tonumber(Options.NotifyReportDuration.Value))
+			end
+		end)
+	end, function()
+		if reportConnection then
+			reportConnection:Disconnect()
+		end
 	end)
 end
 
