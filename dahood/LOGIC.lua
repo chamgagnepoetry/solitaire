@@ -1,4 +1,4 @@
-print("yo ur gay and u like men")
+print("meowmeowmeowmeowmeowmeowmeowmeow")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -209,6 +209,7 @@ end
 
 local function processEntry(Item)
 	local ToolName = getToolName(Item)
+	print(ToolName, Item)
 
 	if ToolName then
 		local Owned = findToolByName(ToolName)
