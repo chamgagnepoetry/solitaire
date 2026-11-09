@@ -1,4 +1,4 @@
-print("yo ur gay and ur gay")
+print("yo ur gay and u like men")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -159,68 +159,84 @@ local function getEquippedGun()
 end
 getgenv().getEquippedGun = getEquippedGun
 
-local function purgeOwnedFromQueue()
-	for i = #PurchaseQueue, 1, -1 do
-		local Entry = PurchaseQueue[i]
-		local Bracketed = Entry.Item.Name:match("%[.-%]")
-		local IsAmmoOrArmor = Entry.Item.Name:find("Ammo") or Entry.Item.Name:find("Armor")
-		local Owned = not IsAmmoOrArmor and Bracketed and findToolByName(Bracketed)
-		if Owned then
-			table.remove(PurchaseQueue, i)
-			if Entry.Callback then
-				task.spawn(Entry.Callback, false, Owned)
-			end
-		end
+local PurchaseAttemptTimeout = 5
+local ToolWaitTimeout = 3
+
+local function getToolName(Item)
+	if Item.Name:find("Ammo") or Item.Name:find("Armor") then
+		return nil
 	end
+	return Item.Name:match("%[.-%]")
 end
 
-local function TryPurchase(Item)
-	local Bracketed = Item.Name:match("%[.-%]")
-	local IsAmmoOrArmor = Item.Name:find("Ammo") or Item.Name:find("Armor")
+local function attemptPurchase(Item)
+	local StartTime = os.clock()
 
-	if Item:FindFirstChild("Amount") then
-		if not Bracketed then return false end
-
-		local GunName = (Bracketed:gsub(" Ammo", ""))
-		if not searchForTool(GunName) then return false end
-	end
-
-	if not IsAmmoOrArmor and Bracketed then
-		if searchForTool(Bracketed) then return false end
-	end
-
-	while true do
+	while os.clock() - StartTime < PurchaseAttemptTimeout do
 		if not LocalHumanoid or LocalHumanoid.Health <= 0 then
 			return false
 		end
 
-		if not Item or not Item.Parent or not Item:FindFirstChild("Head") or not Item:FindFirstChild("ClickDetector") or LocalCurrency.Value < Item.Price.Value then
+		if not Item.Parent or not Item:FindFirstChild("Head") or not Item:FindFirstChild("ClickDetector") or LocalCurrency.Value < Item.Price.Value then
 			return false
 		end
 
 		local ValueBefore = LocalCurrency.Value
 
 		LocalHumanoidRootPart.CFrame = Item.Head.CFrame
-		fireclickdetector(Item.ClickDetector,0)
+		fireclickdetector(Item.ClickDetector, 0)
 		task.wait()
+
 		if LocalCurrency.Value < ValueBefore then
 			return true
 		end
 	end
+
+	return false
 end
 
-local function waitForBoughtTool(Item)
-	local Bracketed = Item.Name:match("%[.-%]")
-	if not Bracketed or Item.Name:find("Ammo") or Item.Name:find("Armor") then
-		return nil
+local function waitForTool(ToolName)
+	local StartTime = os.clock()
+	local Tool = findToolByName(ToolName)
+
+	while not Tool and LocalHumanoid.Health > 0 and os.clock() - StartTime < ToolWaitTimeout do
+		task.wait()
+		Tool = findToolByName(ToolName)
 	end
 
-	local tool = findToolByName(Bracketed)
-	while not tool and LocalHumanoid.Health > 0 do
-		task.wait()
-		tool = findToolByName(Bracketed)
+	return Tool
+end
+
+local function processEntry(Item)
+	local ToolName = getToolName(Item)
+
+	if ToolName then
+		local Owned = findToolByName(ToolName)
+		if Owned then
+			return false, Owned
+		end
 	end
-	return tool
+
+	if Item:FindFirstChild("Amount") then
+		local Bracketed = Item.Name:match("%[.-%]")
+		if not Bracketed or not searchForTool((Bracketed:gsub(" Ammo", ""))) then
+			return false, nil
+		end
+	end
+
+	if not attemptPurchase(Item) then
+		return false, nil
+	end
+
+	if not ToolName then
+		return true, nil
+	end
+
+	local Tool = waitForTool(ToolName)
+	if not Tool then
+		warn("bought " .. ToolName .. " but could not find it in the backpack or character")
+	end
+	return true, Tool
 end
 
 local function ProcessQueue()
@@ -231,26 +247,17 @@ local function ProcessQueue()
 	local OriginalCFrame = HRP.CFrame
 
 	while #PurchaseQueue > 0 do
-		purgeOwnedFromQueue()
-		if #PurchaseQueue == 0 then break end
-
 		local Entry = table.remove(PurchaseQueue, 1)
 
-		local ok, result = pcall(TryPurchase, Entry.Item)
+		local ok, success, tool = pcall(processEntry, Entry.Item)
 		if not ok then
-			warn("purchase error:", result)
+			warn("purchase error:", success)
+			success, tool = false, nil
 		end
-		local success = ok and result == true
 
-		if Entry.Callback then
-			task.spawn(function()
-				local tool = nil
-				if success then
-					tool = waitForBoughtTool(Entry.Item)
-				end
-				Entry.Callback(success, tool)
-			end)
-		end
+		Entry.Success = success == true
+		Entry.Tool = tool
+		Entry.Done = true
 	end
 
 	if HRP.Parent then
@@ -260,16 +267,32 @@ local function ProcessQueue()
 end
 
 local function PurchaseItem(Name, Callback)
-	for _, Item in ipairs(IgnoredShop) do
-		if Item.Name == Name then
-			table.insert(PurchaseQueue, { Item = Item, Callback = Callback })
-			task.spawn(ProcessQueue)
-			return
+	local Item = nil
+	for _, ShopItem in ipairs(IgnoredShop) do
+		if ShopItem.Name == Name then
+			Item = ShopItem
+			break
 		end
 	end
-	if Callback then
-		task.spawn(Callback, false, nil)
+
+	if not Item then
+		if Callback then
+			Callback(false, nil)
+		end
+		return
 	end
+
+	local Entry = { Item = Item, Done = false }
+	table.insert(PurchaseQueue, Entry)
+	task.spawn(ProcessQueue)
+
+	if not Callback then return end
+
+	while not Entry.Done do
+		task.wait()
+	end
+
+	Callback(Entry.Success, Entry.Tool)
 end
 getgenv().PurchaseItem = PurchaseItem
 
@@ -1028,9 +1051,7 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
-	local maskPending = false
 	runLoop(Toggles.AutoMaskToggle, function()
-		if maskPending then return end
 		if LocalHumanoid.DisplayDistanceType ~= Enum.HumanoidDisplayDistanceType.Viewer then return end
 
 		local itemName = Options.AutoMaskItem.Value
@@ -1038,13 +1059,12 @@ function Logic:Initialize(UIReference)
 
 		local maskTool = findToolByName(itemName)
 		if not maskTool then
-			print('no mask tool gang')
-			maskPending = true
+			print('no mask tool, purchasing')
 			PurchaseItem(itemName, function(success, tool)
-				maskPending = false
+				maskTool = tool
 			end)
-			return
 		end
+		if not maskTool then return end
 		print("yo")
 
 		LocalHumanoid:EquipTool(maskTool)
