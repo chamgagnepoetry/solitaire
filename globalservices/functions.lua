@@ -3,21 +3,23 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local LocalCharacter = nil
 local LocalHumanoid = nil
+local LocalHumanoidRootPart = nil
 
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 
 getgenv().NotificationTime = 3
 
-getgenv().SilentAimRadiusFill = Drawing.new("Circle")
-getgenv().SilentAimRadius = Drawing.new("Circle")
-getgenv().SilentAimRadiusFill.Thickness = 0
-getgenv().SilentAimRadiusFill.Filled = true
-
-getgenv().CameraRadiusFill = Drawing.new("Circle")
-getgenv().CameraRadius = Drawing.new("Circle")
-getgenv().CameraRadiusFill.Thickness = 0
-getgenv().CameraRadiusFill.Filled = true
+local function createRadius(name)
+	local outline = Drawing.new("Circle")
+	local fill = Drawing.new("Circle")
+	fill.Thickness = 0
+	fill.Filled = true
+	getgenv()[name] = outline
+	getgenv()[name .. "Fill"] = fill
+end
+createRadius("SilentAimRadius")
+createRadius("CameraRadius")
 
 local function Setup(newCharacter)
 	LocalCharacter = newCharacter
@@ -82,17 +84,25 @@ local function FindBestMatch(Query, Names)
 end
 getgenv().FindBestMatch = FindBestMatch
 
-local function getEquippedTool()
-	local Tool
-	for _, object in pairs(LocalCharacter:GetChildren()) do
-		if object:IsA("Tool") then
-			Tool = object
-			return Tool
+local function getEquippedTool(filter)
+	if not LocalCharacter then
+		return false
+	end
+	for _, object in ipairs(LocalCharacter:GetChildren()) do
+		if object:IsA("Tool") and (not filter or filter(object)) then
+			return object
 		end
 	end
 	return false
 end
 getgenv().getEquippedTool = getEquippedTool
+
+local function getEquippedGun()
+	return getEquippedTool(function(tool)
+		return tool:FindFirstChild("Ammo") ~= nil and tool:FindFirstChild("MaxAmmo") ~= nil
+	end)
+end
+getgenv().getEquippedGun = getEquippedGun
 
 local function checkWall(target)
 	if not LocalHumanoidRootPart then
@@ -125,17 +135,88 @@ local function checkWall(target)
 end
 getgenv().checkWall = checkWall
 
-local function FindPlayerToMouse(radius, configurations)
+local function getBodyEffect(character, name)
+	local effects = character and character:FindFirstChild("BodyEffects")
+	return effects and effects:FindFirstChild(name) or nil
+end
+getgenv().getBodyEffect = getBodyEffect
+
+local function checkKnocked(target)
+	if typeof(target) ~= "Instance" then
+		return false
+	end
+	local character = target:IsA("Player") and target.Character or target
+	local KO = getBodyEffect(character, "K.O")
+	return KO ~= nil and KO.Value == true
+end
+getgenv().checkKnocked = checkKnocked
+
+local function checkCrew(target, crewid)
+	local function getCrew(player)
+		local data = player:FindFirstChild("DataFolder")
+		local info = data and data:FindFirstChild("Information")
+		local crew = info and info:FindFirstChild("Crew")
+		return crew and crew.Value or ""
+	end
+
+	local theirCrew = getCrew(target)
+	if theirCrew == "" then
+		return false
+	end
+	if crewid ~= nil then
+		return tostring(theirCrew) == tostring(crewid)
+	end
+
+	local ourCrew = getCrew(LocalPlayer)
+	return ourCrew ~= "" and ourCrew == theirCrew
+end
+getgenv().checkCrew = checkCrew
+
+-- whitelist can be { "name", ... } and/or { name = true, ... }
+local function buildWhitelistSet(whitelist)
+	local set = {}
+	if type(whitelist) == "table" then
+		for key, value in pairs(whitelist) do
+			if type(value) == "string" then
+				set[value:lower()] = true
+			elseif value == true and type(key) == "string" then
+				set[key:lower()] = true
+			end
+		end
+	end
+	return set
+end
+getgenv().buildWhitelistSet = buildWhitelistSet
+
+local function isWhitelisted(player, whitelist)
+	return player ~= nil and buildWhitelistSet(whitelist)[player.Name:lower()] == true
+end
+getgenv().isWhitelisted = isWhitelisted
+
+local function FindPlayerTo(radius, configurations)
 	if not LocalHumanoidRootPart then
 		return false
 	end
 
+	local useCharacter = configurations.Character and not configurations.Mouse
+	local whitelistSet = buildWhitelistSet(configurations.Whitelist)
+
 	local ClosestPlayer = nil
 	local ShortestDistance = math.huge
+	local MyPosition = LocalHumanoidRootPart.Position
 	local MousePos = Vector2.new(Mouse.X, Mouse.Y)
 
+	local MaxDistance
+	if configurations.LimitDistance then
+		MaxDistance = configurations.MaxDistance
+		if not MaxDistance then
+			local options = getgenv().Options or _G.Options
+			MaxDistance = tonumber(options.TargetingLimitDistance.Value)
+		end
+	end
+
 	for _, target in ipairs(Players:GetPlayers()) do
-		if target ~= LocalPlayer and target.Character then
+		if target ~= LocalPlayer and target.Character and not whitelistSet[target.Name:lower()] then
 			local targetRootPart = target.Character:FindFirstChild("HumanoidRootPart")
 			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
 
@@ -148,38 +229,58 @@ local function FindPlayerToMouse(radius, configurations)
 					continue
 				end
 
+				if configurations.CrewCheck and checkCrew(target) then
+					continue
+				end
+
 				if configurations.WallCheck and checkWall(target) then
 					continue
 				end
 
-				if configurations.DeadCheck and targetHumanoid.Health <= 0 then
+				if (configurations.KnockedCheck or configurations.DeadCheck) and targetHumanoid.Health <= 0 then
 					continue
 				end
 
-				if configurations.LimitDistance and (targetRootPart.Position - LocalHumanoidRootPart.Position).Magnitude > tonumber(Options.TargetingLimitDistanceToggle.Value) then
+				if configurations.KnockedCheck and checkKnocked(target) then
 					continue
 				end
 
-				local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
+				local worldDistance = (targetRootPart.Position - MyPosition).Magnitude
+				if MaxDistance and worldDistance > MaxDistance then
+					continue
+				end
 
-				if onScreen then
-					local screenVector = Vector2.new(screenPos.X, screenPos.Y)
-					local distance = (screenVector - MousePos).Magnitude
-
-					if radius and distance > radius then
+				local distance
+				if useCharacter then
+					distance = worldDistance
+				else
+					local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
+					if not onScreen then
 						continue
 					end
+					distance = (Vector2.new(screenPos.X, screenPos.Y) - MousePos).Magnitude
+				end
 
-					if distance < ShortestDistance then
-						ShortestDistance = distance
-						ClosestPlayer = target
-					end
+				if radius and distance > radius then
+					continue
+				end
+
+				if distance < ShortestDistance then
+					ShortestDistance = distance
+					ClosestPlayer = target
 				end
 			end
 		end
 	end
 
 	return ClosestPlayer
+end
+getgenv().FindPlayerTo = FindPlayerTo
+
+local function FindPlayerToMouse(radius, configurations)
+	configurations = table.clone(configurations or {})
+	configurations.Mouse = true
+	return FindPlayerTo(radius, configurations)
 end
 getgenv().FindPlayerToMouse = FindPlayerToMouse
 
@@ -202,6 +303,10 @@ local function getRandomHitPart(targetCharacter)
 		if part:IsA("BasePart") then
 			table.insert(Parts, part)
 		end
+	end
+
+	if #Parts == 0 then
+		return nil
 	end
 
 	return Parts[math.random(1, #Parts)]
@@ -232,6 +337,22 @@ local function getClosestPartToMouse(player)
     return closestPart
 end
 getgenv().getClosestPartToMouse = getClosestPartToMouse
+
+local function getTargetPart(player, mode, partName)
+	local character = player and player.Character
+	if not character then
+		return nil
+	end
+
+	if mode == "Closest" then
+		return getClosestPartToMouse(player)
+	elseif mode == "Random" then
+		return getRandomHitPart(character)
+	end
+
+	return character:FindFirstChild(partName)
+end
+getgenv().getTargetPart = getTargetPart
 
 local function findToolByName(name)
 	local needle = (name:match("%[.-%]") or name):lower()
