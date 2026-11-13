@@ -1,4 +1,4 @@
-print("yo ur gay sdfsdfsdf ur gay")
+print("yo ur gay and ur like men")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -65,45 +65,22 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	end
 end
 
-local function formatTemplate(templateString, replacements)
-	return (templateString:gsub("{%a+}", function(token)
-		local value = replacements[token]
-		if value == nil then
-			return nil
-		end
-		return tostring(value)
-	end))
-end
-
-local function getDisplayName(username)
-	local player = username and Players:FindFirstChild(username)
-	if player and player:IsA("Player") then
-		return player.DisplayName
-	end
-	return username
-end
-
-local function formatCustomNotification(templateString, username, damage, partName, weaponName)
-	return formatTemplate(templateString, {
-		["{USERNAME}"] = username,
-		["{DISPLAYNAME}"] = getDisplayName(username),
-		["{DMG}"] = damage and math.floor(damage) or nil,
-		["{PART}"] = partName,
-		["{WEAPON}"] = weaponName
-	})
-end
-
-local function formatReportNotification(templateString, username)
-	return formatTemplate(templateString, {
-		["{USERNAME}"] = username,
-		["{DISPLAYNAME}"] = getDisplayName(username)
-	})
+local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
+    local replacements = {
+        ["{NAME}"] = shooterName,
+        ["{DMG}"] = tostring(math.floor(damage)),
+        ["{PART}"] = partName,
+        ["{WEAPON}"] = weaponName
+    }
+    
+    local formattedMessage = templateString:gsub("{%a+}", replacements)
+    return formattedMessage
 end
 
 local function notifyDamage(hit, damage)
 	local text = Options.NotifyDamageText.Value
 	if text == nil or text == "" then
-		text = "{USERNAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.shooterName, damage, hit.partName, hit.weaponName)
 	Library:Notify(notificationText, tonumber(Options.NotifyDamageDuration.Value))
@@ -114,7 +91,7 @@ local function notifyHit(hit, damage)
 
 	local text = Options.NotifyHitText.Value
 	if text == nil or text == "" then
-		text = "HIT {USERNAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.playerName, damage, hit.bodyPartName, hit.gunName)
 	Library:Notify(notificationText, tonumber(Options.NotifyHitDuration.Value))
@@ -170,20 +147,7 @@ end
 LocalPlayer.CharacterAdded:Connect(Setup)
 Setup(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
 
-local function getEquippedGun()
-	local Tool
-	for _, object in pairs(LocalCharacter:GetChildren()) do
-		if object:FindFirstChild("Ammo") and object:FindFirstChild("MaxAmmo") then 
-			Tool = object
-			return Tool
-		end
-	end
-	return false
-end
-getgenv().getEquippedGun = getEquippedGun
 
-local PurchaseAttemptTimeout = 5
-local ToolWaitTimeout = 3
 local PurchaseMoved = false
 
 local function getToolName(Item)
@@ -197,9 +161,7 @@ local function getToolName(Item)
 end
 
 local function attemptPurchase(Item)
-	local StartTime = os.clock()
-
-	while os.clock() - StartTime < PurchaseAttemptTimeout do
+	while true do
 		if not LocalHumanoid or LocalHumanoid.Health <= 0 then
 			return false
 		end
@@ -219,8 +181,6 @@ local function attemptPurchase(Item)
 			return true
 		end
 	end
-
-	return false
 end
 
 local function waitForTool(ToolName)
@@ -255,7 +215,6 @@ local function waitForTool(ToolName)
 	Watch(LocalPlayer:FindFirstChildOfClass("Backpack"))
 	Watch(LocalCharacter)
 	table.insert(Connections, LocalHumanoid.Died:Connect(Finish))
-	task.delay(ToolWaitTimeout, Finish)
 
 	coroutine.yield()
 
@@ -365,122 +324,6 @@ local function PurchaseItem(Name, Callback)
 end
 getgenv().PurchaseItem = PurchaseItem
 
-local function checkLocalPlayerKnocked()
-	local bodyEffects = LocalCharacter and LocalCharacter:FindFirstChild("BodyEffects")
-	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
-
-	return KO ~= nil and KO.Value == true
-end
-getgenv().checkLocalPlayerKnocked = checkLocalPlayerKnocked
-
-local function checkCrew(target, crewid)
-	local function getCrew(player)
-		local data = player:FindFirstChild("DataFolder")
-		local info = data and data:FindFirstChild("Information")
-		local crew = info and info:FindFirstChild("Crew")
-		return crew and crew.Value or ""
-	end
-
-	local theirCrew = getCrew(target)
-
-	if theirCrew == "" then
-		return false
-	end
-	if crewid ~= nil then
-		return tostring(theirCrew) == tostring(crewid)
-	end
-
-	local ourCrew = getCrew(LocalPlayer)
-	return ourCrew ~= "" and ourCrew == theirCrew
-end
-getgenv().checkCrew = checkCrew
-
-local function checkKnocked(target)
-	local character = target and target.Character
-	local bodyEffects = character and character:FindFirstChild("BodyEffects")
-	local KO = bodyEffects and bodyEffects:FindFirstChild("K.O")
-
-	return KO ~= nil and KO.Value == true
-end
-getgenv().checkKnocked = checkKnocked
-
-local function FindPlayerTo(radius, configurations)
-	if not LocalHumanoidRootPart then
-		return false
-	end
-
-	local useCharacter = configurations.Character and not configurations.Mouse
-
-	local whitelistSet = {}
-	if configurations.Whitelist then
-		for key, value in pairs(configurations.Whitelist) do
-			if type(value) == "string" then
-				whitelistSet[value:lower()] = true
-			elseif value == true and type(key) == "string" then
-				whitelistSet[key:lower()] = true
-			end
-		end
-	end
-
-	local ClosestPlayer = nil
-	local ShortestDistance = math.huge
-	local MyPosition = LocalHumanoidRootPart.Position
-	local MousePos = Vector2.new(Mouse.X, Mouse.Y)
-
-	for _, target in ipairs(Players:GetPlayers()) do
-		if target ~= LocalPlayer and target.Character then
-			if whitelistSet[target.Name:lower()] then
-				continue
-			end
-			local targetRootPart = target.Character:FindFirstChild("HumanoidRootPart")
-			local targetHumanoid = target.Character:FindFirstChildOfClass("Humanoid")
-
-			if targetRootPart and targetHumanoid then
-				if configurations.FriendCheck and checkFriend(target) then
-					continue
-				end
-
-				if configurations.CrewCheck and checkCrew(target) then
-					continue
-				end
-
-				if configurations.WallCheck and checkWall(target) then
-					continue
-				end
-
-				if configurations.KnockedCheck and (targetHumanoid.Health <= 0 or checkKnocked(target)) then
-					continue
-				end
-
-				local worldDistance = (targetRootPart.Position - MyPosition).Magnitude
-				if configurations.LimitDistance and worldDistance > tonumber(Options.TargetingLimitDistance.Value) then
-					continue
-				end
-
-				local distance
-				if useCharacter then
-					distance = worldDistance
-				else
-					local screenPos, onScreen = Camera:WorldToViewportPoint(targetRootPart.Position)
-					if not onScreen then
-						continue
-					end
-					distance = (Vector2.new(screenPos.X, screenPos.Y) - MousePos).Magnitude
-				end
-				if radius and distance > radius then
-					continue
-				end
-				if distance < ShortestDistance then
-					ShortestDistance = distance
-					ClosestPlayer = target
-				end
-			end
-		end
-	end
-	return ClosestPlayer
-end
-getgenv().FindPlayerTo = FindPlayerTo
-
 local function getHumanoid(part)
 	local inst = part
 	for i = 1, 6 do
@@ -505,25 +348,13 @@ local function canStompBelow()
 	if not part then return false end
 
 	local hum = getHumanoid(part)
-	if not hum then return false end
-
-	local char = hum.Parent
-	local be = char:FindFirstChild("BodyEffects")
-	if not be then return false end
-
-	return be["K.O"].Value == true
+	return hum ~= nil and checkKnocked(hum.Parent)
 end
 getgenv().canStompBelow = canStompBelow
 
 local function getLocalArmor()
-	local bodyEffects = LocalCharacter and LocalCharacter:FindFirstChild("BodyEffects")
-	local armor = bodyEffects and bodyEffects:FindFirstChild("Armor")
-	if armor then 
-		return armor.Value
-	else
-		return false
-	end
-	return false
+	local armor = getBodyEffect(LocalCharacter, "Armor")
+	return armor and armor.Value or false
 end
 getgenv().getLocalArmor = getLocalArmor
 
@@ -540,17 +371,6 @@ getgenv().getMaxArmor = getMaxArmor
 
 local humanoidHealth = setmetatable({}, { __mode = "k" })
 local lastHit = setmetatable({}, { __mode = "k" })
-
-local function getTargetCharacter(part)
-	local current = part
-	while current and current ~= workspace and current ~= game do
-		if current:IsA("Model") and Players:GetPlayerFromCharacter(current) then
-			return current
-		end
-		current = current.Parent
-	end
-	return nil
-end
 
 local shotQueue = {}
 local function recordShot(handle, hitPart, shotTime)
@@ -635,59 +455,25 @@ end
 Players.PlayerAdded:Connect(watchPlayer)
 
 local function runLoop(controlObj, loopFn, stopFn)
-	if type(controlObj) == "string" then
-		local keybind
+	local isKeybind = type(controlObj) == "string"
+	local useHeartbeat = isKeybind and controlObj:sub(1, 1) == "!"
+	local keybind = isKeybind and Options[useHeartbeat and controlObj:sub(2) or controlObj]
 
-		if controlObj:sub(1, 1) == "!" then
-			keybind = Options[controlObj:sub(2)]
-
-			task.spawn(function()
-				--pcall(function()
-					while true do
-						local state = keybind:GetState()
-
-						if state then
-							loopFn()
-						else
-							if stopFn then
-								stopFn()
-							end
-						end
-
-						RunService.Heartbeat:Wait()
-					end
-				--end)
-			end)
-		else
-			keybind = Options[controlObj]
-
-			task.spawn(function()
-				--pcall(function()
-					while true do
-						local state = keybind:GetState()
-
-						if state then
-							loopFn()
-						else
-							if stopFn then
-								stopFn()
-							end
-						end
-
-						task.wait()
-					end
-				--end)
-			end)
-		end
-
+	if not isKeybind and controlObj.Value == nil then
 		return
 	end
 
-	if controlObj.Value ~= nil then
-		task.spawn(function()
-			local wasActive = false
+	task.spawn(function()
+		local wasActive = false
 
-			while true do
+		while true do
+			if isKeybind then
+				if keybind:GetState() then
+					loopFn()
+				elseif stopFn then
+					stopFn()
+				end
+			else
 				local ok, err = pcall(function()
 					if controlObj.Value then
 						wasActive = true
@@ -703,11 +489,70 @@ local function runLoop(controlObj, loopFn, stopFn)
 				if not ok then
 					warn("runLoop error:", err)
 				end
+			end
 
+			if useHeartbeat then
+				RunService.Heartbeat:Wait()
+			else
 				task.wait()
 			end
-		end)
+		end
+	end)
+end
+
+-- builds the FindPlayerTo config from the shared targeting toggles, plus per-feature extras
+local function targetingConfig(extra)
+	local config = {
+		FriendCheck = Toggles.TargetingFriendCheck.Value,
+		CrewCheck = Toggles.TargetingCrewCheck.Value,
+		WallCheck = Toggles.TargetingWallCheck.Value,
+		KnockedCheck = Toggles.TargetingKnockedCheck.Value,
+		LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
+		MaxDistance = tonumber(Options.TargetingLimitDistance.Value),
+		Whitelist = Options.TargetingWhitelist.Value,
+	}
+	if extra then
+		for key, value in pairs(extra) do
+			config[key] = value
+		end
 	end
+	return config
+end
+
+-- shows/updates a Drawing circle pair created by createRadius(name) from the "<name>*" toggles/options
+local function setupRadius(name)
+	local outline = getgenv()[name]
+	local fill = getgenv()[name .. "Fill"]
+
+	local function hide()
+		fill.Visible = false
+		outline.Visible = false
+	end
+
+	runLoop(Toggles[name], function()
+		local MouseLocation = UserInputService:GetMouseLocation()
+		local MatchAccent = Toggles[name .. "MatchAccent"].Value
+		local Radius = Options[name .. "Size"].Value
+
+		outline.Position = MouseLocation
+		outline.Radius = Radius
+		outline.Color = MatchAccent and Library.AccentColor or Options[name .. "Color"].Value
+		outline.Thickness = Options[name .. "Thickness"].Value
+
+		fill.Position = MouseLocation
+		fill.Radius = Radius
+		fill.Color = MatchAccent and Library.AccentColor or Options[name .. "FillColor"].Value
+		fill.Transparency = Options[name .. "Transparency"].Value
+
+		fill.Visible = Toggles[name .. "Fill"].Value and true or false
+		outline.Visible = true
+	end, hide)
+
+	Toggles[name]:OnChanged(function()
+		if not Toggles[name].Value then
+			hide()
+		end
+	end)
 end
 
 function Logic:Initialize(UIReference)
@@ -745,23 +590,14 @@ function Logic:Initialize(UIReference)
 			
 				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius
 				
-				SilentAimTarget = FindPlayerTo(radiusSize, {
-					Mouse = true,
-					FriendCheck = Toggles.TargetingFriendCheck.Value,
-					CrewCheck = Toggles.TargetingCrewCheck.Value,
-					WallCheck = Toggles.TargetingWallCheck.Value,
-					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
-					Whitelist = Options.TargetingWhitelist.Value
-				})
+				SilentAimTarget = FindPlayerTo(radiusSize, targetingConfig({ Mouse = true }))
 				
 				if SilentAimTarget and SilentAimTarget.Character then
-					local targetPart
-					if not Toggles.SilentAimClosestPart.Value then
-						targetPart = SilentAimTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
-					else
-						targetPart = getClosestPartToMouse(SilentAimTarget)
-					end
+					local targetPart = getTargetPart(
+						SilentAimTarget,
+						Toggles.SilentAimClosestPart.Value and "Closest",
+						Options.TargetingTargetPart.Value
+					)
 					if targetPart then
 						local currentChance = tonumber(Options.SilentAimHitRate.Value)
 						local roll = math.random(1, 100)
@@ -853,126 +689,49 @@ function Logic:Initialize(UIReference)
 	local CameraTarget = nil
 	runLoop("!CameraLockKey", function()
 		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius
+		local function findCameraTarget()
+			return FindPlayerTo(radiusSize, targetingConfig({ Mouse = true }))
+		end
+
 		if not CameraTarget then
-			CameraTarget = FindPlayerTo(radiusSize, {
-				Mouse = true,
-				FriendCheck = Toggles.TargetingFriendCheck.Value,
-				CrewCheck = Toggles.TargetingCrewCheck.Value,
-				WallCheck = Toggles.TargetingWallCheck.Value,
-				KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-				LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
-				Whitelist = Options.TargetingWhitelist.Value
-			})
+			CameraTarget = findCameraTarget()
 		end
 
 		if CameraTarget and CameraTarget.Character then
 			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
 			if Toggles.TargetingKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
-				CameraTarget = FindPlayerTo(radiusSize, {
-					Mouse = true,
-					FriendCheck = Toggles.TargetingFriendCheck.Value,
-					CrewCheck = Toggles.TargetingCrewCheck.Value,
-					WallCheck = Toggles.TargetingWallCheck.Value,
-					KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-					LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
-					Whitelist = Options.TargetingWhitelist.Value
-				})
+				CameraTarget = findCameraTarget()
 			end
 
-			if CameraTarget and CameraTarget.Character then
-				local targetPart
-					if not Toggles.CameraLockClosestPart.Value then
-						targetPart = CameraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
-					else
-						targetPart = getClosestPartToMouse(CameraTarget)
-					end
-				if targetPart then
-					Camera.CFrame = CFrame.new(
-						Camera.CFrame.Position,
-						targetPart.Position
-					)
-				end
+			local targetPart = getTargetPart(
+				CameraTarget,
+				Toggles.CameraLockClosestPart.Value and "Closest",
+				Options.TargetingTargetPart.Value
+			)
+			if targetPart then
+				Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
 			end
 		end
 	end, function()
 		CameraTarget = nil
 	end)
 
-	local function isWhitelisted(player)
-		local whitelist = Options.TargetingWhitelist.Value
-		if not player or type(whitelist) ~= "table" then
-			return false
-		end
-
-		local name = player.Name:lower()
-		for key, value in pairs(whitelist) do
-			if type(value) == "string" then
-				if value:lower() == name then
-					return true
-				end
-			elseif value == true and type(key) == "string" then
-				if key:lower() == name then
-					return true
-				end
-			end
-		end
-
-		return false
-	end
-
 	runLoop("GunTriggerBotKey", function()
 		local Gun = getEquippedGun()
 		if not Gun then
 			return
 		end
-	
-		local TargetPart = Mouse.Target
-		if not TargetPart then
-			Gun:Deactivate()
-			return
-		end
-	
-		local TargetModel = TargetPart.Parent
-		if not TargetModel then
-			Gun:Deactivate()
-			return
-		end
-	
-		local TargetPlayer = Players:FindFirstChild(TargetModel.Name)
-		local TargetHumanoid = TargetModel:FindFirstChildOfClass("Humanoid")
-	
-		if not TargetHumanoid and TargetModel.Parent then
-			TargetHumanoid = TargetModel.Parent:FindFirstChildOfClass("Humanoid")
-			if TargetHumanoid then
-				TargetModel = TargetModel.Parent
-			end
-		end
-	
-		if not TargetHumanoid then
-			Gun:Deactivate()
-			return
-		elseif Toggles.GunTriggerBotKnockedCheck.Value and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)) then
-			Gun:Deactivate()
-			return
-		end
-	
-		if isWhitelisted(TargetPlayer) then
-			Gun:Deactivate()
-			return
-		end
-	
-		local FriendCheck = false
-		local CrewCheck = false
-	
-		if Toggles.GunTriggerBotCrewCheck.Value then
-			CrewCheck = checkCrew(TargetPlayer)
-		end
-	
-		if Toggles.GunTriggerBotFriendCheck.Value then
-			FriendCheck = checkFriend(TargetPlayer)
-		end
-	
-		if not FriendCheck and not CrewCheck then
+
+		local TargetHumanoid = Mouse.Target and getHumanoid(Mouse.Target)
+		local TargetPlayer = TargetHumanoid and Players:GetPlayerFromCharacter(TargetHumanoid.Parent)
+
+		local shouldFire = TargetHumanoid ~= nil
+			and not (Toggles.GunTriggerBotKnockedCheck.Value and (TargetHumanoid.Health <= 0 or checkKnocked(TargetPlayer)))
+			and not isWhitelisted(TargetPlayer, Options.TargetingWhitelist.Value)
+			and not (TargetPlayer and Toggles.GunTriggerBotCrewCheck.Value and checkCrew(TargetPlayer))
+			and not (TargetPlayer and Toggles.GunTriggerBotFriendCheck.Value and checkFriend(TargetPlayer))
+
+		if shouldFire then
 			Gun:Activate()
 		else
 			Gun:Deactivate()
@@ -982,23 +741,16 @@ function Logic:Initialize(UIReference)
 	local KillAuraTarget = nil
 	runLoop("!KillAuraKey", function()
 		local closestToMouse = Toggles.KillAuraClosestToMouse.Value
-		KillAuraTarget = FindPlayerTo(math.huge, {
+		KillAuraTarget = FindPlayerTo(math.huge, targetingConfig({
 			Mouse = closestToMouse,
 			Character = not closestToMouse,
-			FriendCheck = Toggles.TargetingFriendCheck.Value,
-			CrewCheck = Toggles.TargetingCrewCheck.Value,
-			WallCheck = Toggles.TargetingWallCheck.Value,
-			KnockedCheck = Toggles.TargetingKnockedCheck.Value,
-			LimitDistance = Toggles.TargetingLimitDistanceToggle.Value,
-			Whitelist = Options.TargetingWhitelist.Value
-		})
+		}))
 		if KillAuraTarget and KillAuraTarget.Character then
-			local targetPart
-			if not Toggles.KillAuraRandomHitPart.Value then
-				targetPart = KillAuraTarget.Character:FindFirstChild(Options.TargetingTargetPart.Value)
-			else
-				targetPart = getRandomHitPart(KillAuraTarget.Character)
-			end
+			local targetPart = getTargetPart(
+				KillAuraTarget,
+				Toggles.KillAuraRandomHitPart.Value and "Random",
+				Options.TargetingTargetPart.Value
+			)
 			if targetPart then
 				local gun = getEquippedGun()
 				if gun then
@@ -1023,68 +775,13 @@ function Logic:Initialize(UIReference)
 		if not gun then
 			return
 		end
-		if not checkLocalPlayerKnocked() and gun.Ammo.Value < 1 then
+		if not checkKnocked(LocalPlayer) and gun.Ammo.Value < 1 then
 			MainEvent:FireServer("Reload",gun)
 		end
 	end)
 
-	runLoop(Toggles.SilentAimRadius, function()
-		local MouseLocation = UserInputService:GetMouseLocation()
-		local Color = Toggles.SilentAimRadiusMatchAccent.Value and Library.AccentColor or Options.SilentAimRadiusColor.Value
-		local FillColor = Toggles.SilentAimRadiusMatchAccent.Value and Library.AccentColor or Options.SilentAimRadiusFillColor.Value
-		local FillVisib = Toggles.SilentAimRadiusFill.Value and true or false
-
-		SilentAimRadius.Position = MouseLocation
-		SilentAimRadius.Radius = Options.SilentAimRadiusSize.Value
-		SilentAimRadius.Color = Color
-		SilentAimRadius.Thickness = Options.SilentAimRadiusThickness.Value
-
-		SilentAimRadiusFill.Position = MouseLocation
-		SilentAimRadiusFill.Radius = Options.SilentAimRadiusSize.Value
-		SilentAimRadiusFill.Color = FillColor
-		SilentAimRadiusFill.Transparency = Options.SilentAimRadiusTransparency.Value
-
-		SilentAimRadiusFill.Visible = FillVisib
-		SilentAimRadius.Visible = true
-	end, function()
-		SilentAimRadiusFill.Visible = false
-		SilentAimRadius.Visible = false
-	end)
-	Toggles.SilentAimRadius:OnChanged(function()
-		if not Toggles.SilentAimRadius.Value then
-			SilentAimRadiusFill.Visible = false
-			SilentAimRadius.Visible = false
-		end
-	end)
-
-	runLoop(Toggles.CameraRadius, function()
-		local MouseLocation = UserInputService:GetMouseLocation()
-		local Color = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusColor.Value
-		local FillColor = Toggles.CameraRadiusMatchAccent.Value and Library.AccentColor or Options.CameraRadiusFillColor.Value
-		local FillVisib = Toggles.CameraRadiusFill.Value and true or false
-
-		CameraRadius.Position = MouseLocation
-		CameraRadius.Radius = Options.CameraRadiusSize.Value
-		CameraRadius.Color = Color
-		CameraRadius.Thickness = Options.CameraRadiusThickness.Value
-
-		CameraRadiusFill.Position = MouseLocation
-		CameraRadiusFill.Radius = Options.CameraRadiusSize.Value
-		CameraRadiusFill.Color = FillColor
-		CameraRadiusFill.Transparency = Options.CameraRadiusTransparency.Value
-
-		CameraRadiusFill.Visible = FillVisib
-		CameraRadius.Visible = true
-	end, function()
-		CameraRadiusFill.Visible = false
-		CameraRadius.Visible = false
-	end)
-	Toggles.CameraRadius:OnChanged(function()
-		if not Toggles.CameraRadius.Value then
-			CameraRadiusFill.Visible = false
-			CameraRadius.Visible = false
-		end
-	end)
+	setupRadius("SilentAimRadius")
+	setupRadius("CameraRadius")
 
 	-- CHARACTER TAB
     runLoop("VelocityKey", function()
@@ -1109,7 +806,7 @@ function Logic:Initialize(UIReference)
 	end)
 
 	runLoop(Toggles.AntiStompToggle, function()
-		if checkLocalPlayerKnocked() then
+		if checkKnocked(LocalPlayer) then
 			if LocalCharacter then
 				local LocalHead = LocalCharacter:FindFirstChild("Head")
 				if LocalHead then
@@ -1183,12 +880,7 @@ function Logic:Initialize(UIReference)
 		if not reportConnection then
 			reportConnection = LocalDataFolder:WaitForChild("Reporters").ChildAdded:Connect(function(child)
 				if child and child.Value ~= "" then
-					local text = Options.NotifyReportText and Options.NotifyReportText.Value
-					if text == nil or text == "" then
-						text = "{USERNAME} reported you"
-					end
-					local notificationText = formatReportNotification(text, child.Value)
-					Library:Notify(notificationText, tonumber(Options.NotifyReportDuration.Value))
+					Library:Notify(child.Value.." reported you", tonumber(Options.NotifyReportDuration.Value))
 				end
 			end)
 		end
