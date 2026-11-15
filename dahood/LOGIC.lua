@@ -1,4 +1,4 @@
-print("yo ur gay and ur like men")
+print("yo ur gay and ur gay")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -65,22 +65,45 @@ for i,v in ipairs(workspace.Ignored.Shop:GetChildren()) do
 	end
 end
 
-local function formatCustomNotification(templateString, shooterName, damage, partName, weaponName)
-    local replacements = {
-        ["{NAME}"] = shooterName,
-        ["{DMG}"] = tostring(math.floor(damage)),
-        ["{PART}"] = partName,
-        ["{WEAPON}"] = weaponName
-    }
-    
-    local formattedMessage = templateString:gsub("{%a+}", replacements)
-    return formattedMessage
+local function formatTemplate(templateString, replacements)
+	return (templateString:gsub("{%a+}", function(token)
+		local value = replacements[token]
+		if value == nil then
+			return nil
+		end
+		return tostring(value)
+	end))
+end
+
+local function getDisplayName(username)
+	local player = username and Players:FindFirstChild(username)
+	if player and player:IsA("Player") then
+		return player.DisplayName
+	end
+	return username
+end
+
+local function formatCustomNotification(templateString, username, damage, partName, weaponName)
+	return formatTemplate(templateString, {
+		["{USERNAME}"] = username,
+		["{DISPLAYNAME}"] = getDisplayName(username),
+		["{DMG}"] = damage and math.floor(damage) or nil,
+		["{PART}"] = partName,
+		["{WEAPON}"] = weaponName
+	})
+end
+
+local function formatReportNotification(templateString, username)
+	return formatTemplate(templateString, {
+		["{USERNAME}"] = username,
+		["{DISPLAYNAME}"] = getDisplayName(username)
+	})
 end
 
 local function notifyDamage(hit, damage)
 	local text = Options.NotifyDamageText.Value
 	if text == nil or text == "" then
-		text = "{NAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = "{USERNAME} HIT US FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.shooterName, damage, hit.partName, hit.weaponName)
 	Library:Notify(notificationText, tonumber(Options.NotifyDamageDuration.Value))
@@ -91,7 +114,7 @@ local function notifyHit(hit, damage)
 
 	local text = Options.NotifyHitText.Value
 	if text == nil or text == "" then
-		text = "HIT {NAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
+		text = "HIT {USERNAME} FOR {DMG} IN THE {PART} USING {WEAPON}"
 	end
 	local notificationText = formatCustomNotification(text, hit.playerName, damage, hit.bodyPartName, hit.gunName)
 	Library:Notify(notificationText, tonumber(Options.NotifyHitDuration.Value))
@@ -500,7 +523,6 @@ local function runLoop(controlObj, loopFn, stopFn)
 	end)
 end
 
--- builds the FindPlayerTo config from the shared targeting toggles, plus per-feature extras
 local function targetingConfig(extra)
 	local config = {
 		FriendCheck = Toggles.TargetingFriendCheck.Value,
@@ -519,7 +541,6 @@ local function targetingConfig(extra)
 	return config
 end
 
--- shows/updates a Drawing circle pair created by createRadius(name) from the "<name>*" toggles/options
 local function setupRadius(name)
 	local outline = getgenv()[name]
 	local fill = getgenv()[name .. "Fill"]
@@ -817,6 +838,7 @@ function Logic:Initialize(UIReference)
 	end)
 
 	-- MISC TAB
+	local maskHandle
 	runLoop(Toggles.AutoMaskToggle, function()
 		if LocalHumanoid.DisplayDistanceType ~= Enum.HumanoidDisplayDistanceType.Viewer then return end
 
@@ -831,16 +853,24 @@ function Logic:Initialize(UIReference)
 		end
 		if not maskTool then return end
 
-		LocalHumanoid:EquipTool(maskTool)
-		while LocalHumanoid.DisplayDistanceType == Enum.HumanoidDisplayDistanceType.Viewer and LocalHumanoid.Health > 0 and maskTool.Parent and Toggles.AutoMaskToggle.Value do
-			task.wait()
-			if maskTool.Parent == LocalCharacter then
-				maskTool:Activate()
-			else
-				LocalHumanoid:EquipTool(maskTool)
+		maskHandle = EquipTool(maskTool, 1, function(success, tool, release, isActive)
+			if not success then return end
+
+			while isActive() and LocalHumanoid.DisplayDistanceType == Enum.HumanoidDisplayDistanceType.Viewer and LocalHumanoid.Health > 0 and Toggles.AutoMaskToggle.Value and tool.Parent do
+				tool:Activate()
+				task.wait()
 			end
+
+			if isActive() then
+				LocalHumanoid:UnequipTools()
+				release()
+			end
+		end)
+	end, function()
+		if maskHandle then
+			maskHandle:Cancel()
+			maskHandle = nil
 		end
-		LocalHumanoid:UnequipTools()
 	end)
 
 	local armorPending = false
@@ -880,13 +910,19 @@ function Logic:Initialize(UIReference)
 		if not reportConnection then
 			reportConnection = LocalDataFolder:WaitForChild("Reporters").ChildAdded:Connect(function(child)
 				if child and child.Value ~= "" then
-					Library:Notify(child.Value.." reported you", tonumber(Options.NotifyReportDuration.Value))
+					local text = Options.NotifyReportText and Options.NotifyReportText.Value
+					if text == nil or text == "" then
+						text = "{USERNAME} reported you"
+					end
+					local notificationText = formatReportNotification(text, child.Value)
+					Library:Notify(notificationText, tonumber(Options.NotifyReportDuration.Value))
 				end
 			end)
 		end
 	end, function()
 		if reportConnection then
 			reportConnection:Disconnect()
+			reportConnection = nil
 		end
 	end)
 end
