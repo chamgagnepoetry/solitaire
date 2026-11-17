@@ -248,6 +248,14 @@ function UI:Initialize()
 		Options.TargetingWhitelist:SetValue(whitelist)
 	end
 
+	TargetingGroupBox:AddToggle("TargetingTargetLock", {
+        Text = "cam lock"
+    }):AddKeyPicker("TargetingTargetLockKey",{
+        Text = "cam lock";
+        Default = "Z";
+        Mode = "Toggle";
+        NoUI = false;
+    })
 	TargetingGroupBox:AddToggle("TargetingFriendCheck",{
 		Text = "friend check"
 	})
