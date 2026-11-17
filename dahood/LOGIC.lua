@@ -1,4 +1,4 @@
-print("yo ur gay and ur gay")
+print("yo ur gay and sdfsdfsdf gay")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -604,6 +604,28 @@ function Logic:Initialize(UIReference)
 		end))
 	end)
 
+	-- TARGET LOCK (sticky aim)
+	-- One shared locked player used by Silent Aim and Camera Lock.
+	-- Acquired through the normal targeting filters, then kept until the key is toggled off.
+	local LockedTarget = nil
+
+	local function getLockedTarget()
+		if not LockedTarget then return nil end
+
+		local character = LockedTarget.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local invalid = LockedTarget.Parent ~= Players
+			or not humanoid
+			or humanoid.Health <= 0
+			or (Toggles.TargetingKnockedCheck.Value and checkKnocked(LockedTarget))
+
+		if invalid then
+			LockedTarget = nil
+			return nil
+		end
+		return LockedTarget
+	end
+
 	local SilentAimTarget = nil
 	local oldGetAim; oldGetAim = clonefunction(hookfunction(rawget(GunHandler, "getAim"), newcclosure(function(origin)
 		if Toggles.SilentAimToggle.Value and typeof(origin) == "Vector3" then
@@ -611,7 +633,7 @@ function Logic:Initialize(UIReference)
 			
 				local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius
 				
-				SilentAimTarget = FindPlayerTo(radiusSize, targetingConfig({ Mouse = true }))
+				SilentAimTarget = getLockedTarget() or FindPlayerTo(radiusSize, targetingConfig({ Mouse = true }))
 				
 				if SilentAimTarget and SilentAimTarget.Character then
 					local targetPart = getTargetPart(
@@ -707,6 +729,20 @@ function Logic:Initialize(UIReference)
 		SilentAimTarget = nil
 	end)
 
+	runLoop("!TargetingTargetLockKey", function()
+		if getLockedTarget() then return end
+		local radiusSize = Toggles.SilentAimRadius.Value and SilentAimRadius.Radius
+		LockedTarget = FindPlayerTo(radiusSize, targetingConfig({ Mouse = true }))
+		if LockedTarget then
+			Library:Notify("locked onto " .. LockedTarget.DisplayName, NotificationTime)
+		end
+	end, function()
+		if LockedTarget then
+			Library:Notify("unlocked from " .. LockedTarget.DisplayName, NotificationTime)
+		end
+		LockedTarget = nil
+	end)
+
 	local CameraTarget = nil
 	runLoop("!CameraLockKey", function()
 		local radiusSize = Toggles.CameraRadius.Value and CameraRadius.Radius
@@ -714,18 +750,24 @@ function Logic:Initialize(UIReference)
 			return FindPlayerTo(radiusSize, targetingConfig({ Mouse = true }))
 		end
 
-		if not CameraTarget then
-			CameraTarget = findCameraTarget()
-		end
-
-		if CameraTarget and CameraTarget.Character then
-			local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
-			if Toggles.TargetingKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+		local activeTarget = getLockedTarget()
+		if not activeTarget then
+			if not CameraTarget then
 				CameraTarget = findCameraTarget()
 			end
 
+			if CameraTarget and CameraTarget.Character then
+				local TargetHumanoid = CameraTarget.Character:FindFirstChildOfClass("Humanoid")
+				if Toggles.TargetingKnockedCheck.Value and (not TargetHumanoid or TargetHumanoid.Health <= 0) then
+					CameraTarget = findCameraTarget()
+				end
+			end
+			activeTarget = CameraTarget
+		end
+
+		if activeTarget and activeTarget.Character then
 			local targetPart = getTargetPart(
-				CameraTarget,
+				activeTarget,
 				Toggles.CameraLockClosestPart.Value and "Closest",
 				Options.TargetingTargetPart.Value
 			)
